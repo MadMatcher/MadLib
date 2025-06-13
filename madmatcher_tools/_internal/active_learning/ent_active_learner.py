@@ -1,14 +1,22 @@
+"""
+Entropy-based active learning implementation.
+
+This module is part of the internal implementation and should not be imported directly.
+Use the public API in the root package instead.
+"""
+
 import pyspark.sql.functions as F    
 from pyspark.sql import SparkSession
 import pandas as pd
 import pyspark.sql.types as T    
 from copy import deepcopy, copy
-from utils import persisted, get_logger, repartition_df, type_check
-from labeler import Labeler
-from ml_model import MLModel, SKLearnModel, convert_to_array, convert_to_vector
+from ..utils import persisted, get_logger, repartition_df, type_check
+from ..labeler import Labeler
+from ..ml_model import MLModel, SKLearnModel, convert_to_array, convert_to_vector
 from pyspark.ml.functions import vector_to_array, array_to_vector
 import pyspark
 from math import ceil
+from ..api_utils import _create_labeler
 
 log = get_logger(__name__)
     
@@ -34,6 +42,8 @@ class EntropyActiveLearner:
 
         """
 
+        if isinstance(labeler, dict):
+            labeler = _create_labeler(labeler)
         self._check_init_args(model, labeler, batch_size, max_iter)
 
         self._batch_size = batch_size

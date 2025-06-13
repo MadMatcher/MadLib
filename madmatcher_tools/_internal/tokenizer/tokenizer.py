@@ -1,3 +1,10 @@
+"""
+Tokenizer base class and implementations.
+
+This module is part of the internal implementation and should not be imported directly.
+Use the public API in the root package instead.
+"""
+
 from abc import abstractmethod, ABC
 import pandas as pd
 import pyspark.sql.functions as F
@@ -7,7 +14,9 @@ from typing import Iterator
 import re
 import numpy as np
 
+from ..utils import get_logger
 
+log = get_logger(__name__)
 
 class Tokenizer(ABC):
 
@@ -55,7 +64,7 @@ class Tokenizer(ABC):
         return isinstance(o, type(self)) and self.NAME == o.NAME
 
 class StrippedWhiteSpaceTokenizer(Tokenizer):
-    WHITESPACE_NORM = re.compile('[\s]+')
+    WHITESPACE_NORM = re.compile(r'[\s]+')
     RE = re.compile('[^a-z0-9 ]+')
     NAME='stripped_whitespace_tokens'
     def __init__(self):

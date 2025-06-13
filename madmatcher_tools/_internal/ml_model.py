@@ -20,6 +20,9 @@ from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.base import BaseEstimator
 from joblib import parallel_backend
 from threadpoolctl import ThreadpoolController
+from .utils import get_logger
+
+log = get_logger(__name__)
 
 class MLModel(ABC):
     """Abstract base class for machine learning models.

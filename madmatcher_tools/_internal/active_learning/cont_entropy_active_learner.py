@@ -1,3 +1,10 @@
+"""
+Continuous entropy-based active learning implementation.
+
+This module is part of the internal implementation and should not be imported directly.
+Use the public API in the root package instead.
+"""
+
 import pyspark.sql.functions as F    
 from tqdm import tqdm
 import traceback
@@ -6,9 +13,9 @@ import pandas as pd
 import numpy as np
 import pyspark.sql.types as T    
 from copy import deepcopy, copy
-from utils import persisted, get_logger, repartition_df, type_check
-from labeler import Labeler
-from ml_model import MLModel, SKLearnModel, convert_to_array, convert_to_vector
+from ..utils import persisted, get_logger, repartition_df, type_check
+from ..labeler import Labeler
+from ..ml_model import MLModel, SKLearnModel, convert_to_array, convert_to_vector
 from pyspark.ml.functions import vector_to_array, array_to_vector
 from queue import PriorityQueue, Queue, Empty
 from threading import Thread, Event
@@ -17,6 +24,7 @@ from math import ceil
 import time
 from dataclasses import dataclass, field
 from typing import Any
+from ..api_utils import _create_labeler
 
 log = get_logger(__name__)
     
@@ -45,6 +53,8 @@ class ContinuousEntropyActiveLearner:
 
         """
 
+        if isinstance(labeler, dict):
+            labeler = _create_labeler(labeler)
         self._check_init_args(model, labeler, queue_size, max_labeled, on_demand_stop)
 
         self._queue_size = queue_size

@@ -1,24 +1,39 @@
+"""
+Vectorizer implementations.
+
+This module is part of the internal implementation and should not be imported directly.
+Use the public API in the root package instead.
+"""
+
 import numpy as np
 import pandas as pd
 import pyspark.sql.functions as F
 from scipy.sparse.linalg import svds
 from sklearn.utils.extmath import svd_flip, safe_sparse_dot
-from utils import is_null, get_logger
-from utils import SparseVec
+from ..utils import is_null, get_logger, SparseVec, PerfectHashFunction
+from ..storage import MemmapArray
 import gc
 import numba as nb
 from copy import deepcopy
-from utils import PerfectHashFunction
-from storage import MemmapArray
 #import spacy 
 
 
 log = get_logger(__name__)
 
+class Vectorizer:
+    """
+    Base class for all vectorizers.
+    """
+    def build_from_doc_freqs(self, doc_freqs):
+        raise NotImplementedError
+    def out_col_name(self, base):
+        raise NotImplementedError
+    def init(self):
+        raise NotImplementedError
+    def vectorize(self, tokens):
+        raise NotImplementedError
 
-
-
-class TFIDFVectorizer:
+class TFIDFVectorizer(Vectorizer):
 
     def __init__(self):
         self._N = None
@@ -87,7 +102,7 @@ def _vectorize_tfidf(hash_idx, idfs, hashes, values):
         return (idxes.astype(np.int32), values)
 
 
-class SIFVectorizer:
+class SIFVectorizer(Vectorizer):
 
     def __init__(self):
         self._a_param = 0.001

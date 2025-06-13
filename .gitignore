@@ -1,2 +1,3 @@
-__pycache__/ 
 htmlcov/
+new_matcher.py
+**/__pycache__/

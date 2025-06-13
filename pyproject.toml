@@ -50,7 +50,8 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["."]
+packages = ["madmatcher_tools"]
+
 
 [tool.hatch.metadata]
 allow-direct-references = true 

@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
-from feature.feature import Feature
-from tokenizer.tokenizer import Tokenizer
-from utils import is_null, get_logger, type_check
+from .feature import Feature
+from ..tokenizer.tokenizer import Tokenizer
+from ..utils import is_null, get_logger, type_check
 from py_stringmatching import MongeElkan
 from abc import abstractmethod
 import math

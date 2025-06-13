@@ -1,10 +1,9 @@
 import pandas as pd
-from tokenizer.vectorizer import TFIDFVectorizer, SIFVectorizer
-from feature.token_feature import TokenFeature
+from ..tokenizer.vectorizer import TFIDFVectorizer, SIFVectorizer
+from .token_feature import TokenFeature
 import pyspark.sql.functions as F
 import numpy as np
-from utils import get_logger
-from utils import PerfectHashFunction
+from ..utils import get_logger, PerfectHashFunction
 from threading import Lock
 
 log = get_logger(__name__)

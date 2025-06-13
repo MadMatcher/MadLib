@@ -1,3 +1,10 @@
+"""
+Labeler base class and implementations.
+
+This module is part of the internal implementation and should not be imported directly.
+Use the public API in the root package instead.
+"""
+
 from abc import abstractmethod, ABC
 import time
 from tabulate import tabulate
@@ -5,6 +12,10 @@ from pyspark.sql.functions import col
 import shutil
 import textwrap
 import pandas as pd
+
+from .utils import get_logger
+
+log = get_logger(__name__)
 
 
 class Labeler(ABC):

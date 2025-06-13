@@ -6,11 +6,11 @@ import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from pyspark.sql import SparkSession
 import pickle
-from storage import MemmapDataFrame
+from .storage import MemmapDataFrame
 from threading import Lock
 from joblib import Parallel, delayed
-from utils import repartition_df
-from tokenizer import (
+from .utils import repartition_df
+from .tokenizer import (
     AlphaNumericTokenizer,
     NumericTokenizer,
     QGramTokenizer,
@@ -20,7 +20,7 @@ from tokenizer import (
     ShingleTokenizer,
 )
 
-from feature import (
+from .feature import (
     ExactMatchFeature,
     EditDistanceFeature,
     SmithWatermanFeature,
@@ -74,6 +74,19 @@ class BuildCache:
     def clear(self):
         with self._lock:
             self._cache.clear()
+
+
+def get_base_sim_functions():
+    return SIM_FUNCTIONS
+
+
+def get_base_tokenizers():
+    return TOKENIZERS
+
+
+def get_extra_tokenizers():
+    return EXTRA_TOKENIZERS
+
 
 def create_features(
     A: pd.DataFrame,

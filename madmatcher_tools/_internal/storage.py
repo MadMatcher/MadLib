@@ -11,8 +11,7 @@ from tempfile import mkstemp
 from pathlib import Path
 import os
 from itertools import islice
-from utils import get_logger
-from utils import decompress, compress
+from .utils import get_logger, decompress, compress
 from joblib import Parallel, delayed
 
 log = get_logger(__name__)

@@ -1,10 +1,16 @@
+"""
+Feature base class and implementations.
+
+This module is part of the internal implementation and should not be imported directly.
+Use the public API in the root package instead.
+"""
+
 from abc import abstractmethod, ABC
 from functools import partial
 import pandas as pd
 import numpy as np
-from utils import get_logger
+from ..utils import is_null, get_logger, type_check
 from py_stringmatching import Levenshtein, NeedlemanWunsch, SmithWaterman
-from utils import type_check
 #from active_matcher.fv_generator import BuildCache
 
 log = get_logger(__name__)
