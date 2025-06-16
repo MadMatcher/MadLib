@@ -1,7 +1,6 @@
 from typing import List, Optional, Callable, Any
 import pandas as pd
 import numpy as np
-from time import time
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from pyspark.sql import SparkSession
@@ -220,17 +219,9 @@ def featurize(
         B = spark.createDataFrame(B)
     if isinstance(candidates, pd.DataFrame):
         candidates = spark.createDataFrame(candidates)
-    start = time()
     table_a_preproc, table_b_preproc = _build(A, B, features)
-    end = time()
-    print(f"{end-start} seconds to preprocess tables")
-    start = time()
     fvs = _gen_fvs(candidates, table_a_preproc, table_b_preproc, output_col, fill_na, features)
-    end = time()
-    print(f"{end-start} seconds to generate fvs")
     fvs = fvs.toPandas()
-    end = time()
-    print(f"{end-start} seconds to convert to pandas")
     return fvs
 
 

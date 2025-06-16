@@ -8,6 +8,9 @@ Implementation details are hidden in the _internal package.
 from typing import List, Optional, Callable, Any, Union, Literal, Dict, Type
 import pandas as pd
 from pyspark.sql import SparkSession
+import pyspark.sql.functions as F
+from pyspark.sql.window import Window
+from pyspark.sql import DataFrame as SparkDataFrame
 from sklearn.base import BaseEstimator
 import xxhash
 
@@ -22,7 +25,7 @@ from ._internal.featurization import (
     get_extra_tokenizers,
     featurize
 )
-from ._internal.api_utils import _create_model, _create_labeler
+from ._internal.api_utils import _create_matching_model, _create_labeler, _create_training_model
 
 # Re-export the public functions
 __all__ = [
@@ -32,72 +35,94 @@ __all__ = [
     'get_extra_tokenizers',
     'featurize',
     'down_sample',
-    'select_seeds',
+    'create_seeds',
     'train_matcher',
     'apply_matcher',
     'label_data'
 ]
 
+
 def down_sample(
-    fvs: pd.DataFrame,
+    fvs: Union[pd.DataFrame, SparkDataFrame],
     percent: float,
     search_id_column: str,
     score_column: str = 'score',
     bucket_size: int = 1_000,
-) -> pd.DataFrame:
+) -> Union[pd.DataFrame, SparkDataFrame]:
     """
     down sample by score_column to produce percent * fvs.count() rows
 
     Parameters
     ----------
-    fvs : pandas DataFrame
+    fvs : Union[pd.DataFrame, SparkDataFrame]
         the feature vectors to be downsampled
     percent : float
         the portion of the vectors to be output, (0.0, 1.0]
+    search_id_column: str
+        the name of the column containing unique identifiers for each record
     score_column : str
         the column that scored the vectors, should be positively correlated with the probability of the pair being a match
-
+    bucket_size : int = 1000
+        the size of the buckets for partitioning, default 1000
+        
     Returns
     -------
-    pandas DataFrame
+    Union[pd.DataFrame, SparkDataFrame]
         the down sampled dataset with percent * fvs.count() rows with the same schema as fvs
     """
-    if not 0 <= percent <= 1:
-        raise ValueError("percent must be between 0 and 1")
-    if percent == 0:
-        return pd.DataFrame(columns=fvs.columns)
-    if percent == 1:
-        return fvs.copy()
-    fvs = fvs.copy()
-    total = len(fvs)
-    nparts = max(total // bucket_size, 1)
-    fvs["_hash_bucket"] = fvs[search_id_column].astype(str).apply(lambda val: xxhash.xxh64(val).intdigest() % nparts)
-    fvs["_rank_desc"] = fvs.groupby("_hash_bucket")[score_column] \
-        .rank(method="min", ascending=False)
+    if isinstance(fvs, pd.DataFrame):
+        if percent <= 0 or percent > 1.0:
+            raise ValueError('percent must be in the range (0.0, 1.0]')
+        fvs = fvs.copy()
+        total = len(fvs)
+        nparts = max(total // bucket_size, 1)
+        fvs["_hash_bucket"] = fvs[search_id_column].astype(str).apply(lambda val: xxhash.xxh64(val).intdigest() % nparts)
+        fvs["_rank_desc"] = fvs.groupby("_hash_bucket")[score_column] \
+            .rank(method="min", ascending=False)
 
-    bucket_sizes = fvs["_hash_bucket"].value_counts().to_dict()
-    fvs["_bucket_size"] = fvs["_hash_bucket"].map(bucket_sizes)
+        bucket_sizes = fvs["_hash_bucket"].value_counts().to_dict()
+        fvs["_bucket_size"] = fvs["_hash_bucket"].map(bucket_sizes)
 
-    fvs["_percent_rank"] = fvs.apply(
-        lambda row: 0.0
-        if row["_bucket_size"] == 1
-        else (row["_rank_desc"] - 1) / (row["_bucket_size"] - 1),
-        axis=1,
-    )
-    fvs = fvs[fvs["_percent_rank"] <= percent].copy()
-    fvs = fvs.drop(columns=["_hash_bucket", "_rank_desc", "_bucket_size", "_percent_rank"])
+        fvs["_percent_rank"] = fvs.apply(
+            lambda row: 0.0
+            if row["_bucket_size"] == 1
+            else (row["_rank_desc"] - 1) / (row["_bucket_size"] - 1),
+            axis=1,
+        )
+        fvs = fvs[fvs["_percent_rank"] <= percent].copy()
+        fvs = fvs.drop(columns=["_hash_bucket", "_rank_desc", "_bucket_size", "_percent_rank"])
 
+    elif isinstance(fvs, SparkDataFrame):
+        if bucket_size < 1000:
+            raise ValueError('bucket_size must be >= 1000')
+
+        if percent <= 0 or percent > 1.0:
+            raise ValueError('percent must be in the range (0.0, 1.0]')
+
+        if isinstance(score_column, str):
+            score_column = F.col(score_column)
+
+        # temp columns for sampling
+        percentile_col = '_PERCENTILE'
+        hash_col = '_HASH'
+
+        window = Window().partitionBy(hash_col).orderBy(score_column.desc())
+        nparts = max(fvs.count() // bucket_size, 1)
+        fvs = fvs.withColumn(hash_col, F.xxhash64(search_id_column) % nparts)\
+                        .select('*', F.percent_rank().over(window).alias(percentile_col))\
+                        .filter(F.col(percentile_col) <= percent)\
+                        .drop(percentile_col, hash_col)
     return fvs
 
 
-def select_seeds(
-    fvs: pd.DataFrame,
+def create_seeds(
+    fvs: Union[pd.DataFrame, SparkDataFrame],
     nseeds: int,
     labeler: Union[Labeler, Dict],
     score_column: str = 'score'
-) -> pd.DataFrame:
+) -> Union[pd.DataFrame, SparkDataFrame]:
     """
-    select seeds to train a model
+    create seeds seeds to train a model
 
     Parameters
     ----------
@@ -118,17 +143,29 @@ def select_seeds(
     """
     if isinstance(labeler, dict):
         labeler = _create_labeler(labeler)
-    if len(fvs) == 0 or nseeds == 0:
-        df = fvs.copy()
-        df['label'] = []
-        return df
-    fvs = fvs[fvs[score_column].notna()].copy()
-    if len(fvs) == 0:
-        df = fvs.copy()
-        df['label'] = []
-        return df
-    maybe_pos = fvs.nlargest(nseeds, score_column).iterrows()
-    maybe_neg = fvs.nsmallest(nseeds, score_column).iterrows()
+    if nseeds == 0:
+        raise ValueError("no seeds would be created")
+    if isinstance(fvs, pd.DataFrame):
+        fvs = fvs[fvs[score_column].notna()]
+
+        if nseeds > len(fvs):
+            return ValueError("number of seeds would exceed the size of the fvs DataFrame")
+        maybe_pos = fvs.nlargest(nseeds, score_column).iterrows()
+        maybe_neg = fvs.nsmallest(nseeds, score_column).iterrows()
+    elif isinstance(fvs, SparkDataFrame):
+        if nseeds > fvs.count():
+            return ValueError("number of seeds would exceed the size of the fvs DataFrame")
+        fvs = fvs.filter((~F.isnan(score_column)) & (score_column.isNotNull()))
+        # lowest scoring vectors
+        maybe_neg = fvs.sort(score_column, ascending=True)\
+                        .limit(nseeds)\
+                        .toPandas()\
+                        .iterrows()
+        # highest scoring vectors
+        maybe_pos = fvs.sort(score_column, ascending=False)\
+                        .limit(nseeds)\
+                        .toPandas()\
+                        .iterrows()
 
     pos_count = 0
     neg_count = 0
@@ -162,19 +199,17 @@ def select_seeds(
 
 
 def train_matcher(
-    model_spec: Union[str, Dict, MLModel, BaseEstimator],
+    model_spec: Union[Dict, MLModel, BaseEstimator],
     labeled_data: pd.DataFrame,
     feature_col: str = "features",
     label_col: str = "label",
-    **model_kwargs
 ) -> MLModel:
     """Train a matcher model on labeled data.
     
     Parameters
     ----------
-    model_spec : Union[str, Dict, MLModel, BaseEstimator]
+    model_spec : Union[Dict, MLModel, BaseEstimator]
         Either:
-        - A string name of a built-in model (e.g. 'sklearn')
         - A dict with model configuration (e.g. {'name': 'sklearn', 'model_class': XGBClassifier, 'max_depth': 6})
         - An MLModel instance
         - A scikit-learn or Spark model instance
@@ -184,24 +219,24 @@ def train_matcher(
         Name of the column containing feature vectors
     label_col : str, optional
         Name of the column containing labels
-    **model_kwargs : dict
-        Additional arguments to pass to the model constructor
-        
+
     Returns
     -------
     MLModel
         The trained model
     """
-    model = _create_model(model_spec, **model_kwargs)
+    # the users choices for models: they should either give us a pre-trained model, their own custom MLModel
+    # or, they should specify the necessary params. We should be returning to them the trained_model. 
+    # on apply, we should expect to get a trained model. 
+    model = _create_training_model(model_spec)
     return model.train(labeled_data, feature_col, label_col)
 
 
 def apply_matcher(
-    model_spec: Union[str, Dict, MLModel, BaseEstimator],
+    model: Union[MLModel, SKLearnModel, SparkMLModel],
     df: pd.DataFrame,
     feature_col: str,
     output_col: str,
-    **model_kwargs
 ) -> pd.DataFrame:
     """Apply a trained model to make predictions.
     
@@ -219,49 +254,41 @@ def apply_matcher(
         Name of the column containing feature vectors
     output_col : str
         Name of the column to store predictions in
-    **model_kwargs : dict
-        Additional arguments to pass to the model constructor
         
     Returns
     -------
     pandas DataFrame
         The input DataFrame with predictions added
     """
-    model = _create_model(model_spec, **model_kwargs)
+    model = _create_matching_model(model)
     return model.predict(df, feature_col, output_col)
 
 
 def label_data(
-    model_spec: Union[str, Dict, MLModel, BaseEstimator],
+    model_spec: Union[Dict, MLModel],
     mode: Literal["batch", "continuous"],
-    labeler_spec: Union[str, Dict, Labeler],
+    labeler_spec: Union[Dict, Labeler],
     fvs: pd.DataFrame,
-    seeds: Optional[pd.DataFrame] = None,
-    **kwargs
+    seeds: Optional[pd.DataFrame] = None
 ) -> pd.DataFrame:
     """Generate labeled data using active learning.
     
     Parameters
     ----------
-    model_spec : Union[str, Dict, MLModel, BaseEstimator]
+    model_spec : Union[Dict, MLModel]
         Either:
-        - A string name of a built-in model (e.g. 'sklearn')
-        - A dict with model configuration (e.g. {'name': 'sklearn', 'model_class': XGBClassifier})
+        - A dict with model configuration (e.g. {'model_type': 'sklearn', 'model_class': XGBClassifier})
         - An MLModel instance
-        - A scikit-learn or Spark model instance
     mode : Literal["batch", "continuous"]
         Whether to use batch or continuous active learning
     labeler_spec : Union[str, Dict, Labeler]
         Either:
-        - A string name of a built-in labeler (e.g. 'cli')
         - A dict with labeler configuration (e.g. {'name': 'cli', 'a_df': df_a, 'b_df': df_b})
         - A Labeler instance
     fvs : pandas DataFrame
         The data that needs to be labeled
     seeds : pandas DataFrame, optional
         Initial labeled examples to start with
-    **kwargs : dict
-        Additional arguments to pass to the model or labeler constructors
         
     Returns
     -------
@@ -271,11 +298,11 @@ def label_data(
     spark = SparkSession.builder.getOrCreate()
     
     # Create model and labeler
-    model = _create_model(model_spec, **kwargs)
-    labeler = _create_labeler(labeler_spec, **kwargs)
+    model = _create_training_model(model_spec)
+    labeler = _create_labeler(labeler_spec)
     
     if seeds is None:
-        seeds = select_seeds(fvs=fvs, nseeds=10, labeler=labeler, score_column='score')
+        seeds = create_seeds(fvs=fvs, nseeds=10, labeler=labeler, score_column='score')
     
     if mode == "batch":
         learner = EntropyActiveLearner(model, labeler)

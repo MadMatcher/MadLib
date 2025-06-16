@@ -1,0 +1,373 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>madmatcher_tools._internal.ml_model.MLModel &mdash; MadMatcher Tools 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            MadMatcher Tools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">madmatcher_tools._internal.ml_model.MLModel</a><ul>
+<li><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel"><code class="docutils literal notranslate"><span class="pre">MLModel</span></code></a><ul>
+<li><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel.nan_fill"><code class="docutils literal notranslate"><span class="pre">MLModel.nan_fill</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel.use_vectors"><code class="docutils literal notranslate"><span class="pre">MLModel.use_vectors</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel.use_floats"><code class="docutils literal notranslate"><span class="pre">MLModel.use_floats</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel.__init__"><code class="docutils literal notranslate"><span class="pre">MLModel.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel.entropy"><code class="docutils literal notranslate"><span class="pre">MLModel.entropy()</span></code></a></li>
+<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">MLModel.nan_fill</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel.params_dict"><code class="docutils literal notranslate"><span class="pre">MLModel.params_dict()</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel.predict"><code class="docutils literal notranslate"><span class="pre">MLModel.predict()</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel.prediction_conf"><code class="docutils literal notranslate"><span class="pre">MLModel.prediction_conf()</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel.prep_fvs"><code class="docutils literal notranslate"><span class="pre">MLModel.prep_fvs()</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel.train"><code class="docutils literal notranslate"><span class="pre">MLModel.train()</span></code></a></li>
+<li><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">MLModel.use_floats</span></code></a></li>
+<li><a class="reference internal" href="#id2"><code class="docutils literal notranslate"><span class="pre">MLModel.use_vectors</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MadMatcher Tools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">madmatcher_tools._internal.ml_model.MLModel</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/module_stubs/madmatcher_tools._internal.ml_model.MLModel.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="madmatcher-tools-internal-ml-model-mlmodel">
+<h1>madmatcher_tools._internal.ml_model.MLModel<a class="headerlink" href="#madmatcher-tools-internal-ml-model-mlmodel" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="madmatcher_tools._internal.ml_model.MLModel">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">madmatcher_tools._internal.ml_model.</span></span><span class="sig-name descname"><span class="pre">MLModel</span></span><a class="reference internal" href="../_modules/madmatcher_tools/_internal/ml_model.html#MLModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools._internal.ml_model.MLModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Abstract base class for machine learning models.</p>
+<p>This class defines the interface that all machine learning models must implement,
+whether they are scikit-learn models or PySpark ML models. It provides methods
+for training, prediction, confidence estimation, and entropy calculation.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="madmatcher_tools._internal.ml_model.MLModel.nan_fill">
+<span class="sig-name descname"><span class="pre">nan_fill</span></span><a class="headerlink" href="#madmatcher_tools._internal.ml_model.MLModel.nan_fill" title="Link to this definition"></a></dt>
+<dd><p>Value to use for filling NaN values in feature vectors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="madmatcher_tools._internal.ml_model.MLModel.use_vectors">
+<span class="sig-name descname"><span class="pre">use_vectors</span></span><a class="headerlink" href="#madmatcher_tools._internal.ml_model.MLModel.use_vectors" title="Link to this definition"></a></dt>
+<dd><p>Whether the model expects feature vectors in vector format</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="madmatcher_tools._internal.ml_model.MLModel.use_floats">
+<span class="sig-name descname"><span class="pre">use_floats</span></span><a class="headerlink" href="#madmatcher_tools._internal.ml_model.MLModel.use_floats" title="Link to this definition"></a></dt>
+<dd><p>Whether the model uses float32 (True) or float64 (False) precision</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="madmatcher_tools._internal.ml_model.MLModel.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#madmatcher_tools._internal.ml_model.MLModel.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel.__init__" title="madmatcher_tools._internal.ml_model.MLModel.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel.entropy" title="madmatcher_tools._internal.ml_model.MLModel.entropy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">entropy</span></code></a>(df, vector_col, output_col)</p></td>
+<td><p>Calculate entropy of predictions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel.params_dict" title="madmatcher_tools._internal.ml_model.MLModel.params_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">params_dict</span></code></a>()</p></td>
+<td><p>Get a dictionary of model parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel.predict" title="madmatcher_tools._internal.ml_model.MLModel.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(df, vector_col, output_col)</p></td>
+<td><p>Make predictions using the trained model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel.prediction_conf" title="madmatcher_tools._internal.ml_model.MLModel.prediction_conf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prediction_conf</span></code></a>(df, vector_col, label_column)</p></td>
+<td><p>Calculate prediction confidence scores.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel.prep_fvs" title="madmatcher_tools._internal.ml_model.MLModel.prep_fvs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prep_fvs</span></code></a>(fvs[, feature_col])</p></td>
+<td><p>Prepare feature vectors for model input.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel.train" title="madmatcher_tools._internal.ml_model.MLModel.train"><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code></a>(df, vector_col, label_column[, ...])</p></td>
+<td><p>Train the model on the given data.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id0" title="madmatcher_tools._internal.ml_model.MLModel.nan_fill"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nan_fill</span></code></a></p></td>
+<td><p>Value to use for filling NaN values in feature vectors.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id1" title="madmatcher_tools._internal.ml_model.MLModel.use_floats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">use_floats</span></code></a></p></td>
+<td><p>Whether the model uses float32 or float64 precision.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id2" title="madmatcher_tools._internal.ml_model.MLModel.use_vectors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">use_vectors</span></code></a></p></td>
+<td><p>Whether the model expects feature vectors in vector format.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="madmatcher_tools._internal.ml_model.MLModel.entropy">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">entropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/madmatcher_tools/_internal/ml_model.html#MLModel.entropy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools._internal.ml_model.MLModel.entropy" title="Link to this definition"></a></dt>
+<dd><p>Calculate entropy of predictions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em><em> or </em><em>pyspark.sql.DataFrame</em>) – The DataFrame containing the feature vectors</p></li>
+<li><p><strong>vector_col</strong> (<em>str</em>) – Name of the column containing feature vectors</p></li>
+<li><p><strong>output_col</strong> (<em>str</em>) – Name of the column to store entropy values in</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The input DataFrame with entropy values added in the output_col</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame or pyspark.sql.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id0">
+<em class="property"><span class="k"><span class="pre">abstract</span></span><span class="w"> </span><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nan_fill</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>Value to use for filling NaN values in feature vectors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The value to use for filling NaN values, or None if no filling is needed</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="madmatcher_tools._internal.ml_model.MLModel.params_dict">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">params_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../_modules/madmatcher_tools/_internal/ml_model.html#MLModel.params_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools._internal.ml_model.MLModel.params_dict" title="Link to this definition"></a></dt>
+<dd><p>Get a dictionary of model parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary containing model parameters and configuration</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="madmatcher_tools._internal.ml_model.MLModel.predict">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/madmatcher_tools/_internal/ml_model.html#MLModel.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools._internal.ml_model.MLModel.predict" title="Link to this definition"></a></dt>
+<dd><p>Make predictions using the trained model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em><em> or </em><em>pyspark.sql.DataFrame</em>) – The DataFrame containing the feature vectors to predict on</p></li>
+<li><p><strong>vector_col</strong> (<em>str</em>) – Name of the column containing feature vectors</p></li>
+<li><p><strong>output_col</strong> (<em>str</em>) – Name of the column to store predictions in</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The input DataFrame with predictions added in the output_col</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame or pyspark.sql.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="madmatcher_tools._internal.ml_model.MLModel.prediction_conf">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prediction_conf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/madmatcher_tools/_internal/ml_model.html#MLModel.prediction_conf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools._internal.ml_model.MLModel.prediction_conf" title="Link to this definition"></a></dt>
+<dd><p>Calculate prediction confidence scores.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em><em> or </em><em>pyspark.sql.DataFrame</em>) – The DataFrame containing the feature vectors</p></li>
+<li><p><strong>vector_col</strong> (<em>str</em>) – Name of the column containing feature vectors</p></li>
+<li><p><strong>label_column</strong> (<em>str</em>) – Name of the column containing true labels</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The input DataFrame with confidence scores added</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame or pyspark.sql.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="madmatcher_tools._internal.ml_model.MLModel.prep_fvs">
+<span class="sig-name descname"><span class="pre">prep_fvs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fvs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'features'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/madmatcher_tools/_internal/ml_model.html#MLModel.prep_fvs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools._internal.ml_model.MLModel.prep_fvs" title="Link to this definition"></a></dt>
+<dd><p>Prepare feature vectors for model input.</p>
+<p>This method handles NaN filling and conversion between vector and array formats
+based on the model’s requirements.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fvs</strong> (<em>pandas.DataFrame</em><em> or </em><em>pyspark.sql.DataFrame</em>) – DataFrame containing feature vectors</p></li>
+<li><p><strong>feature_col</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the column containing feature vectors</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with prepared feature vectors</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame or pyspark.sql.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="madmatcher_tools._internal.ml_model.MLModel.train">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_estimator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel" title="madmatcher_tools._internal.ml_model.MLModel"><span class="pre">MLModel</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BaseEstimator</span></span></span><a class="reference internal" href="../_modules/madmatcher_tools/_internal/ml_model.html#MLModel.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools._internal.ml_model.MLModel.train" title="Link to this definition"></a></dt>
+<dd><p>Train the model on the given data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em><em> or </em><em>pyspark.sql.DataFrame</em>) – The DataFrame containing training data</p></li>
+<li><p><strong>vector_col</strong> (<em>str</em>) – Name of the column containing feature vectors</p></li>
+<li><p><strong>label_column</strong> (<em>str</em>) – Name of the column containing labels</p></li>
+<li><p><strong>return_estimator</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, return the trained estimator instead of self</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The trained model (self) or the trained estimator if return_estimator is True</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#madmatcher_tools._internal.ml_model.MLModel" title="madmatcher_tools._internal.ml_model.MLModel">MLModel</a> or BaseEstimator</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id1">
+<em class="property"><span class="k"><span class="pre">abstract</span></span><span class="w"> </span><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">use_floats</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd><p>Whether the model uses float32 or float64 precision.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if the model uses float32, False if it uses float64</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id2">
+<em class="property"><span class="k"><span class="pre">abstract</span></span><span class="w"> </span><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">use_vectors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd><p>Whether the model expects feature vectors in vector format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if the model expects vectors, False if it expects arrays</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Dev Ahluwalia, Derek Paulsen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

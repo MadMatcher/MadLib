@@ -11,13 +11,15 @@ import pyspark.sql.types as T
 from pyspark.ml.functions import vector_to_array, array_to_vector
 from pyspark.ml.linalg import VectorUDT
 from pyspark.sql import DataFrame as SparkDataFrame, SparkSession
+from pyspark.ml import Transformer
 import numpy as np
 import warnings
 from typing import Iterator, overload, Union, Optional
 import pandas as pd
 from sklearn.model_selection import cross_val_score
-from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.base import BaseEstimator
+from sklearn.utils.validation import check_is_fitted
+from sklearn.exceptions import NotFittedError
 from joblib import parallel_backend
 from threadpoolctl import ThreadpoolController
 from .utils import get_logger
@@ -235,11 +237,12 @@ class SKLearnModel(MLModel):
     """
     
     def __init__(self, model, nan_fill=None, use_floats=True, execution="local", **model_args):
-        if hasattr(model, 'predict') and not isinstance(model, type):
+        try:
+            check_is_fitted(model)
             self._trained_model = model
             self._model = model.__class__
             self._model_args = {}
-        else:
+        except (NotFittedError, TypeError):
             self._trained_model = None
             self._model_args = model_args.copy()
             self._model = model
@@ -247,7 +250,6 @@ class SKLearnModel(MLModel):
         self._use_floats = use_floats
         self._vector_buffer = None
         self.execution = execution
-    
 
     def params_dict(self):
         return {
@@ -303,22 +305,7 @@ class SKLearnModel(MLModel):
             X = self._make_feature_matrix(vecs.values)
             yield pd.Series(self._trained_model.predict(X))
 
-    @overload
-    def predict(self, df: pd.DataFrame, vector_col: str, output_col: str) -> pd.DataFrame: ...
-
-    @overload
-    def predict(self, estimator: BaseEstimator, df: pd.DataFrame, vector_col: str, output_col: str) -> pd.DataFrame: ...
-
-    def predict(self, *args):
-        # Overloaded method
-        if len(args) == 4 and isinstance(args[0], BaseEstimator):
-            est, df, vector_col, out_col = args
-            if not hasattr(est, 'predict'):
-                raise TypeError("Estimator must have predict method.")
-            return SKLearnModel(est).predict(df, vector_col, out_col)
-        if len(args) != 3:
-            raise ValueError("predict() expects (df, vector_col, output_col) or (estimator, df, vector_col, output_col)")
-        df, vector_col, output_col = args  
+    def predict(self, df: pd.DataFrame, vector_col: str, output_col: str) -> pd.DataFrame: 
         if isinstance(df, pd.DataFrame) and self.execution == "local":
             X = self._make_feature_matrix(df[vector_col].tolist())
             df[output_col] = self._trained_model.predict(X)
@@ -358,7 +345,7 @@ class SKLearnModel(MLModel):
         f = F.pandas_udf(self._entropy, T.DoubleType())
         return df.withColumn(output_col, f(vector_col))
 
-    def train(self, df, vector_col : str, label_column : str, return_estimator : bool = False):
+    def train(self, df, vector_col : str, label_column : str):
         if isinstance(df, SparkDataFrame):
             df = convert_to_array(df, vector_col)
             df = df.toPandas()
@@ -366,7 +353,7 @@ class SKLearnModel(MLModel):
         y = df[label_column].values
         self._trained_model = self._model(**self._model_args)
         self._trained_model.fit(X, y)
-        return self._trained_model if return_estimator else self
+        return self
     
     def cross_val_scores(self, df, vector_col : str, label_column : str, cv : int = 10):
         df = convert_to_array(df, vector_col)
@@ -380,7 +367,7 @@ class SKLearnModel(MLModel):
 class SparkMLModel(MLModel):
 
     def __init__(self, model, nan_fill = 0.0, **model_args):
-        if hasattr(model, 'predict') and not isinstance(model, type):
+        if isinstance(model, Transformer):
             self._trained_model = model
             self._model = model.__class__
             self._model_args = {}
@@ -401,6 +388,10 @@ class SparkMLModel(MLModel):
     @property
     def use_floats(self):
         return False
+
+    @property
+    def trained_model(self):
+        return self._trained_model
 
     def get_model(self):
         return self._model(**self._model_args)
@@ -423,19 +414,7 @@ class SparkMLModel(MLModel):
                                     .transform(df)\
                                     .select(*cols, out)
 
-    @overload
-    def predict(self, df: SparkDataFrame, vector_col: str, output_col: str) -> SparkDataFrame: ...
-
-    @overload
-    def predict(self, transformer: object, df: SparkDataFrame, vector_col: str, output_col: str) -> SparkDataFrame: ...
-
-    def predict(self, *args):
-        if len(args) == 4 and hasattr(args[0], 'transform'):
-            transformer, df, vector_col, out_col = args
-            return SparkMLModel(transformer).predict(df, vector_col, out_col)
-        if len(args) != 3:
-            raise ValueError("predict() expects (df, vector_col, output_col) or (transformer, df, vector_col, output_col)")
-        df, vector_col, out_col = args
+    def predict(self, df: SparkDataFrame, vector_col: str, output_col: str) -> SparkDataFrame:
         model = self._trained_model
         if model is None:
             raise RuntimeError('Model must be trained to predict')
@@ -443,10 +422,10 @@ class SparkMLModel(MLModel):
             spark = SparkSession.builder.getOrCreate()
             df = spark.createDataFrame(df) 
         if not hasattr(self, '_model_args'):
-            return SparkMLModel(model).predict(df, vector_col, out_col)
+            return SparkMLModel(model).predict(df, vector_col, output_col)
         df = convert_to_vector(df, vector_col)
         cols = df.columns
-        out = F.col(self._trained_model.getPredictionCol()).alias(out_col)
+        out = F.col(self._trained_model.getPredictionCol()).alias(output_col)
 
         return self._trained_model.setFeaturesCol(vector_col)\
                                     .transform(df)\

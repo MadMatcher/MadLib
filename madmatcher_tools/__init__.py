@@ -7,7 +7,7 @@ using various tokenization, featurization, and machine learning techniques.
 
 # Abstract base classes that users can extend
 from ._internal.tokenizer.tokenizer import Tokenizer
-from ._internal.tokenizer.vectorizer import Vectorizer, TFIDFVectorizer, SIFVectorizer
+from ._internal.tokenizer.vectorizer import Vectorizer
 from ._internal.feature.feature import Feature
 from ._internal.ml_model import MLModel
 from ._internal.labeler import Labeler, CustomLabeler
@@ -20,7 +20,7 @@ from .tools import (
     get_extra_tokenizers,
     featurize,
     down_sample,
-    select_seeds,
+    create_seeds,
     train_matcher,
     apply_matcher,
     label_data
@@ -30,8 +30,6 @@ __all__ = [
     # Abstract base classes
     'Tokenizer',
     'Vectorizer',
-    'TFIDFVectorizer',
-    'SIFVectorizer',
     'Feature',
     'MLModel',
     'Labeler',
@@ -44,7 +42,7 @@ __all__ = [
     'get_extra_tokenizers',
     'featurize',
     'down_sample',
-    'select_seeds',
+    'create_seeds',
     'train_matcher',
     'apply_matcher',
     'label_data'
