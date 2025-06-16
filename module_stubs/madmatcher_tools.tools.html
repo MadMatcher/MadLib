@@ -1,0 +1,329 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>madmatcher_tools.tools &mdash; MadMatcher Tools 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2709fde1"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            MadMatcher Tools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">madmatcher_tools.tools</a><ul>
+<li><a class="reference internal" href="#madmatcher_tools.tools.apply_matcher"><code class="docutils literal notranslate"><span class="pre">apply_matcher()</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools.tools.create_features"><code class="docutils literal notranslate"><span class="pre">create_features()</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools.tools.create_seeds"><code class="docutils literal notranslate"><span class="pre">create_seeds()</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools.tools.down_sample"><code class="docutils literal notranslate"><span class="pre">down_sample()</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools.tools.featurize"><code class="docutils literal notranslate"><span class="pre">featurize()</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools.tools.get_base_sim_functions"><code class="docutils literal notranslate"><span class="pre">get_base_sim_functions()</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools.tools.get_base_tokenizers"><code class="docutils literal notranslate"><span class="pre">get_base_tokenizers()</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools.tools.get_extra_tokenizers"><code class="docutils literal notranslate"><span class="pre">get_extra_tokenizers()</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools.tools.label_data"><code class="docutils literal notranslate"><span class="pre">label_data()</span></code></a></li>
+<li><a class="reference internal" href="#madmatcher_tools.tools.train_matcher"><code class="docutils literal notranslate"><span class="pre">train_matcher()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MadMatcher Tools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">madmatcher_tools.tools</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/module_stubs/madmatcher_tools.tools.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-madmatcher_tools.tools">
+<span id="madmatcher-tools-tools"></span><h1>madmatcher_tools.tools<a class="headerlink" href="#module-madmatcher_tools.tools" title="Link to this heading"></a></h1>
+<p>Public API functions for MadMatcher.</p>
+<p>This module provides the main functions that users will interact with.
+Implementation details are hidden in the _internal package.</p>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#madmatcher_tools.tools.apply_matcher" title="madmatcher_tools.tools.apply_matcher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_matcher</span></code></a>(model, df, feature_col, output_col)</p></td>
+<td><p>Apply a trained model to make predictions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#madmatcher_tools.tools.create_seeds" title="madmatcher_tools.tools.create_seeds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_seeds</span></code></a>(fvs, nseeds, labeler[, ...])</p></td>
+<td><p>create seeds seeds to train a model</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#madmatcher_tools.tools.down_sample" title="madmatcher_tools.tools.down_sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">down_sample</span></code></a>(fvs, percent, search_id_column)</p></td>
+<td><p>down sample by score_column to produce percent * fvs.count() rows</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#madmatcher_tools.tools.label_data" title="madmatcher_tools.tools.label_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">label_data</span></code></a>(model_spec, mode, labeler_spec, fvs)</p></td>
+<td><p>Generate labeled data using active learning.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#madmatcher_tools.tools.train_matcher" title="madmatcher_tools.tools.train_matcher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">train_matcher</span></code></a>(model_spec, labeled_data[, ...])</p></td>
+<td><p>Train a matcher model on labeled data.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py" id="madmatcher_tools.tools.apply_matcher">
+<span class="sig-prename descclassname"><span class="pre">madmatcher_tools.tools.</span></span><span class="sig-name descname"><span class="pre">apply_matcher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#madmatcher_tools._internal.ml_model.MLModel" title="madmatcher_tools._internal.ml_model.MLModel"><span class="pre">MLModel</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">SKLearnModel</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">SparkMLModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/madmatcher_tools/tools.html#apply_matcher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools.tools.apply_matcher" title="Link to this definition"></a></dt>
+<dd><p>Apply a trained model to make predictions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_spec</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>Dict</em><em>, </em><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#madmatcher_tools._internal.ml_model.MLModel" title="madmatcher_tools._internal.ml_model.MLModel"><em>MLModel</em></a><em>, </em><em>BaseEstimator</em><em>]</em>) – Either:
+- A string name of a built-in model (e.g. ‘sklearn’)
+- A dict with model configuration (e.g. {‘name’: ‘sklearn’, ‘model_class’: XGBClassifier})
+- An MLModel instance
+- A scikit-learn or Spark model instance</p></li>
+<li><p><strong>df</strong> (<em>pandas DataFrame</em>) – The DataFrame to make predictions on</p></li>
+<li><p><strong>feature_col</strong> (<em>str</em>) – Name of the column containing feature vectors</p></li>
+<li><p><strong>output_col</strong> (<em>str</em>) – Name of the column to store predictions in</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The input DataFrame with predictions added</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="madmatcher_tools.tools.create_features">
+<span class="sig-prename descclassname"><span class="pre">madmatcher_tools.tools.</span></span><span class="sig-name descname"><span class="pre">create_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_cols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_cols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_functions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">null_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/madmatcher_tools/_internal/featurization.html#create_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools.tools.create_features" title="Link to this definition"></a></dt>
+<dd><p>creates the features which will be used to featurize your tuple pairs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> (<em>pandas DataFrame</em>) – the records of table A</p></li>
+<li><p><strong>B</strong> (<em>pandas DataFrame</em>) – the records of table B</p></li>
+<li><p><strong>a_cols</strong> (<em>list</em>) – The names of the columns for DataFrame A that should have features generated</p></li>
+<li><p><strong>b_cols</strong> (<em>list</em>) – The names of the columns for DataFrame B that should have features generated</p></li>
+<li><p><strong>sim_functions</strong> (<em>list</em><em> of </em><em>callables</em><em>, </em><em>optional</em>) – similarity functions to apply (default: None)</p></li>
+<li><p><strong>tokenizers</strong> (<em>list</em><em> of </em><em>callables</em><em>, </em><em>optional</em>) – tokenizers to use (default: None)</p></li>
+<li><p><strong>null_threshold</strong> (<em>float</em>) – the portion of values that must be null in order for the column to be dropped and
+not considered for feature generation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a DataFrame containing initialized feature objects for columns in A, B</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="madmatcher_tools.tools.create_seeds">
+<span class="sig-prename descclassname"><span class="pre">madmatcher_tools.tools.</span></span><span class="sig-name descname"><span class="pre">create_seeds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fvs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nseeds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labeler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="madmatcher_tools._internal.labeler.Labeler.html#madmatcher_tools._internal.labeler.Labeler" title="madmatcher_tools._internal.labeler.Labeler"><span class="pre">Labeler</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'score'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/madmatcher_tools/tools.html#create_seeds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools.tools.create_seeds" title="Link to this definition"></a></dt>
+<dd><p>create seeds seeds to train a model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fvs</strong> (<em>pandas DataFrame</em>) – the DataFrame with feature vectors that is your training data</p></li>
+<li><p><strong>nseeds</strong> (<em>int</em>) – the number of seeds you want to use to train an initial model</p></li>
+<li><p><strong>labeler</strong> (<em>Union</em><em>[</em><a class="reference internal" href="madmatcher_tools._internal.labeler.Labeler.html#madmatcher_tools._internal.labeler.Labeler" title="madmatcher_tools._internal.labeler.Labeler"><em>Labeler</em></a><em>, </em><em>Dict</em><em>]</em>) – the labeler object (or a labeler_spec dict) you want to use to assign labels to rows</p></li>
+<li><p><strong>score_column</strong> (<em>str</em>) – the name of the score column in your fvs DataFrame</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A DataFrame with labeled seeds, schema is (previous schema of fvs, <cite>label</cite>) where the values in
+label are either 0.0 or 1.0</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="madmatcher_tools.tools.down_sample">
+<span class="sig-prename descclassname"><span class="pre">madmatcher_tools.tools.</span></span><span class="sig-name descname"><span class="pre">down_sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fvs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">percent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_id_column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'score'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bucket_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/madmatcher_tools/tools.html#down_sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools.tools.down_sample" title="Link to this definition"></a></dt>
+<dd><p>down sample by score_column to produce percent * fvs.count() rows</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fvs</strong> (<em>Union</em><em>[</em><em>pd.DataFrame</em><em>, </em><em>SparkDataFrame</em><em>]</em>) – the feature vectors to be downsampled</p></li>
+<li><p><strong>percent</strong> (<em>float</em>) – the portion of the vectors to be output, (0.0, 1.0]</p></li>
+<li><p><strong>search_id_column</strong> (<em>str</em>) – the name of the column containing unique identifiers for each record</p></li>
+<li><p><strong>score_column</strong> (<em>str</em>) – the column that scored the vectors, should be positively correlated with the probability of the pair being a match</p></li>
+<li><p><strong>bucket_size</strong> (<em>int = 1000</em>) – the size of the buckets for partitioning, default 1000</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the down sampled dataset with percent * fvs.count() rows with the same schema as fvs</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[pd.DataFrame, SparkDataFrame]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="madmatcher_tools.tools.featurize">
+<span class="sig-prename descclassname"><span class="pre">madmatcher_tools.tools.</span></span><span class="sig-name descname"><span class="pre">featurize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">candidates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'features'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_na</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/madmatcher_tools/_internal/featurization.html#featurize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools.tools.featurize" title="Link to this definition"></a></dt>
+<dd><p>applies the featurizer to the record pairs in candidates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>features</strong> (<em>List</em><em>[</em><em>Callable</em><em>]</em>) – a DataFrame containing initialized feature objects for columns in A, B</p></li>
+<li><p><strong>A</strong> (<em>pandas DataFrame</em>) – the records of table A</p></li>
+<li><p><strong>B</strong> (<em>pandas DataFrame</em>) – the records of table B</p></li>
+<li><p><strong>candidates</strong> (<em>pandas DataFrame</em>) – id pairs of A and B that are potential matches</p></li>
+<li><p><strong>output_col</strong> (<em>str</em>) – the name of the column for the resulting feature vectors, default <cite>fvs</cite></p></li>
+<li><p><strong>fill_na</strong> – value to fill in for missing data, default None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with feature vectors created with the following schema:
+(<cite>id2</cite>, <cite>id1</cite>, <cite>fv</cite>, other columns from candidates)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="madmatcher_tools.tools.get_base_sim_functions">
+<span class="sig-prename descclassname"><span class="pre">madmatcher_tools.tools.</span></span><span class="sig-name descname"><span class="pre">get_base_sim_functions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/madmatcher_tools/_internal/featurization.html#get_base_sim_functions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools.tools.get_base_sim_functions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="madmatcher_tools.tools.get_base_tokenizers">
+<span class="sig-prename descclassname"><span class="pre">madmatcher_tools.tools.</span></span><span class="sig-name descname"><span class="pre">get_base_tokenizers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/madmatcher_tools/_internal/featurization.html#get_base_tokenizers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools.tools.get_base_tokenizers" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="madmatcher_tools.tools.get_extra_tokenizers">
+<span class="sig-prename descclassname"><span class="pre">madmatcher_tools.tools.</span></span><span class="sig-name descname"><span class="pre">get_extra_tokenizers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/madmatcher_tools/_internal/featurization.html#get_extra_tokenizers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools.tools.get_extra_tokenizers" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="madmatcher_tools.tools.label_data">
+<span class="sig-prename descclassname"><span class="pre">madmatcher_tools.tools.</span></span><span class="sig-name descname"><span class="pre">label_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#madmatcher_tools._internal.ml_model.MLModel" title="madmatcher_tools._internal.ml_model.MLModel"><span class="pre">MLModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'batch'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'continuous'</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labeler_spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="madmatcher_tools._internal.labeler.Labeler.html#madmatcher_tools._internal.labeler.Labeler" title="madmatcher_tools._internal.labeler.Labeler"><span class="pre">Labeler</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">fvs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seeds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/madmatcher_tools/tools.html#label_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools.tools.label_data" title="Link to this definition"></a></dt>
+<dd><p>Generate labeled data using active learning.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_spec</strong> (<em>Union</em><em>[</em><em>Dict</em><em>, </em><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#madmatcher_tools._internal.ml_model.MLModel" title="madmatcher_tools._internal.ml_model.MLModel"><em>MLModel</em></a><em>]</em>) – Either:
+- A dict with model configuration (e.g. {‘model_type’: ‘sklearn’, ‘model_class’: XGBClassifier})
+- An MLModel instance</p></li>
+<li><p><strong>mode</strong> (<em>Literal</em><em>[</em><em>&quot;batch&quot;</em><em>, </em><em>&quot;continuous&quot;</em><em>]</em>) – Whether to use batch or continuous active learning</p></li>
+<li><p><strong>labeler_spec</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>Dict</em><em>, </em><a class="reference internal" href="madmatcher_tools._internal.labeler.Labeler.html#madmatcher_tools._internal.labeler.Labeler" title="madmatcher_tools._internal.labeler.Labeler"><em>Labeler</em></a><em>]</em>) – Either:
+- A dict with labeler configuration (e.g. {‘name’: ‘cli’, ‘a_df’: df_a, ‘b_df’: df_b})
+- A Labeler instance</p></li>
+<li><p><strong>fvs</strong> (<em>pandas DataFrame</em>) – The data that needs to be labeled</p></li>
+<li><p><strong>seeds</strong> (<em>pandas DataFrame</em><em>, </em><em>optional</em>) – Initial labeled examples to start with</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with ids of potential matches and the corresponding label</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="madmatcher_tools.tools.train_matcher">
+<span class="sig-prename descclassname"><span class="pre">madmatcher_tools.tools.</span></span><span class="sig-name descname"><span class="pre">train_matcher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#madmatcher_tools._internal.ml_model.MLModel" title="madmatcher_tools._internal.ml_model.MLModel"><span class="pre">MLModel</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">BaseEstimator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labeled_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'features'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'label'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#madmatcher_tools._internal.ml_model.MLModel" title="madmatcher_tools._internal.ml_model.MLModel"><span class="pre">MLModel</span></a></span></span><a class="reference internal" href="../_modules/madmatcher_tools/tools.html#train_matcher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools.tools.train_matcher" title="Link to this definition"></a></dt>
+<dd><p>Train a matcher model on labeled data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_spec</strong> (<em>Union</em><em>[</em><em>Dict</em><em>, </em><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#madmatcher_tools._internal.ml_model.MLModel" title="madmatcher_tools._internal.ml_model.MLModel"><em>MLModel</em></a><em>, </em><em>BaseEstimator</em><em>]</em>) – Either:
+- A dict with model configuration (e.g. {‘name’: ‘sklearn’, ‘model_class’: XGBClassifier, ‘max_depth’: 6})
+- An MLModel instance
+- A scikit-learn or Spark model instance</p></li>
+<li><p><strong>labeled_data</strong> (<em>pandas DataFrame</em>) – DataFrame containing the labeled data</p></li>
+<li><p><strong>feature_col</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the column containing feature vectors</p></li>
+<li><p><strong>label_col</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the column containing labels</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The trained model</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#madmatcher_tools._internal.ml_model.MLModel" title="madmatcher_tools._internal.ml_model.MLModel">MLModel</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Dev Ahluwalia, Derek Paulsen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
