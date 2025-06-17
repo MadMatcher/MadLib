@@ -31,7 +31,7 @@ def _create_training_model(model_spec: Union[Dict, MLModel]) -> MLModel:
     # type (SKLearn vs SparkML, model class, args for the model itself)
     model_type = model_spec['model_type']
     model = model_spec['model']
-    if model_type == 'SKLearn':
+    if model_type.lower() == 'sklearn':
         if 'execution' in model_spec:
             execution = model_spec['execution']
         else:

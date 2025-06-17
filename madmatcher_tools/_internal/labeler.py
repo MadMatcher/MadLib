@@ -8,7 +8,7 @@ Use the public API in the root package instead.
 from abc import abstractmethod, ABC
 import time
 from tabulate import tabulate
-from pyspark.sql.functions import col
+from pyspark.sql import DataFrame as SparkDataFrame
 import shutil
 import textwrap
 import pandas as pd
@@ -35,7 +35,7 @@ class Labeler(ABC):
 class GoldLabeler(Labeler):
 
     def __init__(self, gold):
-        self._gold = gold
+        self._gold = set(zip(gold['id1'], gold['id2']))
 
     def __call__(self, id1, id2):
         return 1.0 if (id1, id2) in self._gold else 0.0

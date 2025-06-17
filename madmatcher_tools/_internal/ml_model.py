@@ -76,6 +76,16 @@ class MLModel(ABC):
         """
         pass
 
+    @abstractproperty
+    def trained_model(self):
+        """ The trained ML Model object
+        
+        Returns
+        -------
+        MLModel
+            The trained ML Model object 
+        """
+
     @abstractmethod
     def predict(self, df: Union[pd.DataFrame, SparkDataFrame], vector_col: str, output_col: str) -> Union[pd.DataFrame, SparkDataFrame]:
         """Make predictions using the trained model.
@@ -137,7 +147,7 @@ class MLModel(ABC):
         pass
 
     @abstractmethod
-    def train(self, df: Union[pd.DataFrame, SparkDataFrame], vector_col: str, label_column: str, return_estimator: bool = False) -> Union['MLModel', BaseEstimator]:
+    def train(self, df: Union[pd.DataFrame, SparkDataFrame], vector_col: str, label_column: str):
         """Train the model on the given data.
         
         Parameters
@@ -148,13 +158,11 @@ class MLModel(ABC):
             Name of the column containing feature vectors
         label_column : str
             Name of the column containing labels
-        return_estimator : bool, optional
-            If True, return the trained estimator instead of self
             
         Returns
         -------
-        MLModel or BaseEstimator
-            The trained model (self) or the trained estimator if return_estimator is True
+        MLModel
+            The trained model (self) 
         """
         pass
 
@@ -295,7 +303,8 @@ class SKLearnModel(MLModel):
             return None
         buffer = self._allocate_buffer(len(vecs), len(vecs[0]))
         X = np.stack(vecs, axis=0, out=buffer)
-
+        if self._nan_fill is not None:
+            np.nan_to_num(X, copy=False, nan=self._nan_fill)
         return X
 
     def _predict(self, vec_itr : Iterator[pd.Series]) -> Iterator[pd.Series]:
@@ -457,7 +466,7 @@ class SparkMLModel(MLModel):
                                     .withColumn(output_col, self._entropy_expr(prob_array))\
                                     .drop(prob_array)
         
-    def train(self, df, vector_col : str, label_column : str, return_estimator : bool = False):
+    def train(self, df, vector_col : str, label_column : str):
         if isinstance(df, pd.DataFrame):
             spark = SparkSession.builder.getOrCreate()
             df = spark.createDataFrame(df)
@@ -468,4 +477,4 @@ class SparkMLModel(MLModel):
                                             .setPredictionCol('__PREDICTION_TMP')\
                                             .setProbabilityCol('__PROB_TMP')\
                                             .setRawPredictionCol('__RAW_PREDICTION_TMP')
-        return self._trained_model if return_estimator else self
+        return self

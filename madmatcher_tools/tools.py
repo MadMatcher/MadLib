@@ -120,7 +120,7 @@ def create_seeds(
     nseeds: int,
     labeler: Union[Labeler, Dict],
     score_column: str = 'score'
-) -> Union[pd.DataFrame, SparkDataFrame]:
+) -> pd.DataFrame:
     """
     create seeds seeds to train a model
 
@@ -147,7 +147,6 @@ def create_seeds(
         raise ValueError("no seeds would be created")
     if isinstance(fvs, pd.DataFrame):
         fvs = fvs[fvs[score_column].notna()]
-
         if nseeds > len(fvs):
             return ValueError("number of seeds would exceed the size of the fvs DataFrame")
         maybe_pos = fvs.nlargest(nseeds, score_column).iterrows()
@@ -155,6 +154,8 @@ def create_seeds(
     elif isinstance(fvs, SparkDataFrame):
         if nseeds > fvs.count():
             return ValueError("number of seeds would exceed the size of the fvs DataFrame")
+        if isinstance(score_column, str):
+            score_column = F.col(score_column)
         fvs = fvs.filter((~F.isnan(score_column)) & (score_column.isNotNull()))
         # lowest scoring vectors
         maybe_neg = fvs.sort(score_column, ascending=True)\
@@ -175,7 +176,6 @@ def create_seeds(
         try:
             _, ex = next(maybe_pos) if pos_count <= neg_count else next(maybe_neg)
             label = float(labeler(ex['id1'], ex['id2']))
-            
             if label == -1.0:  # User requested to stop
                 break
             elif label == 2.0:  # User marked as unsure
@@ -184,7 +184,6 @@ def create_seeds(
                 pos_count += 1
             else:  # label == 0.0, Negative match
                 neg_count += 1
-
             ex['label'] = label
             seeds.append(ex)
         except StopIteration:
@@ -199,8 +198,8 @@ def create_seeds(
 
 
 def train_matcher(
-    model_spec: Union[Dict, MLModel, BaseEstimator],
-    labeled_data: pd.DataFrame,
+    model_spec: Union[Dict, MLModel],
+    labeled_data: Union[pd.DataFrame, SparkDataFrame],
     feature_col: str = "features",
     label_col: str = "label",
 ) -> MLModel:
@@ -208,11 +207,10 @@ def train_matcher(
     
     Parameters
     ----------
-    model_spec : Union[Dict, MLModel, BaseEstimator]
+    model_spec : Union[Dict, MLModel]
         Either:
-        - A dict with model configuration (e.g. {'name': 'sklearn', 'model_class': XGBClassifier, 'max_depth': 6})
+        - A dict with model configuration (e.g. {'model_type': 'sklearn', 'model': XGBClassifier, 'model_args':{'max_depth': 6}})
         - An MLModel instance
-        - A scikit-learn or Spark model instance
     labeled_data : pandas DataFrame
         DataFrame containing the labeled data
     feature_col : str, optional
@@ -228,13 +226,15 @@ def train_matcher(
     # the users choices for models: they should either give us a pre-trained model, their own custom MLModel
     # or, they should specify the necessary params. We should be returning to them the trained_model. 
     # on apply, we should expect to get a trained model. 
+    if isinstance(labeled_data, SparkDataFrame):
+        labeled_data = labeled_data.toPandas()
     model = _create_training_model(model_spec)
     return model.train(labeled_data, feature_col, label_col)
 
 
 def apply_matcher(
     model: Union[MLModel, SKLearnModel, SparkMLModel],
-    df: pd.DataFrame,
+    df: Union[pd.DataFrame, SparkDataFrame],
     feature_col: str,
     output_col: str,
 ) -> pd.DataFrame:
@@ -242,12 +242,10 @@ def apply_matcher(
     
     Parameters
     ----------
-    model_spec : Union[str, Dict, MLModel, BaseEstimator]
+    model_spec : Union[MLModel, SKLearn Model, SparkMLModel]
         Either:
-        - A string name of a built-in model (e.g. 'sklearn')
-        - A dict with model configuration (e.g. {'name': 'sklearn', 'model_class': XGBClassifier})
-        - An MLModel instance
-        - A scikit-learn or Spark model instance
+        - A trained MLModel instance
+        - A trained scikit-learn or Spark model instance
     df : pandas DataFrame
         The DataFrame to make predictions on
     feature_col : str
@@ -260,6 +258,8 @@ def apply_matcher(
     pandas DataFrame
         The input DataFrame with predictions added
     """
+    if isinstance(df, SparkDataFrame):
+        df = df.toPandas()
     model = _create_matching_model(model)
     return model.predict(df, feature_col, output_col)
 
@@ -268,7 +268,7 @@ def label_data(
     model_spec: Union[Dict, MLModel],
     mode: Literal["batch", "continuous"],
     labeler_spec: Union[Dict, Labeler],
-    fvs: pd.DataFrame,
+    fvs: Union[pd.DataFrame, SparkDataFrame],
     seeds: Optional[pd.DataFrame] = None
 ) -> pd.DataFrame:
     """Generate labeled data using active learning.
@@ -296,21 +296,20 @@ def label_data(
         DataFrame with ids of potential matches and the corresponding label
     """
     spark = SparkSession.builder.getOrCreate()
-    
+        
     # Create model and labeler
     model = _create_training_model(model_spec)
     labeler = _create_labeler(labeler_spec)
-    
+    if isinstance(fvs, pd.DataFrame):
+        fvs = spark.createDataFrame(fvs)
+
     if seeds is None:
-        seeds = create_seeds(fvs=fvs, nseeds=10, labeler=labeler, score_column='score')
+        seeds = create_seeds(fvs=fvs, nseeds=min(10, fvs.count()), labeler=labeler, score_column='score')
     
     if mode == "batch":
         learner = EntropyActiveLearner(model, labeler)
     elif mode == "continuous":
         learner = ContinuousEntropyActiveLearner(model, labeler)
-    
-    if isinstance(fvs, pd.DataFrame):
-        fvs = spark.createDataFrame(fvs)
-    
+
     labeled_data = learner.train(fvs, seeds)
     return labeled_data
