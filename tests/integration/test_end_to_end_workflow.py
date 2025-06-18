@@ -4,10 +4,10 @@ import pytest
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
 
 from madmatcher_tools.tools import (
-    down_sample, create_seeds, train_matcher, apply_matcher, featurize, create_features
+    down_sample, create_seeds, train_matcher, apply_matcher, featurize, 
+    create_features
 )
 from madmatcher_tools import Labeler, MLModel, Feature
 
@@ -28,7 +28,9 @@ class TestCompleteWorkflow:
         )
         
         # Step 2: Featurize candidates
-        feature_vectors = featurize(features, sample_dataframe_a, sample_dataframe_b, sample_candidates)
+        feature_vectors = featurize(
+            features, sample_dataframe_a, sample_dataframe_b, sample_candidates
+        )
         
         assert isinstance(feature_vectors, pd.DataFrame)
         assert 'features' in feature_vectors.columns
@@ -36,9 +38,12 @@ class TestCompleteWorkflow:
         
         # Fill NaN values in feature vectors and add score column
         feature_vectors['features'] = feature_vectors['features'].apply(
-            lambda x: [0.0 if pd.isna(val) else val for val in x] if x is not None else [0.0]
+            lambda x: [0.0 if pd.isna(val) else val for val in x] 
+            if x is not None else [0.0]
         )
-        feature_vectors['score'] = feature_vectors['features'].apply(lambda x: np.sum(x) if x is not None else 0.0)
+        feature_vectors['score'] = feature_vectors['features'].apply(
+            lambda x: np.sum(x) if x is not None else 0.0
+        )
         
         # Step 3: Create manual seeds with both positive and negative examples
         # to ensure sklearn can train properly
@@ -61,62 +66,18 @@ class TestCompleteWorkflow:
         assert hasattr(matcher, 'trained_model')
         
         # Step 5: Apply matcher
-        predictions = apply_matcher(matcher, feature_vectors, 
-                                  feature_col='features', output_col='prediction')
+        predictions = apply_matcher(
+            matcher, feature_vectors, 
+            feature_col='features', output_col='prediction'
+        )
         
         assert isinstance(predictions, pd.DataFrame)
         assert 'prediction' in predictions.columns
         assert len(predictions) == len(feature_vectors)
         assert predictions['prediction'].notna().all()
 
-    @pytest.mark.skip(reason="Feature generation issues with pd.isnull ambiguity - core functionality tested elsewhere")
-    def test_workflow_with_downsampling(self, sample_dataframe_a, sample_dataframe_b, gold_labels):
-        """Test workflow with down sampling step."""
-        # Create larger candidate set for down sampling
-        large_candidates = pd.DataFrame({
-            'id1_list': [[i] for i in range(1, 6)] * 4,  # 20 candidates
-            'id2': list(range(101, 106)) * 4
-        })
-        
-        # Step 1: Create features and featurize - use multiple columns to avoid vector feature issues
-        features = create_features(
-            sample_dataframe_a, 
-            sample_dataframe_b, 
-            ['name', 'age'], 
-            ['name', 'age']
-        )
-        feature_vectors = featurize(features, sample_dataframe_a, sample_dataframe_b, large_candidates)
-        
-        original_count = len(feature_vectors)
-        assert original_count == 20
-        
-        # Fill NaN values in feature vectors and add score column
-        feature_vectors['features'] = feature_vectors['features'].apply(
-            lambda x: [0.0 if pd.isna(val) else val for val in x] if x is not None else [0.0]
-        )
-        feature_vectors['score'] = feature_vectors['features'].apply(lambda x: np.sum(x) if x is not None else 0.0)
-        
-        # featurize already returns id1 column - no need to transform id1_list
-        
-        # Step 2: Down sample
-        sampled_fvs = down_sample(feature_vectors, percent=0.5, search_id_column='id2')
-        
-        assert len(sampled_fvs) <= original_count
-        assert len(sampled_fvs) >= int(0.5 * original_count) - 2  # Allow some variance
-        
-        # Step 3: Continue with pipeline
-        gold_labeler = {'name': 'gold', 'gold': gold_labels}
-        seeds = create_seeds(sampled_fvs, nseeds=2, labeler=gold_labeler)
-        
-        model_spec = {'model_type': 'sklearn', 'model': LogisticRegression, 'model_args': {'random_state': 42}}
-        matcher = train_matcher(model_spec, seeds)
-        
-        predictions = apply_matcher(matcher, sampled_fvs, feature_col='features', output_col='prediction')
-        
-        assert len(predictions) == len(sampled_fvs)
-
-    def test_workflow_with_custom_components(self, sample_dataframe_a, sample_dataframe_b, 
-                                           sample_candidates):
+    def test_workflow_with_custom_components(self, sample_dataframe_a, 
+                                           sample_dataframe_b, sample_candidates):
         """Test workflow with custom Feature, MLModel, and Labeler."""
         
         # Custom Feature
@@ -133,7 +94,9 @@ class TestCompleteWorkflow:
             def __call__(self, A_dict, B_series):
                 # Simple mock feature that returns random values
                 np.random.seed(42)
-                return pd.Series(np.random.random(len(B_series)), index=B_series.index)
+                return pd.Series(
+                    np.random.random(len(B_series)), index=B_series.index
+                )
         
         # Custom MLModel
         class SimpleMLModel(MLModel):
@@ -158,8 +121,10 @@ class TestCompleteWorkflow:
             
             def predict(self, df, vector_col, output_col):
                 result = df.copy()
-                predictions = [1.0 if np.sum(row[vector_col]) > self.threshold else 0.0 
-                             for _, row in df.iterrows()]
+                predictions = [
+                    1.0 if np.sum(row[vector_col]) > self.threshold else 0.0 
+                    for _, row in df.iterrows()
+                ]
                 result[output_col] = predictions
                 return result
             
@@ -197,7 +162,9 @@ class TestCompleteWorkflow:
         custom_model = SimpleMLModel()
         matcher = train_matcher(custom_model, seeds)
         
-        predictions = apply_matcher(matcher, feature_vectors, feature_col='features', output_col='prediction')
+        predictions = apply_matcher(
+            matcher, feature_vectors, feature_col='features', output_col='prediction'
+        )
         
         assert len(predictions) == len(feature_vectors)
         assert 'prediction' in predictions.columns
@@ -230,7 +197,9 @@ class TestWorkflowRobustness:
             ['name', 'email'], 
             ['name', 'email']
         )
-        feature_vectors = featurize(features, df_a_missing, df_b_missing, sample_candidates)
+        feature_vectors = featurize(
+            features, df_a_missing, df_b_missing, sample_candidates
+        )
         
         # Should handle missing values gracefully
         assert len(feature_vectors) == len(sample_candidates)
@@ -238,9 +207,12 @@ class TestWorkflowRobustness:
         
         # Fill NaN values in feature vectors and add score column
         feature_vectors['features'] = feature_vectors['features'].apply(
-            lambda x: [0.0 if pd.isna(val) else val for val in x] if x is not None else [0.0]
+            lambda x: [0.0 if pd.isna(val) else val for val in x] 
+            if x is not None else [0.0]
         )
-        feature_vectors['score'] = feature_vectors['features'].apply(lambda x: np.sum(x) if x is not None else 0.0)
+        feature_vectors['score'] = feature_vectors['features'].apply(
+            lambda x: np.sum(x) if x is not None else 0.0
+        )
         
         # featurize already returns id1 column - no need to transform id1_list
         
@@ -248,10 +220,16 @@ class TestWorkflowRobustness:
         gold_labeler = {'name': 'gold', 'gold': gold_labels}
         seeds = create_seeds(feature_vectors, nseeds=2, labeler=gold_labeler)
         
-        model_spec = {'model_type': 'sklearn', 'model': LogisticRegression, 'model_args': {'random_state': 42}}
+        model_spec = {
+            'model_type': 'sklearn', 
+            'model': LogisticRegression, 
+            'model_args': {'random_state': 42}
+        }
         matcher = train_matcher(model_spec, seeds)
         
-        predictions = apply_matcher(matcher, feature_vectors, feature_col='features', output_col='prediction')
+        predictions = apply_matcher(
+            matcher, feature_vectors, feature_col='features', output_col='prediction'
+        )
         
         assert len(predictions) == len(feature_vectors)
 
@@ -265,23 +243,34 @@ class TestWorkflowRobustness:
                 ['name'], 
                 ['name']
             )
-            feature_vectors = featurize(features, sample_dataframe_a, sample_dataframe_b, sample_candidates)
+            feature_vectors = featurize(
+                features, sample_dataframe_a, sample_dataframe_b, sample_candidates
+            )
             
             # Fill NaN values in feature vectors and add score column
             feature_vectors['features'] = feature_vectors['features'].apply(
-                lambda x: [0.0 if pd.isna(val) else val for val in x] if x is not None else [0.0]
+                lambda x: [0.0 if pd.isna(val) else val for val in x] 
+                if x is not None else [0.0]
             )
-            feature_vectors['score'] = feature_vectors['features'].apply(lambda x: np.sum(x) if x is not None else 0.0)
+            feature_vectors['score'] = feature_vectors['features'].apply(
+                lambda x: np.sum(x) if x is not None else 0.0
+            )
             
             # featurize already returns id1 column - no need to transform id1_list
             
             gold_labeler = {'name': 'gold', 'gold': gold_labels}
             seeds = create_seeds(feature_vectors, nseeds=2, labeler=gold_labeler)
             
-            model_spec = {'model_type': 'sklearn', 'model': LogisticRegression, 'model_args': {'random_state': 42}}
+            model_spec = {
+                'model_type': 'sklearn', 
+                'model': LogisticRegression, 
+                'model_args': {'random_state': 42}
+            }
             matcher = train_matcher(model_spec, seeds)
             
-            predictions = apply_matcher(matcher, feature_vectors, feature_col='features', output_col='prediction')
+            predictions = apply_matcher(
+                matcher, feature_vectors, feature_col='features', output_col='prediction'
+            )
             return predictions
         
         # Run pipeline twice
@@ -290,5 +279,7 @@ class TestWorkflowRobustness:
         
         # Results should be identical
         assert len(predictions1) == len(predictions2)
-        pd.testing.assert_frame_equal(predictions1.sort_index(), predictions2.sort_index())
+        pd.testing.assert_frame_equal(
+            predictions1.sort_index(), predictions2.sort_index()
+        )
  

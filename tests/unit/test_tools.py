@@ -69,6 +69,71 @@ class TestDownSample:
         assert len(result) == 0
         assert list(result.columns) == ['id2', 'score']
 
+    @patch('madmatcher_tools.tools.SparkDataFrame')
+    @patch('madmatcher_tools.tools.isinstance')
+    def test_down_sample_spark_bucket_size_too_small(self, mock_isinstance, mock_spark_dataframe):
+        """Test down_sample with Spark DataFrame and bucket_size < 1000."""
+        # Mock isinstance to return True for SparkDataFrame
+        def mock_isinstance_func(obj, type_or_tuple):
+            if type_or_tuple == mock_spark_dataframe:
+                return True
+            return isinstance(obj, type_or_tuple)
+        mock_isinstance.side_effect = mock_isinstance_func
+        
+        # Create a mock that simulates SparkDataFrame
+        mock_df = Mock()
+        mock_df.count.return_value = 1000
+        # Add __len__ method to support len() calls
+        mock_df.__len__ = Mock(return_value=1000)
+        # Mock the Spark operations that would be called
+        mock_df.withColumn.return_value = mock_df
+        mock_df.select.return_value = mock_df
+        mock_df.filter.return_value = mock_df
+        mock_df.drop.return_value = mock_df
+        
+        with pytest.raises(ValueError, match="bucket_size must be >= 1000"):
+            down_sample(mock_df, percent=0.5, search_id_column='id2', bucket_size=500)
+
+    @patch('madmatcher_tools.tools.SparkDataFrame')
+    @patch('madmatcher_tools.tools.isinstance')
+    def test_down_sample_spark_invalid_percent(self, mock_isinstance, mock_spark_dataframe):
+        """Test down_sample with Spark DataFrame and invalid percent."""
+        # Mock isinstance to return True for SparkDataFrame
+        def mock_isinstance_func(obj, type_or_tuple):
+            if type_or_tuple == mock_spark_dataframe:
+                return True
+            return isinstance(obj, type_or_tuple)
+        mock_isinstance.side_effect = mock_isinstance_func
+        
+        # Create a mock that simulates SparkDataFrame
+        mock_df = Mock()
+        mock_df.count.return_value = 1000
+        # Add __len__ method to support len() calls
+        mock_df.__len__ = Mock(return_value=1000)
+        # Mock the Spark operations that would be called
+        mock_df.withColumn.return_value = mock_df
+        mock_df.select.return_value = mock_df
+        mock_df.filter.return_value = mock_df
+        mock_df.drop.return_value = mock_df
+        
+        with pytest.raises(ValueError, match="percent must be in the range"):
+            down_sample(mock_df, percent=0.0, search_id_column='id2', bucket_size=1000)
+
+    def test_down_sample_empty_input(self):
+        """Test down_sample with empty DataFrame (should return empty DataFrame)."""
+        fvs = pd.DataFrame(columns=['id2', 'score'])
+        result = down_sample(fvs, percent=0.5, search_id_column='id2')
+        assert result.empty
+
+    def test_down_sample_invalid_type(self):
+        """Test down_sample with invalid input type (should return input unchanged)."""
+        # Use an integer to test invalid type behavior
+        invalid_input = 12345
+        result = down_sample(invalid_input, percent=0.5, search_id_column='id2')
+        # The function should return the input unchanged when given invalid type
+        assert result == invalid_input
+        assert type(result) == type(invalid_input)
+
 
 @pytest.mark.unit
 class TestCreateSeeds:
@@ -115,10 +180,8 @@ class TestCreateSeeds:
         labeler = Mock(spec=Labeler)
         labeler.return_value = 1.0
         
-        # The actual implementation returns a ValueError instead of raising it
-        result = create_seeds(fvs, nseeds=100, labeler=labeler)
-        assert isinstance(result, ValueError)
-        assert "number of seeds would exceed" in str(result)
+        with pytest.raises(ValueError, match="number of seeds would exceed"):
+            create_seeds(fvs, nseeds=100, labeler=labeler)
 
     def test_create_seeds_custom_score_column(self, sample_feature_vectors):
         """Test create_seeds with custom score column."""
@@ -132,6 +195,103 @@ class TestCreateSeeds:
         
         assert len(seeds) <= 2
         assert 'label' in seeds.columns
+
+    @patch('madmatcher_tools.tools.SparkDataFrame')
+    @patch('madmatcher_tools.tools.isinstance')
+    def test_create_seeds_spark_too_many_seeds(self, mock_isinstance, mock_spark_dataframe):
+        """Test create_seeds with Spark DataFrame and too many seeds."""
+        # Mock isinstance to return True for SparkDataFrame
+        def mock_isinstance_func(obj, type_or_tuple):
+            if type_or_tuple == mock_spark_dataframe:
+                return True
+            return isinstance(obj, type_or_tuple)
+        mock_isinstance.side_effect = mock_isinstance_func
+        
+        # Create a mock that simulates SparkDataFrame
+        mock_df = Mock()
+        mock_df.count.return_value = 5
+        # Add __len__ method to support len() calls
+        mock_df.__len__ = Mock(return_value=5)
+        labeler = Mock(spec=Labeler)
+        
+        with pytest.raises(ValueError, match="number of seeds would exceed"):
+            create_seeds(mock_df, nseeds=10, labeler=labeler)
+
+    @patch('madmatcher_tools.tools.F')
+    @patch('madmatcher_tools.tools.SparkDataFrame')
+    @patch('madmatcher_tools.tools.isinstance')
+    def test_create_seeds_spark_custom_score_column(self, mock_isinstance, mock_spark_dataframe, mock_F):
+        """Test create_seeds with Spark DataFrame and custom score column (pure mock, no SparkContext needed)."""
+        # Mock F.col to return a mock column object
+        mock_col = Mock()
+        mock_col.isNotNull.return_value = True
+        mock_F.col.return_value = mock_col
+        mock_F.isnan.return_value = False
+        
+        # Mock isinstance to return True for SparkDataFrame
+        def mock_isinstance_func(obj, type_or_tuple):
+            if type_or_tuple == mock_spark_dataframe:
+                return True
+            return isinstance(obj, type_or_tuple)
+        mock_isinstance.side_effect = mock_isinstance_func
+        
+        # Create a mock that simulates SparkDataFrame
+        mock_df = Mock()
+        mock_df.count.return_value = 10
+        mock_df.__len__ = Mock(return_value=10)
+        mock_df.filter.return_value = mock_df
+        mock_df.sort.return_value = mock_df
+        mock_df.limit.return_value = mock_df
+        mock_df.toPandas.return_value = pd.DataFrame({
+            'id1': [1, 2], 'id2': [101, 102], 'score': [0.9, 0.8]
+        })
+        
+        labeler = Mock(spec=Labeler)
+        labeler.return_value = 1.0
+        
+        seeds = create_seeds(mock_df, nseeds=2, labeler=labeler, score_column='custom_score')
+        
+        assert len(seeds) <= 2
+        assert 'label' in seeds.columns
+
+    def test_create_seeds_labeler_stop_iteration(self, sample_feature_vectors):
+        """Test create_seeds when labeler runs out of examples."""
+        fvs = sample_feature_vectors.copy()
+        fvs['score'] = [0.9, 0.8, 0.6, 0.4, 0.2]
+        
+        # Mock labeler that returns -1.0 (stop) immediately
+        labeler = Mock(spec=Labeler)
+        labeler.return_value = -1.0
+        
+        with pytest.raises(RuntimeError, match="No seeds were labeled before stopping"):
+            create_seeds(fvs, nseeds=3, labeler=labeler)
+
+    def test_create_seeds_labeler_unsure_labels(self, sample_feature_vectors):
+        """Test create_seeds with labeler returning unsure labels (2.0)."""
+        # Create a larger dataset to ensure we have enough examples
+        fvs = pd.DataFrame({
+            'id1': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            'id2': [101, 102, 103, 104, 105, 106, 107, 108, 109, 110],
+            'score': [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0],
+            'features': [[0.1, 0.2, 0.3]] * 10
+        })
+        
+        # Mock labeler that returns unsure (2.0) for first few calls, then valid labels
+        # Need to provide enough side effects to ensure we get valid labels
+        labeler = Mock(spec=Labeler)
+        # Provide more side effects to ensure we get enough valid labels
+        labeler.side_effect = [2.0, 2.0, 2.0, 2.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0]
+        
+        seeds = create_seeds(fvs, nseeds=2, labeler=labeler)
+        
+        assert len(seeds) <= 2
+        assert 'label' in seeds.columns
+        assert seeds['label'].isin([0.0, 1.0]).all()
+
+    def test_create_seeds_invalid_labeler(self, sample_feature_vectors):
+        """Test create_seeds with invalid labeler type (should raise TypeError or ValueError)."""
+        with pytest.raises((TypeError, ValueError)):
+            create_seeds(sample_feature_vectors, nseeds=2, labeler='not_a_labeler')
 
 
 @pytest.mark.unit
@@ -248,6 +408,29 @@ class TestTrainMatcher:
         
         assert hasattr(model, 'trained_model')
 
+    def test_train_matcher_invalid_input(self):
+        """Test train_matcher with invalid input (should raise Exception)."""
+        with pytest.raises((TypeError, ValueError, AttributeError)):
+            train_matcher('not_a_model_spec', pd.DataFrame({'id1': [1], 'id2': [2], 'features': [[1.0]], 'label': [1.0]}))
+
+    @patch('madmatcher_tools._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
+    def test_train_matcher_spark_dataframe(self, mock_convert, mock_labeled_data):
+        mock_spark_df = MagicMock()
+        mock_spark_df.toPandas.return_value = mock_labeled_data
+        mock_spark_df.count.return_value = len(mock_labeled_data)
+        mock_spark_df.columns = mock_labeled_data.columns.tolist()
+        mock_spark_df.__getitem__.side_effect = lambda key: mock_labeled_data[key]
+        mock_spark_df.__iter__.side_effect = lambda: iter(mock_labeled_data)
+        with patch('madmatcher_tools._internal.ml_model.convert_to_array', return_value=mock_labeled_data):
+            model_spec = {
+                'model_type': 'sklearn',
+                'model': LogisticRegression,
+                'model_args': {'random_state': 42}
+            }
+            model = train_matcher(model_spec, mock_spark_df)
+            assert hasattr(model, 'trained_model')
+            assert isinstance(model.trained_model, LogisticRegression)
+
 
 @pytest.mark.unit
 class TestApplyMatcher:
@@ -310,6 +493,32 @@ class TestApplyMatcher:
         for col in original_columns:
             assert col in result.columns
 
+    def test_apply_matcher_invalid_input(self):
+        """Test apply_matcher with invalid model (should raise Exception)."""
+        with pytest.raises((TypeError, ValueError, AttributeError)):
+            apply_matcher('not_a_model', pd.DataFrame({'id1': [1], 'id2': [2], 'features': [[1.0]]}), 'features', 'output')
+
+    @patch('madmatcher_tools._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
+    def test_apply_matcher_spark_dataframe(self, mock_convert, sample_feature_vectors, mock_labeled_data):
+        mock_spark_df = MagicMock()
+        mock_spark_df.toPandas.return_value = sample_feature_vectors
+        mock_spark_df.count.return_value = len(sample_feature_vectors)
+        mock_spark_df.columns = sample_feature_vectors.columns.tolist()
+        mock_spark_df.__getitem__.side_effect = lambda key: sample_feature_vectors[key]
+        mock_spark_df.__iter__.side_effect = lambda: iter(sample_feature_vectors)
+        with patch('madmatcher_tools._internal.ml_model.convert_to_array', return_value=sample_feature_vectors):
+            model_spec = {
+                'model_type': 'sklearn',
+                'model': LogisticRegression,
+                'model_args': {'random_state': 42}
+            }
+            training_model = train_matcher(model_spec, mock_labeled_data)
+            with patch.object(training_model, 'predict') as mock_predict:
+                mock_predict.return_value = sample_feature_vectors.assign(prediction=[0.5, 0.3, 0.7, 0.2, 0.8])
+                result = apply_matcher(training_model, mock_spark_df, 'features', 'prediction')
+                assert isinstance(result, pd.DataFrame)
+                assert 'prediction' in result.columns
+
 
 @pytest.mark.unit
 class TestLabelData:
@@ -355,7 +564,9 @@ class TestLabelData:
         
         # Test
         model_spec = {'model_type': 'sklearn', 'model': LogisticRegression, 'model_args': {}}
-        labeler_spec = {'name': 'gold', 'gold': gold_labels}
+        # Convert gold_labels DataFrame to the format expected by GoldLabeler
+        gold_dict = {'id1': gold_labels['id1'].tolist(), 'id2': gold_labels['id2'].tolist()}
+        labeler_spec = {'name': 'gold', 'gold': gold_dict}
         
         result = label_data(model_spec, 'continuous', labeler_spec, sample_feature_vectors)
         
@@ -375,7 +586,9 @@ class TestLabelData:
             mock_learner_class.return_value = mock_learner
             
             model_spec = {'model_type': 'sklearn', 'model': LogisticRegression, 'model_args': {}}
-            labeler_spec = {'name': 'gold', 'gold': gold_labels}
+            # Convert gold_labels DataFrame to the format expected by GoldLabeler
+            gold_dict = {'id1': gold_labels['id1'].tolist(), 'id2': gold_labels['id2'].tolist()}
+            labeler_spec = {'name': 'gold', 'gold': gold_dict}
             
             result = label_data(model_spec, 'batch', labeler_spec, 
                               sample_feature_vectors, seeds=existing_seeds)
@@ -383,6 +596,94 @@ class TestLabelData:
             # Should not call create_seeds when seeds are provided
             mock_create_seeds.assert_not_called()
             mock_learner.train.assert_called_once()
+
+    @patch('madmatcher_tools.tools.SparkSession')
+    def test_label_data_spark_dataframe_conversion(self, mock_spark_session):
+        """Test label_data with pandas DataFrame that gets converted to Spark."""
+        mock_spark = Mock()
+        mock_spark_session.builder.getOrCreate.return_value = mock_spark
+        
+        # Create a proper mock SparkDataFrame that supports count() and comparison
+        mock_spark_df = Mock()
+        mock_spark_df.count.return_value = 5  # Return integer for min() comparison
+        mock_spark.createDataFrame.return_value = mock_spark_df
+        
+        fvs = pd.DataFrame({'id1': [1, 2], 'id2': [101, 102], 'score': [0.9, 0.8]})
+        model_spec = {'model_type': 'sklearn', 'model': LogisticRegression, 'model_args': {}}
+        # Fix the gold labeler format
+        labeler_spec = {'name': 'gold', 'gold': {'id1': [1], 'id2': [101]}}
+        
+        with patch('madmatcher_tools.tools.create_seeds') as mock_create_seeds:
+            with patch('madmatcher_tools.tools.EntropyActiveLearner') as mock_learner_class:
+                mock_learner = Mock()
+                mock_learner_class.return_value = mock_learner
+                mock_learner.train.return_value = pd.DataFrame({'id1': [1], 'id2': [101], 'label': [1.0]})
+                
+                result = label_data(model_spec, 'batch', labeler_spec, fvs)
+                
+                mock_spark.createDataFrame.assert_called_once_with(fvs)
+                assert isinstance(result, pd.DataFrame)
+
+    @patch('madmatcher_tools.tools.SparkSession')
+    def test_label_data_continuous_mode(self, mock_spark_session):
+        """Test label_data with continuous mode."""
+        mock_spark = Mock()
+        mock_spark_session.builder.getOrCreate.return_value = mock_spark
+        
+        # Create a proper mock SparkDataFrame that supports count() and comparison
+        mock_spark_df = Mock()
+        mock_spark_df.count.return_value = 5  # Return integer for min() comparison
+        mock_spark.createDataFrame.return_value = mock_spark_df
+        
+        fvs = pd.DataFrame({'id1': [1, 2], 'id2': [101, 102], 'score': [0.9, 0.8]})
+        model_spec = {'model_type': 'sklearn', 'model': LogisticRegression, 'model_args': {}}
+        # Fix the gold labeler format
+        labeler_spec = {'name': 'gold', 'gold': {'id1': [1], 'id2': [101]}}
+        
+        with patch('madmatcher_tools.tools.create_seeds') as mock_create_seeds:
+            with patch('madmatcher_tools.tools.ContinuousEntropyActiveLearner') as mock_learner_class:
+                mock_learner = Mock()
+                mock_learner_class.return_value = mock_learner
+                mock_learner.train.return_value = pd.DataFrame({'id1': [1], 'id2': [101], 'label': [1.0]})
+                
+                result = label_data(model_spec, 'continuous', labeler_spec, fvs)
+                
+                mock_learner_class.assert_called_once()
+                assert isinstance(result, pd.DataFrame)
+
+    @patch('madmatcher_tools.tools.SparkSession')
+    def test_label_data_continuous_mode_spark(self, mock_spark_session):
+        """Test label_data with continuous mode and Spark DataFrame."""
+        mock_spark = Mock()
+        mock_spark_session.builder.getOrCreate.return_value = mock_spark
+        
+        # Create a proper mock SparkDataFrame that supports count() and comparison
+        mock_spark_df = Mock()
+        mock_spark_df.count.return_value = 5  # Return integer for min() comparison
+        mock_spark.createDataFrame.return_value = mock_spark_df
+        
+        fvs = pd.DataFrame({'id1': [1, 2], 'id2': [101, 102], 'score': [0.9, 0.8]})
+        model_spec = {'model_type': 'sklearn', 'model': LogisticRegression, 'model_args': {}}
+        # Fix the gold labeler format
+        labeler_spec = {'name': 'gold', 'gold': {'id1': [1], 'id2': [101]}}
+        
+        with patch('madmatcher_tools.tools.create_seeds') as mock_create_seeds:
+            with patch('madmatcher_tools.tools.ContinuousEntropyActiveLearner') as mock_learner_class:
+                mock_learner = Mock()
+                mock_learner_class.return_value = mock_learner
+                mock_learner.train.return_value = pd.DataFrame({'id1': [1], 'id2': [101], 'label': [1.0]})
+                
+                result = label_data(model_spec, 'continuous', labeler_spec, fvs)
+                
+                mock_learner_class.assert_called_once()
+                assert isinstance(result, pd.DataFrame)
+
+    def test_label_data_invalid_mode(self, sample_feature_vectors, gold_labels):
+        """Test label_data with invalid mode (should raise Exception)."""
+        model_spec = {'model_type': 'sklearn', 'model': LogisticRegression, 'model_args': {}}
+        labeler_spec = {'name': 'gold', 'gold': gold_labels}
+        with pytest.raises((ValueError, TypeError)):
+            label_data(model_spec, 'invalid_mode', labeler_spec, sample_feature_vectors)
 
 
 @pytest.mark.unit
@@ -418,4 +719,134 @@ class TestEdgeCases:
         
         for spec in invalid_specs:
             with pytest.raises((ValueError, KeyError, AttributeError)):
-                train_matcher(spec, mock_labeled_data) 
+                train_matcher(spec, mock_labeled_data)
+
+    def test_create_seeds_labeler_stop_iteration(self, sample_feature_vectors):
+        """Test create_seeds when labeler runs out of examples."""
+        fvs = sample_feature_vectors.copy()
+        fvs['score'] = [0.9, 0.8, 0.6, 0.4, 0.2]
+        
+        # Mock labeler that returns -1.0 (stop) immediately
+        labeler = Mock(spec=Labeler)
+        labeler.return_value = -1.0
+        
+        with pytest.raises(RuntimeError, match="No seeds were labeled before stopping"):
+            create_seeds(fvs, nseeds=3, labeler=labeler)
+
+    def test_create_seeds_labeler_unsure_labels(self, sample_feature_vectors):
+        """Test create_seeds with labeler returning unsure labels (2.0)."""
+        # Create a larger dataset to ensure we have enough examples
+        fvs = pd.DataFrame({
+            'id1': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            'id2': [101, 102, 103, 104, 105, 106, 107, 108, 109, 110],
+            'score': [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0],
+            'features': [[0.1, 0.2, 0.3]] * 10
+        })
+        
+        # Mock labeler that returns unsure (2.0) for first few calls, then valid labels
+        # Need to provide enough side effects to ensure we get valid labels
+        labeler = Mock(spec=Labeler)
+        # Provide more side effects to ensure we get enough valid labels
+        labeler.side_effect = [2.0, 2.0, 2.0, 2.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0]
+        
+        seeds = create_seeds(fvs, nseeds=2, labeler=labeler)
+        
+        assert len(seeds) <= 2
+        assert 'label' in seeds.columns
+        assert seeds['label'].isin([0.0, 1.0]).all()
+
+    def test_create_seeds_labeler_dict(self, sample_feature_vectors):
+        """Test create_seeds with labeler as dict (should create labeler from dict)."""
+        fvs = sample_feature_vectors.copy()
+        labeler_dict = {'name': 'gold', 'gold': {'id1': [1], 'id2': [101]}}
+        
+        seeds = create_seeds(fvs, nseeds=2, labeler=labeler_dict)
+        
+        assert len(seeds) <= 2
+        assert 'label' in seeds.columns
+
+    def test_create_seeds_nan_scores(self, sample_feature_vectors):
+        """Test create_seeds with NaN scores (should filter out NaN scores)."""
+        fvs = sample_feature_vectors.copy()
+        fvs.loc[0, 'score'] = np.nan
+        labeler = Mock(spec=Labeler)
+        labeler.return_value = 1.0
+        
+        seeds = create_seeds(fvs, nseeds=2, labeler=labeler)
+        
+        assert len(seeds) <= 2
+        assert 'label' in seeds.columns
+
+    def test_down_sample_percent_one(self, sample_feature_vectors):
+        """Test down_sample with percent=1.0 (should return all rows)."""
+        fvs = sample_feature_vectors.copy()
+        fvs['score'] = [0.9, 0.8, 0.6, 0.4, 0.2]
+        
+        result = down_sample(fvs, percent=1.0, search_id_column='id2')
+        
+        assert len(result) <= len(fvs)
+
+    def test_down_sample_bucket_size_one(self, sample_feature_vectors):
+        """Test down_sample with bucket_size=1 (edge case)."""
+        fvs = sample_feature_vectors.copy()
+        fvs['score'] = [0.9, 0.8, 0.6, 0.4, 0.2]
+        
+        result = down_sample(fvs, percent=0.5, search_id_column='id2', bucket_size=1)
+        
+        assert len(result) <= len(fvs)
+
+    @patch('madmatcher_tools._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
+    def test_train_matcher_spark_dataframe(self, mock_convert, mock_labeled_data):
+        mock_spark_df = MagicMock()
+        mock_spark_df.toPandas.return_value = mock_labeled_data
+        mock_spark_df.count.return_value = len(mock_labeled_data)
+        mock_spark_df.columns = mock_labeled_data.columns.tolist()
+        mock_spark_df.__getitem__.side_effect = lambda key: mock_labeled_data[key]
+        mock_spark_df.__iter__.side_effect = lambda: iter(mock_labeled_data)
+        with patch('madmatcher_tools._internal.ml_model.convert_to_array', return_value=mock_labeled_data):
+            model_spec = {
+                'model_type': 'sklearn',
+                'model': LogisticRegression,
+                'model_args': {'random_state': 42}
+            }
+            model = train_matcher(model_spec, mock_spark_df)
+            assert hasattr(model, 'trained_model')
+            assert isinstance(model.trained_model, LogisticRegression)
+
+    @patch('madmatcher_tools._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
+    def test_apply_matcher_spark_dataframe(self, mock_convert, sample_feature_vectors, mock_labeled_data):
+        mock_spark_df = MagicMock()
+        mock_spark_df.toPandas.return_value = sample_feature_vectors
+        mock_spark_df.count.return_value = len(sample_feature_vectors)
+        mock_spark_df.columns = sample_feature_vectors.columns.tolist()
+        mock_spark_df.__getitem__.side_effect = lambda key: sample_feature_vectors[key]
+        mock_spark_df.__iter__.side_effect = lambda: iter(sample_feature_vectors)
+        with patch('madmatcher_tools._internal.ml_model.convert_to_array', return_value=sample_feature_vectors):
+            model_spec = {
+                'model_type': 'sklearn',
+                'model': LogisticRegression,
+                'model_args': {'random_state': 42}
+            }
+            training_model = train_matcher(model_spec, mock_labeled_data)
+            with patch.object(training_model, 'predict') as mock_predict:
+                mock_predict.return_value = sample_feature_vectors.assign(prediction=[0.5, 0.3, 0.7, 0.2, 0.8])
+                result = apply_matcher(training_model, mock_spark_df, 'features', 'prediction')
+                assert isinstance(result, pd.DataFrame)
+                assert 'prediction' in result.columns
+
+    def test_label_data_with_seeds(self, sample_feature_vectors, gold_labels):
+        """Test label_data with provided seeds (should not create new seeds)."""
+        existing_seeds = pd.DataFrame({'id1': [1], 'id2': [101], 'label': [1.0]})
+        
+        with patch('madmatcher_tools.tools.EntropyActiveLearner') as mock_learner_class:
+            mock_learner = Mock()
+            mock_learner_class.return_value = mock_learner
+            mock_learner.train.return_value = existing_seeds
+            
+            model_spec = {'model_type': 'sklearn', 'model': LogisticRegression, 'model_args': {}}
+            labeler_spec = {'name': 'gold', 'gold': gold_labels}
+            
+            result = label_data(model_spec, 'batch', labeler_spec, sample_feature_vectors, seeds=existing_seeds)
+            
+            assert isinstance(result, pd.DataFrame)
+            mock_learner.train.assert_called_once() 

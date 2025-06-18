@@ -84,10 +84,10 @@
 <span class="n">log</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Feature">
-<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.feature.feature.Feature.html#madmatcher_tools._internal.feature.feature.Feature">[docs]</a>
+<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.feature.feature.Feature.html#madmatcher_tools.Feature">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Feature</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <div class="viewcode-block" id="Feature.__init__">
-<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.feature.feature.Feature.html#madmatcher_tools._internal.feature.feature.Feature.__init__">[docs]</a>
+<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.feature.feature.Feature.html#madmatcher_tools.Feature.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a_attr</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">b_attr</span> <span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a_attr</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">b_attr</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;a_attr and b_attr must be strings not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">a_attr</span><span class="p">),</span><span class="w"> </span><span class="nb">type</span><span class="p">(</span><span class="n">b_attr</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -97,7 +97,7 @@
 
 
 <div class="viewcode-block" id="Feature.build">
-<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.feature.feature.Feature.html#madmatcher_tools._internal.feature.feature.Feature.build">[docs]</a>
+<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.feature.feature.Feature.html#madmatcher_tools.Feature.build">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">cache</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Guarenteed to be called before the features preprocessing is done. </span>
@@ -108,7 +108,7 @@
 
 
 <div class="viewcode-block" id="Feature.template">
-<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.feature.feature.Feature.html#madmatcher_tools._internal.feature.feature.Feature.template">[docs]</a>
+<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.feature.feature.Feature.html#madmatcher_tools.Feature.template">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">template</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
@@ -164,7 +164,7 @@
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="Feature.preprocess_output_column">
-<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.feature.feature.Feature.html#madmatcher_tools._internal.feature.feature.Feature.preprocess_output_column">[docs]</a>
+<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.feature.feature.Feature.html#madmatcher_tools.Feature.preprocess_output_column">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">preprocess_output_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">for_table_a</span> <span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        get the name of the preprocessing output column for table A or B</span>
@@ -176,7 +176,7 @@
 
 
 <div class="viewcode-block" id="Feature.preprocess">
-<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.feature.feature.Feature.html#madmatcher_tools._internal.feature.feature.Feature.preprocess">[docs]</a>
+<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.feature.feature.Feature.html#madmatcher_tools.Feature.preprocess">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">preprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">is_table_a</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        preprocess the data, adding the output column to data</span>

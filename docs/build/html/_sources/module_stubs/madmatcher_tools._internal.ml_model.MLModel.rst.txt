@@ -30,6 +30,7 @@
    .. autosummary::
    
       ~MLModel.nan_fill
+      ~MLModel.trained_model
       ~MLModel.use_floats
       ~MLModel.use_vectors
    

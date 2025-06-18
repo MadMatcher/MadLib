@@ -93,11 +93,11 @@ def down_sample(
         fvs = fvs.drop(columns=["_hash_bucket", "_rank_desc", "_bucket_size", "_percent_rank"])
 
     elif isinstance(fvs, SparkDataFrame):
-        if bucket_size < 1000:
-            raise ValueError('bucket_size must be >= 1000')
-
         if percent <= 0 or percent > 1.0:
             raise ValueError('percent must be in the range (0.0, 1.0]')
+
+        if bucket_size < 1000:
+            raise ValueError('bucket_size must be >= 1000')
 
         if isinstance(score_column, str):
             score_column = F.col(score_column)
@@ -148,23 +148,23 @@ def create_seeds(
     if isinstance(fvs, pd.DataFrame):
         fvs = fvs[fvs[score_column].notna()]
         if nseeds > len(fvs):
-            return ValueError("number of seeds would exceed the size of the fvs DataFrame")
-        maybe_pos = fvs.nlargest(nseeds, score_column).iterrows()
-        maybe_neg = fvs.nsmallest(nseeds, score_column).iterrows()
+            raise ValueError("number of seeds would exceed the size of the fvs DataFrame")
+        maybe_pos = fvs.nlargest(len(fvs)//2, score_column).iterrows()
+        maybe_neg = fvs.nsmallest(len(fvs)//2, score_column).iterrows()
     elif isinstance(fvs, SparkDataFrame):
         if nseeds > fvs.count():
-            return ValueError("number of seeds would exceed the size of the fvs DataFrame")
+            raise ValueError("number of seeds would exceed the size of the fvs DataFrame")
         if isinstance(score_column, str):
             score_column = F.col(score_column)
         fvs = fvs.filter((~F.isnan(score_column)) & (score_column.isNotNull()))
         # lowest scoring vectors
         maybe_neg = fvs.sort(score_column, ascending=True)\
-                        .limit(nseeds)\
+                        .limit(len(fvs)//2)\
                         .toPandas()\
                         .iterrows()
         # highest scoring vectors
         maybe_pos = fvs.sort(score_column, ascending=False)\
-                        .limit(nseeds)\
+                        .limit(len(fvs)//2)\
                         .toPandas()\
                         .iterrows()
 
@@ -172,7 +172,7 @@ def create_seeds(
     neg_count = 0
     seeds = []
     i = 0
-    while pos_count + neg_count < nseeds and i < nseeds * 2:
+    while pos_count + neg_count < nseeds and i < len(fvs):
         try:
             _, ex = next(maybe_pos) if pos_count <= neg_count else next(maybe_neg)
             label = float(labeler(ex['id1'], ex['id2']))

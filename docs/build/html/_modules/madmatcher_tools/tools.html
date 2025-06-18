@@ -193,7 +193,7 @@
     <span class="n">nseeds</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">labeler</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Labeler</span><span class="p">,</span> <span class="n">Dict</span><span class="p">],</span>
     <span class="n">score_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;score&#39;</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    create seeds seeds to train a model</span>
 
@@ -220,7 +220,6 @@
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;no seeds would be created&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
         <span class="n">fvs</span> <span class="o">=</span> <span class="n">fvs</span><span class="p">[</span><span class="n">fvs</span><span class="p">[</span><span class="n">score_column</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()]</span>
-
         <span class="k">if</span> <span class="n">nseeds</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">fvs</span><span class="p">):</span>
             <span class="k">return</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;number of seeds would exceed the size of the fvs DataFrame&quot;</span><span class="p">)</span>
         <span class="n">maybe_pos</span> <span class="o">=</span> <span class="n">fvs</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="n">nseeds</span><span class="p">,</span> <span class="n">score_column</span><span class="p">)</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()</span>
@@ -228,6 +227,8 @@
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">nseeds</span> <span class="o">&gt;</span> <span class="n">fvs</span><span class="o">.</span><span class="n">count</span><span class="p">():</span>
             <span class="k">return</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;number of seeds would exceed the size of the fvs DataFrame&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">score_column</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">score_column</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="n">score_column</span><span class="p">)</span>
         <span class="n">fvs</span> <span class="o">=</span> <span class="n">fvs</span><span class="o">.</span><span class="n">filter</span><span class="p">((</span><span class="o">~</span><span class="n">F</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">score_column</span><span class="p">))</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">score_column</span><span class="o">.</span><span class="n">isNotNull</span><span class="p">()))</span>
         <span class="c1"># lowest scoring vectors</span>
         <span class="n">maybe_neg</span> <span class="o">=</span> <span class="n">fvs</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">score_column</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
@@ -248,7 +249,6 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">ex</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">maybe_pos</span><span class="p">)</span> <span class="k">if</span> <span class="n">pos_count</span> <span class="o">&lt;=</span> <span class="n">neg_count</span> <span class="k">else</span> <span class="nb">next</span><span class="p">(</span><span class="n">maybe_neg</span><span class="p">)</span>
             <span class="n">label</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">labeler</span><span class="p">(</span><span class="n">ex</span><span class="p">[</span><span class="s1">&#39;id1&#39;</span><span class="p">],</span> <span class="n">ex</span><span class="p">[</span><span class="s1">&#39;id2&#39;</span><span class="p">]))</span>
-            
             <span class="k">if</span> <span class="n">label</span> <span class="o">==</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">:</span>  <span class="c1"># User requested to stop</span>
                 <span class="k">break</span>
             <span class="k">elif</span> <span class="n">label</span> <span class="o">==</span> <span class="mf">2.0</span><span class="p">:</span>  <span class="c1"># User marked as unsure</span>
@@ -257,7 +257,6 @@
                 <span class="n">pos_count</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">else</span><span class="p">:</span>  <span class="c1"># label == 0.0, Negative match</span>
                 <span class="n">neg_count</span> <span class="o">+=</span> <span class="mi">1</span>
-
             <span class="n">ex</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span>
             <span class="n">seeds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
@@ -275,8 +274,8 @@
 <div class="viewcode-block" id="train_matcher">
 <a class="viewcode-back" href="../../module_stubs/madmatcher_tools.tools.html#madmatcher_tools.tools.train_matcher">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">train_matcher</span><span class="p">(</span>
-    <span class="n">model_spec</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">MLModel</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">],</span>
-    <span class="n">labeled_data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">model_spec</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">MLModel</span><span class="p">],</span>
+    <span class="n">labeled_data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
     <span class="n">feature_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;features&quot;</span><span class="p">,</span>
     <span class="n">label_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;label&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MLModel</span><span class="p">:</span>
@@ -284,11 +283,10 @@
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    model_spec : Union[Dict, MLModel, BaseEstimator]</span>
+<span class="sd">    model_spec : Union[Dict, MLModel]</span>
 <span class="sd">        Either:</span>
-<span class="sd">        - A dict with model configuration (e.g. {&#39;name&#39;: &#39;sklearn&#39;, &#39;model_class&#39;: XGBClassifier, &#39;max_depth&#39;: 6})</span>
+<span class="sd">        - A dict with model configuration (e.g. {&#39;model_type&#39;: &#39;sklearn&#39;, &#39;model&#39;: XGBClassifier, &#39;model_args&#39;:{&#39;max_depth&#39;: 6}})</span>
 <span class="sd">        - An MLModel instance</span>
-<span class="sd">        - A scikit-learn or Spark model instance</span>
 <span class="sd">    labeled_data : pandas DataFrame</span>
 <span class="sd">        DataFrame containing the labeled data</span>
 <span class="sd">    feature_col : str, optional</span>
@@ -304,6 +302,8 @@
     <span class="c1"># the users choices for models: they should either give us a pre-trained model, their own custom MLModel</span>
     <span class="c1"># or, they should specify the necessary params. We should be returning to them the trained_model. </span>
     <span class="c1"># on apply, we should expect to get a trained model. </span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">labeled_data</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">):</span>
+        <span class="n">labeled_data</span> <span class="o">=</span> <span class="n">labeled_data</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">_create_training_model</span><span class="p">(</span><span class="n">model_spec</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">labeled_data</span><span class="p">,</span> <span class="n">feature_col</span><span class="p">,</span> <span class="n">label_col</span><span class="p">)</span></div>
 
@@ -313,7 +313,7 @@
 <a class="viewcode-back" href="../../module_stubs/madmatcher_tools.tools.html#madmatcher_tools.tools.apply_matcher">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">apply_matcher</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">MLModel</span><span class="p">,</span> <span class="n">SKLearnModel</span><span class="p">,</span> <span class="n">SparkMLModel</span><span class="p">],</span>
-    <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
     <span class="n">feature_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">output_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
@@ -321,12 +321,10 @@
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    model_spec : Union[str, Dict, MLModel, BaseEstimator]</span>
+<span class="sd">    model_spec : Union[MLModel, SKLearn Model, SparkMLModel]</span>
 <span class="sd">        Either:</span>
-<span class="sd">        - A string name of a built-in model (e.g. &#39;sklearn&#39;)</span>
-<span class="sd">        - A dict with model configuration (e.g. {&#39;name&#39;: &#39;sklearn&#39;, &#39;model_class&#39;: XGBClassifier})</span>
-<span class="sd">        - An MLModel instance</span>
-<span class="sd">        - A scikit-learn or Spark model instance</span>
+<span class="sd">        - A trained MLModel instance</span>
+<span class="sd">        - A trained scikit-learn or Spark model instance</span>
 <span class="sd">    df : pandas DataFrame</span>
 <span class="sd">        The DataFrame to make predictions on</span>
 <span class="sd">    feature_col : str</span>
@@ -339,6 +337,8 @@
 <span class="sd">    pandas DataFrame</span>
 <span class="sd">        The input DataFrame with predictions added</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">):</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">_create_matching_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">feature_col</span><span class="p">,</span> <span class="n">output_col</span><span class="p">)</span></div>
 
@@ -350,7 +350,7 @@
     <span class="n">model_spec</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">MLModel</span><span class="p">],</span>
     <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="s2">&quot;continuous&quot;</span><span class="p">],</span>
     <span class="n">labeler_spec</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">Labeler</span><span class="p">],</span>
-    <span class="n">fvs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">fvs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
     <span class="n">seeds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate labeled data using active learning.</span>
@@ -378,22 +378,21 @@
 <span class="sd">        DataFrame with ids of potential matches and the corresponding label</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
-    
+        
     <span class="c1"># Create model and labeler</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">_create_training_model</span><span class="p">(</span><span class="n">model_spec</span><span class="p">)</span>
     <span class="n">labeler</span> <span class="o">=</span> <span class="n">_create_labeler</span><span class="p">(</span><span class="n">labeler_spec</span><span class="p">)</span>
-    
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">fvs</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span><span class="n">fvs</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">seeds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">seeds</span> <span class="o">=</span> <span class="n">create_seeds</span><span class="p">(</span><span class="n">fvs</span><span class="o">=</span><span class="n">fvs</span><span class="p">,</span> <span class="n">nseeds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">labeler</span><span class="o">=</span><span class="n">labeler</span><span class="p">,</span> <span class="n">score_column</span><span class="o">=</span><span class="s1">&#39;score&#39;</span><span class="p">)</span>
+        <span class="n">seeds</span> <span class="o">=</span> <span class="n">create_seeds</span><span class="p">(</span><span class="n">fvs</span><span class="o">=</span><span class="n">fvs</span><span class="p">,</span> <span class="n">nseeds</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">fvs</span><span class="o">.</span><span class="n">count</span><span class="p">()),</span> <span class="n">labeler</span><span class="o">=</span><span class="n">labeler</span><span class="p">,</span> <span class="n">score_column</span><span class="o">=</span><span class="s1">&#39;score&#39;</span><span class="p">)</span>
     
     <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;batch&quot;</span><span class="p">:</span>
         <span class="n">learner</span> <span class="o">=</span> <span class="n">EntropyActiveLearner</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">labeler</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;continuous&quot;</span><span class="p">:</span>
         <span class="n">learner</span> <span class="o">=</span> <span class="n">ContinuousEntropyActiveLearner</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">labeler</span><span class="p">)</span>
-    
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
-        <span class="n">fvs</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span><span class="n">fvs</span><span class="p">)</span>
-    
+
     <span class="n">labeled_data</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">seeds</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">labeled_data</span></div>
 

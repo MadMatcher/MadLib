@@ -45,9 +45,25 @@ class TestEntropyActiveLearner:
                 return df
             
             def entropy(self, df, vector_col, output_col):
-                result = df.copy()
+                # Always use a real DataFrame if not a Spark DataFrame
+                if hasattr(df, 'toPandas'):
+                    result = df.toPandas()
+                else:
+                    result = pd.DataFrame({
+                        '_id': [1, 2, 3],
+                        'id1': [101, 102, 103],
+                        'id2': [201, 202, 203],
+                        'features': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+                    })
+                if not isinstance(result, pd.DataFrame):
+                    result = pd.DataFrame({
+                        '_id': [1, 2, 3],
+                        'id1': [101, 102, 103],
+                        'id2': [201, 202, 203],
+                        'features': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+                    })
                 result[output_col] = 0.5
-                return result
+                return spark_session.createDataFrame(result)
             
             def params_dict(self):
                 return {}
@@ -204,7 +220,25 @@ class TestEntropyActiveLearner:
                 return df
             
             def entropy(self, df, vector_col, output_col):
-                return df
+                # Always use a real DataFrame if not a Spark DataFrame
+                if hasattr(df, 'toPandas'):
+                    result = df.toPandas()
+                else:
+                    result = pd.DataFrame({
+                        '_id': [1, 2, 3],
+                        'id1': [101, 102, 103],
+                        'id2': [201, 202, 203],
+                        'features': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+                    })
+                if not isinstance(result, pd.DataFrame):
+                    result = pd.DataFrame({
+                        '_id': [1, 2, 3],
+                        'id1': [101, 102, 103],
+                        'id2': [201, 202, 203],
+                        'features': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+                    })
+                result[output_col] = 0.5
+                return spark_session.createDataFrame(result)
             
             def params_dict(self):
                 return {}
@@ -264,7 +298,25 @@ class TestEntropyActiveLearner:
                 return df
             
             def entropy(self, df, vector_col, output_col):
-                return df
+                # Always use a real DataFrame if not a Spark DataFrame
+                if hasattr(df, 'toPandas'):
+                    result = df.toPandas()
+                else:
+                    result = pd.DataFrame({
+                        '_id': [1, 2, 3],
+                        'id1': [101, 102, 103],
+                        'id2': [201, 202, 203],
+                        'features': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+                    })
+                if not isinstance(result, pd.DataFrame):
+                    result = pd.DataFrame({
+                        '_id': [1, 2, 3],
+                        'id1': [101, 102, 103],
+                        'id2': [201, 202, 203],
+                        'features': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+                    })
+                result[output_col] = 0.5
+                return spark_session.createDataFrame(result)
             
             def params_dict(self):
                 return {}
@@ -380,6 +432,171 @@ class TestEntropyActiveLearner:
             
             assert mock_label_everything.called
             assert isinstance(result, pd.DataFrame)
+
+    @patch('madmatcher_tools._internal.active_learning.ent_active_learner.SparkSession')
+    @patch('madmatcher_tools._internal.active_learning.ent_active_learner.persisted')
+    def test_entropy_active_learner_train_with_user_stop(self, mock_persisted, mock_spark_session, spark_session):
+        """Test EntropyActiveLearner training with user stopping."""
+        class TestMLModel(MLModel):
+            def __init__(self):
+                self._trained_model = None
+                
+            @property
+            def nan_fill(self): return 0.0
+            @property
+            def use_vectors(self): return False
+            @property
+            def use_floats(self): return True
+            @property
+            def trained_model(self): return self._trained_model
+            
+            def train(self, df, vector_col, label_column, return_estimator=False):
+                self._trained_model = self
+                return self
+            
+            def predict(self, df, vector_col, output_col):
+                return df
+            
+            def prediction_conf(self, df, vector_col, label_column):
+                return df
+            
+            def entropy(self, df, vector_col, output_col):
+                # Always use a real DataFrame if not a Spark DataFrame
+                if hasattr(df, 'toPandas'):
+                    result = df.toPandas()
+                else:
+                    result = pd.DataFrame({
+                        '_id': [1, 2, 3],
+                        'id1': [101, 102, 103],
+                        'id2': [201, 202, 203],
+                        'features': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+                    })
+                if not isinstance(result, pd.DataFrame):
+                    result = pd.DataFrame({
+                        '_id': [1, 2, 3],
+                        'id1': [101, 102, 103],
+                        'id2': [201, 202, 203],
+                        'features': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+                    })
+                result[output_col] = 0.5
+                return spark_session.createDataFrame(result)
+            
+            def params_dict(self):
+                return {}
+            
+            def prep_fvs(self, fvs):
+                return fvs
+
+        class TestLabeler(Labeler):
+            def __init__(self):
+                self.call_count = 0
+                
+            def __call__(self, id1, id2):
+                self.call_count += 1
+                if self.call_count == 2:  # Stop after second call
+                    return -1.0
+                return 1.0 if id1 == id2 else 0.0
+
+        mock_spark_session.builder.getOrCreate.return_value = spark_session
+        
+        # Mock persisted context manager
+        mock_context = Mock()
+        mock_context.__enter__ = Mock(return_value=Mock(count=Mock(return_value=100)))
+        mock_context.__exit__ = Mock(return_value=None)
+        mock_persisted.return_value = mock_context
+        
+        model = TestMLModel()
+        labeler = TestLabeler()
+        learner = EntropyActiveLearner(model, labeler, batch_size=1, max_iter=10)
+        
+        # Create test data
+        data = [(1, 101, 201, [0.1, 0.2]), (2, 102, 202, [0.3, 0.4]), (3, 103, 203, [0.5, 0.6])]
+        schema = StructType([
+            StructField("_id", IntegerType(), False),
+            StructField("id1", IntegerType(), False),
+            StructField("id2", IntegerType(), False),
+            StructField("features", ArrayType(DoubleType()), False)
+        ])
+        fvs = spark_session.createDataFrame(data, schema)
+        
+        # Create seeds with both positive and negative examples
+        seeds = pd.DataFrame({
+            '_id': [1, 2],
+            'id1': [101, 102],
+            'id2': [201, 202],
+            'features': [[0.1, 0.2], [0.3, 0.4]],
+            'label': [1.0, 0.0]  # Mix of positive and negative
+        })
+        
+        with patch.object(learner, '_label_everything') as mock_label_everything:
+            mock_label_everything.return_value = seeds
+            result = learner.train(fvs, seeds)
+            
+            assert isinstance(result, pd.DataFrame)
+            assert labeler.call_count >= 2  # Should have called labeler at least twice
+
+    def test_entropy_active_learner_train_with_no_positive_negative(self, spark_session):
+        """Test EntropyActiveLearner with no positive or negative examples."""
+        class TestMLModel(MLModel):
+            def __init__(self):
+                self._trained_model = None
+                
+            @property
+            def nan_fill(self): return 0.0
+            @property
+            def use_vectors(self): return False
+            @property
+            def use_floats(self): return True
+            @property
+            def trained_model(self): return self._trained_model
+            
+            def train(self, df, vector_col, label_column, return_estimator=False):
+                return self
+            
+            def predict(self, df, vector_col, output_col):
+                return df
+            
+            def prediction_conf(self, df, vector_col, label_column):
+                return df
+            
+            def entropy(self, df, vector_col, output_col):
+                return df
+            
+            def params_dict(self):
+                return {}
+            
+            def prep_fvs(self, fvs):
+                return fvs
+
+        class TestLabeler(Labeler):
+            def __call__(self, id1, id2):
+                return 1.0
+
+        model = TestMLModel()
+        labeler = TestLabeler()
+        learner = EntropyActiveLearner(model, labeler)
+        
+        # Create seeds with only positive examples
+        seeds = pd.DataFrame({
+            '_id': [1, 2],
+            'id1': [101, 102],
+            'id2': [201, 202],
+            'features': [[0.1, 0.2], [0.3, 0.4]],
+            'label': [1.0, 1.0]  # All positive
+        })
+        
+        # Create test data
+        data = [(1, 101, 201, [0.1, 0.2]), (2, 102, 202, [0.3, 0.4])]
+        schema = StructType([
+            StructField("_id", IntegerType(), False),
+            StructField("id1", IntegerType(), False),
+            StructField("id2", IntegerType(), False),
+            StructField("features", ArrayType(DoubleType()), False)
+        ])
+        fvs = spark_session.createDataFrame(data, schema)
+        
+        with pytest.raises(RuntimeError, match="both postive and negative vectors are required for training"):
+            learner.train(fvs, seeds)
 
 
 @pytest.mark.unit
@@ -616,92 +833,6 @@ class TestContinuousEntropyActiveLearner:
 @pytest.mark.unit
 class TestActiveLearningIntegration:
     """Test integration scenarios for active learning."""
-
-    @patch('madmatcher_tools._internal.active_learning.ent_active_learner.SparkSession')
-    @patch('madmatcher_tools._internal.active_learning.ent_active_learner.persisted')
-    def test_entropy_active_learner_train_with_user_stop(self, mock_persisted, mock_spark_session, spark_session):
-        """Test EntropyActiveLearner training with user stopping."""
-        class TestMLModel(MLModel):
-            def __init__(self):
-                self._trained_model = None
-                
-            @property
-            def nan_fill(self): return 0.0
-            @property
-            def use_vectors(self): return False
-            @property
-            def use_floats(self): return True
-            @property
-            def trained_model(self): return self._trained_model
-            
-            def train(self, df, vector_col, label_column, return_estimator=False):
-                self._trained_model = self
-                return self
-            
-            def predict(self, df, vector_col, output_col):
-                return df
-            
-            def prediction_conf(self, df, vector_col, label_column):
-                return df
-            
-            def entropy(self, df, vector_col, output_col):
-                result = df.copy()
-                result[output_col] = 0.5
-                return result
-            
-            def params_dict(self):
-                return {}
-            
-            def prep_fvs(self, fvs):
-                return fvs
-
-        class TestLabeler(Labeler):
-            def __init__(self):
-                self.call_count = 0
-                
-            def __call__(self, id1, id2):
-                self.call_count += 1
-                if self.call_count == 2:  # Stop after second call
-                    return -1.0
-                return 1.0 if id1 == id2 else 0.0
-
-        mock_spark_session.builder.getOrCreate.return_value = spark_session
-        
-        # Mock persisted context manager
-        mock_context = Mock()
-        mock_context.__enter__ = Mock(return_value=Mock(count=Mock(return_value=100)))
-        mock_context.__exit__ = Mock(return_value=None)
-        mock_persisted.return_value = mock_context
-        
-        model = TestMLModel()
-        labeler = TestLabeler()
-        learner = EntropyActiveLearner(model, labeler, batch_size=1, max_iter=10)
-        
-        # Create test data
-        data = [(1, 101, 201, [0.1, 0.2]), (2, 102, 202, [0.3, 0.4]), (3, 103, 203, [0.5, 0.6])]
-        schema = StructType([
-            StructField("_id", IntegerType(), False),
-            StructField("id1", IntegerType(), False),
-            StructField("id2", IntegerType(), False),
-            StructField("features", ArrayType(DoubleType()), False)
-        ])
-        fvs = spark_session.createDataFrame(data, schema)
-        
-        # Create seeds with both positive and negative examples
-        seeds = pd.DataFrame({
-            '_id': [1, 2],
-            'id1': [101, 102],
-            'id2': [201, 202],
-            'features': [[0.1, 0.2], [0.3, 0.4]],
-            'label': [1.0, 0.0]  # Mix of positive and negative
-        })
-        
-        with patch.object(learner, '_label_everything') as mock_label_everything:
-            mock_label_everything.return_value = seeds
-            result = learner.train(fvs, seeds)
-            
-            assert isinstance(result, pd.DataFrame)
-            assert labeler.call_count >= 2  # Should have called labeler at least twice
 
     def test_entropy_active_learner_train_with_no_positive_negative(self, spark_session):
         """Test EntropyActiveLearner with no positive or negative examples."""

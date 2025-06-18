@@ -161,7 +161,7 @@ class RelDiffFeature(Feature):
         f = rec[self._b_float_col]
         floats = recs[self._a_float_col]
 
-        if pd.isnull(f):
+        if is_null(f):
             return pd.Series(np.nan, index=floats.index)
 
         vals = floats.values.astype(np.float32)

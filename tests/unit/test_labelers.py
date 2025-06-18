@@ -7,6 +7,7 @@ from unittest.mock import Mock, patch, MagicMock
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 from pyspark.sql.functions import col
+import time
 
 from madmatcher_tools._internal.labeler import (
     Labeler, GoldLabeler, DelayedGoldLabeler, CLILabeler, CustomLabeler
@@ -108,7 +109,9 @@ class TestDelayedGoldLabeler:
         labeler = DelayedGoldLabeler(gold_data, delay_secs=0.1)
         
         assert isinstance(labeler, Labeler)
-        assert labeler._gold.equals(gold_data)
+        # The _gold should now be a set of tuples
+        expected_gold = {(1, 101), (2, 102), (3, 103)}
+        assert labeler._gold == expected_gold
         assert labeler._delay_secs == 0.1
 
     def test_delayed_gold_labeler_call_match(self):
@@ -117,13 +120,18 @@ class TestDelayedGoldLabeler:
             'id1': [1, 2, 3],
             'id2': [101, 102, 103]
         })
-        
+
         labeler = DelayedGoldLabeler(gold_data, delay_secs=0.01)
-        
-        # Test matching pairs
+
+        # Test matching pairs - these should be in the gold_data DataFrame rows
+        # The DelayedGoldLabeler now converts DataFrame to set of tuples
         assert labeler(1, 101) == 1.0
         assert labeler(2, 102) == 1.0
         assert labeler(3, 103) == 1.0
+
+        # Non-matching pairs should return 0.0
+        assert labeler(1, 102) == 0.0
+        assert labeler(2, 103) == 0.0
 
     def test_delayed_gold_labeler_call_no_match(self):
         """Test DelayedGoldLabeler with non-matching pairs."""
@@ -144,12 +152,30 @@ class TestDelayedGoldLabeler:
             'id1': [1],
             'id2': [101]
         })
-        
+
         labeler = DelayedGoldLabeler(gold_data, delay_secs=0.0)
-        
+
         # Should work without delay
         assert labeler(1, 101) == 1.0
+
+    def test_delayed_gold_labeler_dataframe_membership(self):
+        """Test how DelayedGoldLabeler checks DataFrame membership."""
+        gold_data = pd.DataFrame({
+            'id1': [1, 2, 3],
+            'id2': [101, 102, 103]
+        })
+        
+        # Test what the actual behavior should be
+        # The DelayedGoldLabeler now converts DataFrame to set of tuples
+        labeler = DelayedGoldLabeler(gold_data, delay_secs=0.0)
+        
+        # Test the actual labeler behavior
+        assert labeler(1, 101) == 1.0
+        assert labeler(2, 102) == 1.0
+        assert labeler(3, 103) == 1.0
+        # Non-matching pairs should return 0.0
         assert labeler(1, 102) == 0.0
+        assert labeler(4, 104) == 0.0
 
 
 @pytest.mark.unit
@@ -211,6 +237,12 @@ class TestCLILabeler:
         
         labeler = CLILabeler(a_df, b_df)
         
+        # Initialize _all_fields and _current_fields if not already set
+        if labeler._all_fields is None:
+            labeler._all_fields = ['name', 'age']
+        if labeler._current_fields is None:
+            labeler._current_fields = set(['name', 'age'])
+
         # Test getting existing row
         row = labeler._get_row(a_df, 1)
         assert row['_id'] == 1
@@ -235,6 +267,12 @@ class TestCLILabeler:
         
         labeler = CLILabeler(a_df, b_df)
         
+        # Initialize _all_fields and _current_fields if not already set
+        if labeler._all_fields is None:
+            labeler._all_fields = ['name', 'age']
+        if labeler._current_fields is None:
+            labeler._current_fields = set(['name', 'age'])
+
         # Test getting existing row
         row = labeler._get_row(a_df, 1)
         assert row['_id'] == 1
@@ -259,6 +297,12 @@ class TestCLILabeler:
         
         labeler = CLILabeler(a_df, b_df)
         
+        # Initialize _all_fields and _current_fields if not already set
+        if labeler._all_fields is None:
+            labeler._all_fields = ['name', 'age']
+        if labeler._current_fields is None:
+            labeler._current_fields = set(['name', 'age'])
+
         # Test with a simple dict
         test_dict = {'name': 'John', 'age': 25}
         
@@ -283,6 +327,12 @@ class TestCLILabeler:
         
         labeler = CLILabeler(a_df, b_df)
         
+        # Initialize _all_fields and _current_fields if not already set
+        if labeler._all_fields is None:
+            labeler._all_fields = ['name', 'age']
+        if labeler._current_fields is None:
+            labeler._current_fields = set(['name', 'age'])
+
         # Mock user input
         mock_input.return_value = 'y'
         
@@ -310,6 +360,12 @@ class TestCLILabeler:
         
         labeler = CLILabeler(a_df, b_df)
         
+        # Initialize _all_fields and _current_fields if not already set
+        if labeler._all_fields is None:
+            labeler._all_fields = ['name', 'age']
+        if labeler._current_fields is None:
+            labeler._current_fields = set(['name', 'age'])
+
         # Mock user input
         mock_input.return_value = 'n'
         
@@ -335,6 +391,12 @@ class TestCLILabeler:
         
         labeler = CLILabeler(a_df, b_df)
         
+        # Initialize _all_fields and _current_fields if not already set
+        if labeler._all_fields is None:
+            labeler._all_fields = ['name', 'age']
+        if labeler._current_fields is None:
+            labeler._current_fields = set(['name', 'age'])
+
         # Mock user input
         mock_input.return_value = 'u'
         
@@ -360,6 +422,12 @@ class TestCLILabeler:
         
         labeler = CLILabeler(a_df, b_df)
         
+        # Initialize _all_fields and _current_fields if not already set
+        if labeler._all_fields is None:
+            labeler._all_fields = ['name', 'age']
+        if labeler._current_fields is None:
+            labeler._current_fields = set(['name', 'age'])
+
         # Mock user input sequence: stop, then confirm
         mock_input.side_effect = ['s', 'y']
         
@@ -385,8 +453,14 @@ class TestCLILabeler:
         
         labeler = CLILabeler(a_df, b_df)
         
+        # Initialize _all_fields and _current_fields if not already set
+        if labeler._all_fields is None:
+            labeler._all_fields = ['name', 'age']
+        if labeler._current_fields is None:
+            labeler._current_fields = set(['name', 'age'])
+
         # Mock user input sequence: help, then yes
-        mock_input.side_effect = ['h', 'y']
+        mock_input.side_effect = ['h', 'e', 'y']  # help, exit help, yes
         
         result = labeler(1, 101)
         
@@ -412,6 +486,12 @@ class TestCLILabeler:
         
         labeler = CLILabeler(a_df, b_df)
         
+        # Initialize _all_fields and _current_fields if not already set
+        if labeler._all_fields is None:
+            labeler._all_fields = ['name', 'age']
+        if labeler._current_fields is None:
+            labeler._current_fields = set(['name', 'age'])
+
         # Mock user input sequence: invalid, then yes
         mock_input.side_effect = ['invalid', 'y']
         
@@ -437,6 +517,12 @@ class TestCLILabeler:
         
         labeler = CLILabeler(a_df, b_df)
         
+        # Initialize _all_fields and _current_fields if not already set
+        if labeler._all_fields is None:
+            labeler._all_fields = ['name', 'age']
+        if labeler._current_fields is None:
+            labeler._current_fields = set(['name', 'age'])
+
         # Mock user input to exit help
         mock_input.return_value = 'e'
         
@@ -456,22 +542,28 @@ class TestCLILabeler:
             'age': [25],
             'city': ['NYC']
         })
-        
+
         b_df = pd.DataFrame({
             '_id': [101],
             'name': ['John Smith'],
             'age': [25],
             'city': ['NYC']
         })
-        
+
         labeler = CLILabeler(a_df, b_df)
         
+        # Initialize _all_fields and _current_fields if not already set
+        if labeler._all_fields is None:
+            labeler._all_fields = ['name', 'age', 'city']
+        if labeler._current_fields is None:
+            labeler._current_fields = set(['name', 'age', 'city'])
+
         # Mock user input sequence: add field, remove field, exit
         mock_input.side_effect = ['a', '1', 'r', '1', 'e']
-        
+
         row1 = {'name': 'John', 'age': 25, 'city': 'NYC'}
         row2 = {'name': 'John Smith', 'age': 25, 'city': 'NYC'}
-        
+
         # This should not raise an exception
         labeler._help_interactive(row1, row2)
 
@@ -484,21 +576,27 @@ class TestCLILabeler:
             'name': ['John'],
             'age': [25]
         })
-        
+
         b_df = pd.DataFrame({
             '_id': [101],
             'name': ['John Smith'],
             'age': [25]
         })
-        
+
         labeler = CLILabeler(a_df, b_df)
         
+        # Initialize _all_fields and _current_fields if not already set
+        if labeler._all_fields is None:
+            labeler._all_fields = ['name', 'age']
+        if labeler._current_fields is None:
+            labeler._current_fields = set(['name', 'age'])
+
         # Mock user input sequence: invalid command, then exit
         mock_input.side_effect = ['invalid', 'e']
-        
+
         row1 = {'name': 'John', 'age': 25}
         row2 = {'name': 'John Smith', 'age': 25}
-        
+
         # This should not raise an exception
         labeler._help_interactive(row1, row2)
 
@@ -520,6 +618,12 @@ class TestCLILabeler:
         
         labeler = CLILabeler(a_df, b_df)
         
+        # Initialize _all_fields and _current_fields if not already set
+        if labeler._all_fields is None:
+            labeler._all_fields = ['name', 'age']
+        if labeler._current_fields is None:
+            labeler._current_fields = set(['name', 'age'])
+
         # Mock terminal size with proper object
         mock_terminal_size.return_value = Mock(columns=120, lines=20)
         
@@ -548,6 +652,12 @@ class TestCLILabeler:
         
         labeler = CLILabeler(a_df, b_df)
         
+        # Initialize _all_fields and _current_fields if not already set
+        if labeler._all_fields is None:
+            labeler._all_fields = ['name', 'age']
+        if labeler._current_fields is None:
+            labeler._current_fields = set(['name', 'age'])
+
         # Mock terminal size with proper object
         mock_terminal_size.return_value = Mock(columns=120, lines=20)
         
