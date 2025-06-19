@@ -316,7 +316,12 @@ class TestCreateMatchingModel:
     @patch('madmatcher_tools._internal.api_utils.check_is_fitted')
     def test_create_matching_model_with_fitted_sklearn(self, mock_check_fitted):
         """Test creating matching model with fitted sklearn model."""
+        # Create a mock sklearn model with the required attributes
         mock_sklearn_model = MagicMock()
+        # Create a mock tags object with the required attributes
+        mock_tags = MagicMock()
+        mock_tags.requires_fit = True
+        mock_sklearn_model.__sklearn_tags__ = MagicMock(return_value=mock_tags)
         mock_check_fitted.return_value = None  # No exception raised
         
         result = _create_matching_model(mock_sklearn_model)
@@ -329,7 +334,12 @@ class TestCreateMatchingModel:
     @patch('madmatcher_tools._internal.api_utils.check_is_fitted')
     def test_create_matching_model_with_unfitted_sklearn(self, mock_check_fitted):
         """Test creating matching model with unfitted sklearn model."""
+        # Create a mock sklearn model with the required attributes
         mock_sklearn_model = MagicMock()
+        # Create a mock tags object with the required attributes
+        mock_tags = MagicMock()
+        mock_tags.requires_fit = True
+        mock_sklearn_model.__sklearn_tags__ = MagicMock(return_value=mock_tags)
         mock_check_fitted.side_effect = NotFittedError("Model not fitted")
         
         with pytest.raises(RuntimeError, match="Model must be trained to predict"):

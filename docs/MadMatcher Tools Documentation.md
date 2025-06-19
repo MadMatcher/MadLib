@@ -1,3 +1,5 @@
+<!-- MadMatcher Documentation -->
+
 # MadMatcher Tools Technical Documentation
 
 This document provides an in-depth technical overview of MadMatcher Tools' functionality, internal workings, and advanced use cases. For quick start guide and basic usage, refer to the README.md file. For complete API reference, see the API documentation.

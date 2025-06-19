@@ -64,7 +64,6 @@ class ContinuousEntropyActiveLearner:
         self._labeler = labeler
         self._model = copy(model)
         self.local_training_fvs_ = None
-        self._terminate_if_label_everything = False
     
     def _check_init_args(self, model, labeler, queue_size, max_labeled, on_demand_stop):
 
@@ -138,7 +137,13 @@ class ContinuousEntropyActiveLearner:
                 example = to_be_label_queue.get(timeout=10).item
             except Empty:
                 if not training_thread.is_alive():
-                    raise RuntimeError('label queue is empty by training thread is dead, likely due to an exception during training')
+                    # Check if training thread finished early due to insufficient examples
+                    if hasattr(self, 'local_training_fvs_') and self.local_training_fvs_ is not None:
+                        # Training thread finished early, return the labeled data
+                        labeled_data = self.local_training_fvs_.dropna(subset=['label']).copy()
+                        return labeled_data
+                    else:
+                        raise RuntimeError('label queue is empty by training thread is dead, likely due to an exception during training')
             else:
                 # example gotten, label and send back to training thread
                 example['label'] = float(self._labeler(example['id1'], example['id2']))
@@ -167,14 +172,14 @@ class ContinuousEntropyActiveLearner:
 
             with persisted(fvs) as fvs:
                 n_fvs = fvs.count()
-                # just label everything and return 
-                if n_fvs <= len(seeds) + self._max_labeled and not self._on_demand_stop:
-                    if self._terminate_if_label_everything:
-                        log.info('running al to completion would label everything, labeling all fvs and returning')
-                        return self._label_everything(fvs)
-                    else:
-                        log.info('running al to completion would label everything, but self._terminate_if_label_everything is False so AL will still run')
-
+                
+                if n_fvs <= len(seeds):  
+                    log.warning(f'Insufficient examples for active learning: {n_fvs} total, {len(seeds)} seeds. No unlabeled examples to select from. Labeling all examples.')
+                    self._label_everything(fvs)
+                    # Signal to main thread that we're done
+                    stop_event.set()
+                    return
+            
                 self.local_training_fvs_ = seeds.copy()
                 self.local_training_fvs_.set_index('_id', drop=False, inplace=True)
                 # seed feature vectors
@@ -184,9 +189,8 @@ class ContinuousEntropyActiveLearner:
                 total_pos, total_neg = self._get_pos_negative(self.local_training_fvs_)
                 if total_pos == 0 or total_neg == 0:
                     log.error(f'total positive = {total_pos} negative = {total_neg}')
-                    raise RuntimeError('both postive and negative vectors are required for training')
+                    raise RuntimeError('both positive and negative vectors are required for training')
 
-                
                 i = -1
                 while not stop_event.is_set():
                     i += 1

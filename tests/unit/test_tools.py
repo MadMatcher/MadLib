@@ -209,9 +209,11 @@ class TestCreateSeeds:
         
         # Create a mock that simulates SparkDataFrame
         mock_df = Mock()
-        mock_df.count.return_value = 5
+        mock_df.count.return_value = 5  # Return actual integer
         # Add __len__ method to support len() calls
         mock_df.__len__ = Mock(return_value=5)
+        # Ensure filter returns the same mock with count method intact
+        mock_df.filter.return_value = mock_df
         labeler = Mock(spec=Labeler)
         
         with pytest.raises(ValueError, match="number of seeds would exceed"):

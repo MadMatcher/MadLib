@@ -195,33 +195,98 @@ class MLModel(ABC):
         pandas.DataFrame or pyspark.sql.DataFrame
             DataFrame with prepared feature vectors
         """
-        if self.nan_fill is not None:
-            fvs = fvs.withColumn(feature_col, F.transform(feature_col, lambda x : F.when(x.isNotNull() & ~F.isnan(x), x).otherwise(self._model.nan_fill)))
+        if isinstance(fvs, pd.DataFrame):
+            if self.nan_fill is not None:
+                fvs = fvs.copy()
+                feature_data = fvs[feature_col]
+                if hasattr(feature_data.iloc[0], '__iter__') and not isinstance(feature_data.iloc[0], str):
+                    filled_features = []
+                    for feature in feature_data:
+                        if isinstance(feature, (list, np.ndarray)):
+                            feature_array = np.array(feature)
+                            feature_array = np.nan_to_num(feature_array, nan=self.nan_fill)
+                            filled_features.append(feature_array)
+                        else:
+                            filled_features.append(feature)
+                    fvs[feature_col] = filled_features
+                else:
+                    fvs[feature_col] = fvs[feature_col].fillna(self.nan_fill)
+        
+        elif isinstance(fvs, SparkDataFrame):
+            if self.nan_fill is not None:
+                fvs = fvs.withColumn(feature_col, F.transform(feature_col, lambda x : F.when(x.isNotNull() & ~F.isnan(x), x).otherwise(self.nan_fill)))
 
-        if self.use_vectors:
-            fvs = convert_to_vector(fvs, feature_col)
-        else:
-            fvs = convert_to_array(fvs, feature_col)
-            if self.use_floats:
-                fvs = fvs.withColumn(feature_col, fvs[feature_col].cast('array<float>'))
+            if self.use_vectors:
+                fvs = convert_to_vector(fvs, feature_col)
             else:
-                fvs = fvs.withColumn(feature_col, fvs[feature_col].cast('array<double>'))
+                fvs = convert_to_array(fvs, feature_col)
+                if self.use_floats:
+                    fvs = fvs.withColumn(feature_col, fvs[feature_col].cast('array<float>'))
+                else:
+                    fvs = fvs.withColumn(feature_col, fvs[feature_col].cast('array<double>'))
+        
+        else:
+            raise TypeError(f"Unsupported DataFrame type: {type(fvs)}")
 
         return fvs
 
 def convert_to_vector(df, col):
-    if not isinstance(df.schema[col].dataType, VectorUDT):
-        df = df.withColumn(col, array_to_vector(col))
-    return df
+    """Convert array column to vector format for both pandas and Spark DataFrames.
+    
+    Parameters
+    ----------
+    df : pandas.DataFrame or pyspark.sql.DataFrame
+        The DataFrame containing the column to convert
+    col : str
+        Name of the column to convert
+        
+    Returns
+    -------
+    pandas.DataFrame or pyspark.sql.DataFrame
+        DataFrame with the column converted to vector format
+    """
+    if isinstance(df, pd.DataFrame):
+        if col in df.columns:
+            return df
+        else:
+            raise ValueError(f"Column '{col}' not found in DataFrame")
+    elif isinstance(df, SparkDataFrame):
+        if not isinstance(df.schema[col].dataType, VectorUDT):
+            df = df.withColumn(col, array_to_vector(col))
+        return df
+    else:
+        raise TypeError(f"Unsupported DataFrame type: {type(df)}")
 
 _DOUBLE_ARRAY = T.ArrayType(T.DoubleType())
 _FLOAT_ARRAY = T.ArrayType(T.FloatType())
 _ARRAY_TYPES = {_DOUBLE_ARRAY, _FLOAT_ARRAY}
 
 def convert_to_array(df, col):
-    if df.schema[col].dataType not in _ARRAY_TYPES:
-        df = df.withColumn(col, vector_to_array(col))
-    return df
+    """Convert vector column to array format for both pandas and Spark DataFrames.
+    
+    Parameters
+    ----------
+    df : pandas.DataFrame or pyspark.sql.DataFrame
+        The DataFrame containing the column to convert
+    col : str
+        Name of the column to convert
+        
+    Returns
+    -------
+    pandas.DataFrame or pyspark.sql.DataFrame
+        DataFrame with the column converted to array format
+    """
+    if isinstance(df, pd.DataFrame):
+        if col in df.columns:
+            return df
+        else:
+            raise ValueError(f"Column '{col}' not found in DataFrame")
+    elif isinstance(df, SparkDataFrame):
+        if df.schema[col].dataType not in _ARRAY_TYPES:
+            df = df.withColumn(col, vector_to_array(col))
+        return df
+    else:
+        raise TypeError(f"Unsupported DataFrame type: {type(df)}")
 
 class SKLearnModel(MLModel):
     """Scikit-learn model wrapper.

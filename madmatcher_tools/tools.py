@@ -147,24 +147,26 @@ def create_seeds(
         raise ValueError("no seeds would be created")
     if isinstance(fvs, pd.DataFrame):
         fvs = fvs[fvs[score_column].notna()]
+        fvs_length = len(fvs)
         if nseeds > len(fvs):
             raise ValueError("number of seeds would exceed the size of the fvs DataFrame")
-        maybe_pos = fvs.nlargest(len(fvs)//2, score_column).iterrows()
-        maybe_neg = fvs.nsmallest(len(fvs)//2, score_column).iterrows()
+        maybe_pos = fvs.nlargest(fvs_length//2, score_column).iterrows()
+        maybe_neg = fvs.nsmallest(fvs_length//2, score_column).iterrows()
     elif isinstance(fvs, SparkDataFrame):
-        if nseeds > fvs.count():
-            raise ValueError("number of seeds would exceed the size of the fvs DataFrame")
         if isinstance(score_column, str):
             score_column = F.col(score_column)
         fvs = fvs.filter((~F.isnan(score_column)) & (score_column.isNotNull()))
+        fvs_length = fvs.count()
+        if nseeds > fvs_length:
+            raise ValueError("number of seeds would exceed the size of the fvs DataFrame")
         # lowest scoring vectors
         maybe_neg = fvs.sort(score_column, ascending=True)\
-                        .limit(len(fvs)//2)\
+                        .limit(fvs_length//2)\
                         .toPandas()\
                         .iterrows()
         # highest scoring vectors
         maybe_pos = fvs.sort(score_column, ascending=False)\
-                        .limit(len(fvs)//2)\
+                        .limit(fvs_length//2)\
                         .toPandas()\
                         .iterrows()
 
@@ -172,7 +174,7 @@ def create_seeds(
     neg_count = 0
     seeds = []
     i = 0
-    while pos_count + neg_count < nseeds and i < len(fvs):
+    while pos_count + neg_count < nseeds and i < fvs_length:
         try:
             _, ex = next(maybe_pos) if pos_count <= neg_count else next(maybe_neg)
             label = float(labeler(ex['id1'], ex['id2']))
@@ -310,6 +312,7 @@ def label_data(
         learner = EntropyActiveLearner(model, labeler)
     elif mode == "continuous":
         learner = ContinuousEntropyActiveLearner(model, labeler)
-
+    else:
+        raise ValueError(f"mode must be either \'batch\' or \'continuous\', not {mode}")
     labeled_data = learner.train(fvs, seeds)
     return labeled_data

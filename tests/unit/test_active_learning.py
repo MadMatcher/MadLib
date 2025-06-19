@@ -829,6 +829,146 @@ class TestContinuousEntropyActiveLearner:
         assert item1.item['id'] == 1
         assert item1.item['data'] == 'test1'
 
+    def test_continuous_entropy_active_learner_insufficient_examples(self, spark_session):
+        """Test ContinuousEntropyActiveLearner with insufficient examples."""
+        class TestMLModel(MLModel):
+            def __init__(self):
+                self._trained_model = None
+                
+            @property
+            def nan_fill(self): return 0.0
+            @property
+            def use_vectors(self): return False
+            @property
+            def use_floats(self): return True
+            @property
+            def trained_model(self): return self._trained_model
+            
+            def train(self, df, vector_col, label_column, return_estimator=False):
+                self._trained_model = self
+                return self
+            
+            def predict(self, df, vector_col, output_col):
+                return df
+            
+            def prediction_conf(self, df, vector_col, label_column):
+                return df
+            
+            def entropy(self, df, vector_col, output_col):
+                # Return DataFrame with entropy column
+                if df.count() == 0:
+                    return df
+                # Add entropy column to the DataFrame
+                from pyspark.sql.functions import lit
+                return df.withColumn(output_col, lit(0.5))
+            
+            def params_dict(self):
+                return {}
+            
+            def prep_fvs(self, fvs):
+                return fvs
+
+        class TestLabeler(Labeler):
+            def __call__(self, id1, id2):
+                return 1.0 if id1 == id2 else 0.0
+
+        model = TestMLModel()
+        labeler = TestLabeler()
+        
+        # Create a small dataset with only 2 examples (same as seeds)
+        fvs_data = [
+            {'_id': 1, 'id1': 101, 'id2': 201, 'features': [0.1, 0.2]},
+            {'_id': 2, 'id1': 102, 'id2': 202, 'features': [0.3, 0.4]}
+        ]
+        fvs = spark_session.createDataFrame(fvs_data)
+        
+        # Create seeds with the same examples
+        seeds_data = [
+            {'_id': 1, 'id1': 101, 'id2': 201, 'features': [0.1, 0.2], 'label': 1.0},
+            {'_id': 2, 'id1': 102, 'id2': 202, 'features': [0.3, 0.4], 'label': 0.0}
+        ]
+        seeds = pd.DataFrame(seeds_data)
+        
+        learner = ContinuousEntropyActiveLearner(model, labeler)
+        
+        # This should trigger the insufficient examples check and label everything
+        result = learner.train(fvs, seeds)
+        
+        # Should return labeled data
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 2
+        assert 'label' in result.columns
+
+    def test_continuous_entropy_active_learner_empty_candidates(self, spark_session):
+        """Test ContinuousEntropyActiveLearner when no candidates are left."""
+        class TestMLModel(MLModel):
+            def __init__(self):
+                self._trained_model = None
+                
+            @property
+            def nan_fill(self): return 0.0
+            @property
+            def use_vectors(self): return False
+            @property
+            def use_floats(self): return True
+            @property
+            def trained_model(self): return self._trained_model
+            
+            def train(self, df, vector_col, label_column, return_estimator=False):
+                self._trained_model = self
+                return self
+            
+            def predict(self, df, vector_col, output_col):
+                return df
+            
+            def prediction_conf(self, df, vector_col, label_column):
+                return df
+            
+            def entropy(self, df, vector_col, output_col):
+                # Return empty DataFrame with entropy column to simulate no candidates
+                if df.count() == 0:
+                    return df
+                # Add entropy column to the DataFrame
+                from pyspark.sql.functions import lit
+                return df.withColumn(output_col, lit(0.5))
+            
+            def params_dict(self):
+                return {}
+            
+            def prep_fvs(self, fvs):
+                return fvs
+
+        class TestLabeler(Labeler):
+            def __call__(self, id1, id2):
+                return 1.0 if id1 == id2 else 0.0
+
+        model = TestMLModel()
+        labeler = TestLabeler()
+        
+        # Create a dataset with more examples than seeds
+        fvs_data = [
+            {'_id': 1, 'id1': 101, 'id2': 201, 'features': [0.1, 0.2]},
+            {'_id': 2, 'id1': 102, 'id2': 202, 'features': [0.3, 0.4]},
+            {'_id': 3, 'id1': 103, 'id2': 203, 'features': [0.5, 0.6]}
+        ]
+        fvs = spark_session.createDataFrame(fvs_data)
+        
+        # Create seeds with some examples
+        seeds_data = [
+            {'_id': 1, 'id1': 101, 'id2': 201, 'features': [0.1, 0.2], 'label': 1.0},
+            {'_id': 2, 'id1': 102, 'id2': 202, 'features': [0.3, 0.4], 'label': 0.0}
+        ]
+        seeds = pd.DataFrame(seeds_data)
+        
+        learner = ContinuousEntropyActiveLearner(model, labeler, queue_size=5)
+        
+        # This should handle the empty candidates gracefully
+        result = learner.train(fvs, seeds)
+        
+        # Should return labeled data
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) >= 2  # At least the seeds
+
 
 @pytest.mark.unit
 class TestActiveLearningIntegration:
