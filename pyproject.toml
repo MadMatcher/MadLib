@@ -41,7 +41,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0.0",
+    "pytest>=7.1,<8.0",
     "pytest-cov>=4.0.0",
     "pytest-mock>=3.10.0",
     "pytest-spark>=0.6.0",
@@ -55,6 +55,7 @@ dev = [
     "sphinx>=7.0.0",
     "sphinx-rtd-theme>=2.0.0",
     "sphinx-autodoc-typehints>=1.25.0",
+    "pytest-benchmark<5.1.0",
 ]
 
 [tool.hatch.build.targets.wheel]

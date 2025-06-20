@@ -187,7 +187,7 @@ def featurize(
     B,
     candidates,
     output_col: str = 'features',
-    fill_na: object = None,
+    fill_na: float = 0.0,
 ) -> pd.DataFrame:
     """
     applies the featurizer to the record pairs in candidates
@@ -204,8 +204,8 @@ def featurize(
         id pairs of A and B that are potential matches
     output_col : str
         the name of the column for the resulting feature vectors, default `fvs`
-    fill_na : 
-        value to fill in for missing data, default None
+    fill_na : float
+        value to fill in for missing data, default 0.0
     Returns
     -------
     pandas DataFrame
@@ -363,7 +363,8 @@ def _generate_feature_vectors_inner(rec, recs, fill_na, features):
 
     if fill_na is not None:
         f_mat = np.nan_to_num(f_mat, copy=False, nan=fill_na)
-
+    else:
+        f_mat = np.nan_to_num(f_mat, copy=False)
     return f_mat
 
 

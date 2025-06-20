@@ -204,8 +204,16 @@ class TestFeaturize:
             assert mock_spark_df.toPandas() is not None
             assert mock_spark_df.count() == len(sample_dataframe_a)
 
-    def test_featurize_with_none_fill_na(self, sample_dataframe_a, sample_dataframe_b, sample_candidates):
-        """Test featurize with fill_na=None."""
+    def test_featurize_with_default_fill_na(self, sample_dataframe_a, sample_dataframe_b, sample_candidates):
+        """Test featurize with default fill_na=0.0."""
+        features = create_features(sample_dataframe_a, sample_dataframe_b, ['name'], ['name'])
+        result = featurize(features, sample_dataframe_a, sample_dataframe_b, sample_candidates)
+        
+        assert isinstance(result, pd.DataFrame)
+        assert 'features' in result.columns
+
+    def test_featurize_with_explicit_none_fill_na(self, sample_dataframe_a, sample_dataframe_b, sample_candidates):
+        """Test featurize with explicit fill_na=None for backward compatibility."""
         features = create_features(sample_dataframe_a, sample_dataframe_b, ['name'], ['name'])
         result = featurize(features, sample_dataframe_a, sample_dataframe_b, sample_candidates, fill_na=None)
         
@@ -215,7 +223,7 @@ class TestFeaturize:
     def test_featurize_with_custom_fill_na(self, sample_dataframe_a, sample_dataframe_b, sample_candidates):
         """Test featurize with custom fill_na value."""
         features = create_features(sample_dataframe_a, sample_dataframe_b, ['name'], ['name'])
-        result = featurize(features, sample_dataframe_a, sample_dataframe_b, sample_candidates, fill_na=0.0)
+        result = featurize(features, sample_dataframe_a, sample_dataframe_b, sample_candidates, fill_na=-1.0)
         
         assert isinstance(result, pd.DataFrame)
         assert 'features' in result.columns

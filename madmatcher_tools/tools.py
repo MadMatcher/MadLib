@@ -13,6 +13,7 @@ from pyspark.sql.window import Window
 from pyspark.sql import DataFrame as SparkDataFrame
 from sklearn.base import BaseEstimator
 import xxhash
+import numpy as np
 
 from ._internal.ml_model import MLModel, SKLearnModel, SparkMLModel
 from ._internal.labeler import Labeler, CLILabeler, GoldLabeler
@@ -145,6 +146,17 @@ def create_seeds(
         labeler = _create_labeler(labeler)
     if nseeds == 0:
         raise ValueError("no seeds would be created")
+    # gold labeler overrides the score column with 1.0 for gold pairs and 0.0 for non-gold pairs
+    if isinstance(labeler, GoldLabeler):
+        gold_pairs = labeler._gold
+        if isinstance(fvs, pd.DataFrame) and (score_column not in fvs.columns or fvs[score_column].isna().all()):
+            is_gold_mask = [tuple(x) in gold_pairs for x in fvs[['id1', 'id2']].to_numpy()]
+            fvs[score_column] = np.where(is_gold_mask, 1.0, 0.0)
+        elif isinstance(fvs, SparkDataFrame) and score_column not in [col.name for col in fvs.schema.fields]:
+            fvs = fvs.withColumn(score_column, 
+                F.when(F.struct('id1', 'id2').isin([F.struct(F.lit(p[0]), F.lit(p[1])) for p in gold_pairs]), 1.0)
+                .otherwise(0.0))
+
     if isinstance(fvs, pd.DataFrame):
         fvs = fvs[fvs[score_column].notna()]
         fvs_length = len(fvs)

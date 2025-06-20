@@ -117,7 +117,7 @@ class ContinuousEntropyActiveLearner:
             the ids of the seed feature vectors for starting active learning, these must be present in `fvs`
         """
         type_check(fvs, 'fvs', pyspark.sql.DataFrame)
-
+        self.max_labeled_ = max(self._max_labeled, fvs.count())
         to_be_label_queue = PriorityQueue(self._queue_size)
         labeled_queue = Queue(self._queue_size * 5)
 
@@ -166,14 +166,14 @@ class ContinuousEntropyActiveLearner:
 
     def _training_loop(self, to_be_label_queue, labeled_queue, stop_event, fvs, seeds):
         try:
-            spark = SparkSession.builder.config("spark.ui.showConsoleProgress", "false").getOrCreate()
+            spark = SparkSession.builder.getOrCreate()
 
             fvs = self._prep_fvs(fvs)
 
             with persisted(fvs) as fvs:
                 n_fvs = fvs.count()
                 
-                if n_fvs <= len(seeds):  
+                if n_fvs <= len(seeds) + self._max_labeled:  
                     log.warning(f'Insufficient examples for active learning: {n_fvs} total, {len(seeds)} seeds. No unlabeled examples to select from. Labeling all examples.')
                     self._label_everything(fvs)
                     # Signal to main thread that we're done
