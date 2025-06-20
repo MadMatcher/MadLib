@@ -1,108 +1,269 @@
-# madmatcher-tools
+# MadMatcher Tools
 
-Tools for entity matching and record linkage, providing a flexible and scalable solution for matching and linking records across datasets.
+A comprehensive Python library for entity matching and record linkage, providing flexible and scalable solutions for matching and linking records across datasets using machine learning and active learning techniques.
 
 ## Features
 
-- Machine learning models for entity matching (both scikit-learn and PySpark)
-- Active learning for efficient labeling
-- Feature engineering and vectorization
-- CLI-based labeling interface
+- **Machine Learning Models**: Support for both scikit-learn and PySpark ML models
+- **Active Learning**: Efficient labeling with batch and continuous modes
+- **Similarity Functions**: TF-IDF, Jaccard, Cosine, SIF embeddings, and more
+- **Flexible Labeling**: CLI-based and programmatic labeling interfaces
+- **Scalable Processing**: Can leverage PySpark for handling large datasets
 
 ## Installation
+
+Install from PyPI: [todo]
+
+```bash
+pip install madmatcher-tools
+```
+
+For development dependencies:
+
+```bash
+pip install madmatcher-tools[dev]
+```
+
+### Requirements
+
+**Core Dependencies:**
+
+- Python 3.8+
+- numpy>=1.20.0
+- pandas>=1.3.0
+- scikit-learn>=1.0.0
+- pyspark>=3.2.0
+- pyarrow>=11.0.0
+- joblib>=1.1.0
+- threadpoolctl>=3.0.0
+- scipy>=1.7.0
+- numba>=0.56.0
+- tqdm>=4.62.0
+- tabulate>=0.8.9
+- xxhash>=3.0.0
+- py-stringmatching>=0.4.0
+- mmh3>=3.0.0
 
 ## Quick Start
 
 Here's a simple example of using madmatcher-tools:
 
-## Testing
+```python
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+from madmatcher_tools import create_features, featurize, create_seeds, train_matcher
 
-### Running Tests
+# Sample datasets
+df_a = pd.DataFrame({
+    '_id': [1, 2, 3],
+    'name': ['Alice Smith', 'Bob Johnson', 'Charlie Brown'],
+    'email': ['alice@email.com', 'bob@email.com', 'charlie@email.com']
+})
 
-To run all tests:
+df_b = pd.DataFrame({
+    '_id': [101, 102, 103],
+    'name': ['Alicia Smith', 'Robert Johnson', 'Charles Brown'],
+    'email': ['alicia@email.com', 'robert@email.com', 'charles@email.com']
+})
 
-```bash
-python -m pytest tests/unit
+# Generate candidate pairs
+candidates = pd.DataFrame({
+    'id1_list': [[1], [2], [3]],
+    'id2': [101, 102, 103]
+})
+
+# Create features for comparison
+features = create_features(df_a, df_b, ['name', 'email'], ['name', 'email'])
+
+# Generate feature vectors
+fvs = featurize(features, df_a, df_b, candidates)
+
+# Create labeled seeds for training
+gold_labels = pd.DataFrame({'id1': [1, 3], 'id2': [101, 103]})
+gold_labeler = {'name': 'gold', 'gold': gold_labels}
+seeds = create_seeds(fvs, nseeds=2, labeler=gold_labeler)
+
+# Train a matcher model
+model_spec = {
+    'model_type': 'sklearn',
+    'model': LogisticRegression,
+    'nan_fill': 0.0,
+    'model_args': {'random_state': 42}
+}
+trained_model = train_matcher(model_spec, seeds)
+
+# Apply the model to make predictions
+predictions = apply_matcher(trained_model, fvs, 'features', 'prediction')
 ```
 
-To run tests with verbose output:
+## Spark vs Pandas
 
-```bash
-python -m pytest tests/unit -v
+MadMatcher Tools supports both Pandas DataFrames and Spark DataFrames, allowing you to choose the best approach for your data size and processing requirements.
+
+### When to Use Spark vs Pandas
+
+**Use Pandas when:**
+
+- Working with smaller datasets
+- Prototyping and development
+- Simple single-machine processing
+- You prefer familiar Pandas syntax
+
+**Use Spark when:**
+
+- Working with large datasets
+- Need distributed processing across multiple CPU cores or multiple machines
+- Processing data that doesn't fit in memory
+- Require scalable, production-ready performance
+
+### Setting Up a SparkSession
+
+MadMatcher Tools leverages Spark to enhance speed for large-scale record matching. Spark works by processing data in parallel, which significantly increases processing speed. On a local machine, Spark treats each CPU core as a worker node to distribute work efficiently.
+
+Before using Spark DataFrames with MadMatcher Tools, you need to set up a SparkSession:
+
+```python
+from pyspark.sql import SparkSession
+
+# Create a SparkSession for local processing
+spark = SparkSession.builder \
+    .master('local[*]') \
+    .appName('MadMatcher Tools') \
+    .getOrCreate()
 ```
 
-To run a specific test file:
+**Configuration Options:**
 
-```bash
-python -m pytest tests/unit/test_tools.py
+- `master('local[*]')`: Uses all available CPU cores on your local machine
+- `master('local[4]')`: Uses exactly 4 CPU cores
+- `master(url)`: Uses the machine at URL as the driver
+- `appName('MadMatcher Tools')`: Names your Spark application for identification
+
+### Converting Between Pandas and Spark
+
+```python
+# Convert Pandas DataFrame to Spark DataFrame
+spark_df = spark.createDataFrame(pandas_df)
+
+# Convert Spark DataFrame to Pandas DataFrame
+pandas_df = spark_df.toPandas()
 ```
 
-To run a specific test class:
+### Example with Spark DataFrames
 
-```bash
-python -m pytest tests/unit/test_tools.py::TestCreateSeeds
+```python
+from pyspark.sql import SparkSession
+from madmatcher_tools import create_features, featurize
+
+# Set up Spark
+spark = SparkSession.builder \
+    .master('local[*]') \
+    .appName('MadMatcher Tools') \
+    .getOrCreate()
+
+# Convert your data to Spark DataFrames
+spark_df_a = spark.createDataFrame(df_a)
+spark_df_b = spark.createDataFrame(df_b)
+spark_candidates = spark.createDataFrame(candidates)
+
+# Use the same MadMatcher Tools functions
+features = create_features(spark_df_a, spark_df_b, ['name', 'email'], ['name', 'email'])
+spark_fvs = featurize(features, spark_df_a, spark_df_b, spark_candidates)
+
+# The result is a Spark DataFrame with distributed processing
+print(f"Feature vectors count: {spark_fvs.count()}")
 ```
 
-To run a specific test method:
+### Running on a Spark Cluster
 
-```bash
-python -m pytest tests/unit/test_tools.py::TestCreateSeeds::test_create_seeds_gold_labeler
+For production deployments on a Spark cluster:
+
+```python
+from pyspark.sql import SparkSession
+
+# Connect to a Spark cluster
+spark = SparkSession.builder \
+    .master('spark://your-cluster-master:7077') \
+    .appName('MadMatcher Tools Production') \
+    .config('spark.executor.memory', '8g') \
+    .config('spark.driver.memory', '4g') \
+    .config('spark.sql.adaptive.enabled', 'true') \
+    .getOrCreate()
+
+# Your MadMatcher Tools code remains the same
+features = create_features(spark_df_a, spark_df_b, ['name', 'email'], ['name', 'email'])
+spark_fvs = featurize(features, spark_df_a, spark_df_b, spark_candidates)
 ```
 
-### Test Coverage
+For additional SparkSession configuration options (storage limits, memory settings, etc.), refer to the [official PySpark documentation](https://spark.apache.org/docs/latest/api/python/reference/pyspark.sql/api/pyspark.sql.SparkSession.html).
 
-To run tests with coverage reporting:
+## API Overview
 
-```bash
-python -m pytest tests/unit --cov=madmatcher_tools --cov-report=term
-```
+### Core Functions
 
-To generate a detailed coverage report:
+- **`create_features(A, B, a_cols, b_cols, sim_functions=None, tokenizers=None, null_threshold=0.5)`**: Generate feature objects for comparing records
+- **`featurize(features, A, B, candidates, output_col='features', fill_na=0.0)`**: Apply features to candidate pairs
+- **`down_sample(fvs, percent, search_id_column, score_column='score', bucket_size=1000)`**: Reduce dataset size by sampling
+- **`create_seeds(fvs, nseeds, labeler, score_column='score')`**: Generate labeled training examples
+- **`train_matcher(model_spec, labeled_data, feature_col='features', label_col='label')`**: Train a matching model
+- **`apply_matcher(model, df, feature_col, output_col)`**: Apply trained model for predictions
+- **`label_data(model_spec, mode, labeler_spec, fvs, seeds=None)`**: Generate labeled data using active learning
 
-```bash
-python -m pytest tests/unit --cov=madmatcher_tools --cov-report=term-missing
-```
+### Feature Types
 
-To save coverage report to file:
+- **Exact Match**: Binary exact string matching
+- **TF-IDF**: Term frequency-inverse document frequency similarity
+- **Jaccard**: Jaccard coefficient for set similarity
+- **Cosine**: Cosine similarity between vectors
+- **SIF**: Smooth Inverse Frequency embeddings
+- **Overlap Coefficient**: Normalized overlap between sets
+- **Relative Difference**: Numerical difference normalization
 
-```bash
-python -m pytest tests/unit --cov=madmatcher_tools --cov-report=term > tests/coverage.txt
-```
+### Model Support
 
-### Test Structure
+- **Scikit-learn Models**: LogisticRegression, RandomForest, XGBoost, etc.
+- **PySpark ML Models**: MLlib classifiers for large-scale processing
+- **Custom Models**: Implement the MLModel interface for custom algorithms
 
-The test suite is organized as follows:
+### Active Learning
 
-- **`tests/unit/`** - Unit tests for all modules
-  - `test_tools.py` - Tests for the main tools API
-  - `test_ml_model.py` - Tests for machine learning models
-  - `test_feature_base.py` - Unit tests for feature classes
-  - `test_features.py` - Integration tests for feature creation and featurization
-  - `test_utils.py` - Tests for utility functions
-  - `test_storage.py` - Tests for storage components
-  - `test_labelers.py` - Tests for labeling components
-  - `test_active_learning.py` - Tests for active learning
-  - `test_tokenizers.py` - Tests for tokenization
-  - `test_api_utils.py` - Tests for API utilities
+- **Batch Mode**: Process multiple examples at once
+- **Continuous Mode**: Interactive labeling with real-time model updates
+- **Entropy-based Selection**: Focus on most uncertain examples
 
-### Test Requirements
+## Examples
 
-Tests require:
+Check out the comprehensive Jupyter notebook in `examples/madmatcher_examples.ipynb` for detailed usage examples including:
 
-- Python 3.8+
-- pytest
-- pytest-cov
-- pandas
-- numpy
-- scikit-learn
-- pyspark (for Spark-related tests)
+### Table of Contents
 
-### Coverage Goals
+1. **Setup** - Installation and imports
+2. **Public API Overview** - Complete function reference
+3. **Tokenizers and Similarity Functions** - Text preprocessing and comparison methods
+4. **Feature Creation** - Building feature objects for record comparison
+5. **Featurization** - Converting records to feature vectors
+6. **Down Sampling** - Reducing dataset size for efficiency
+7. **Seed Creation** - Generating initial labeled examples
+8. **Training a Matcher** - Building machine learning models
+9. **Applying a Matcher** - Making predictions on new data
+10. **Active Learning Labeling** - Efficient data labeling strategies
+11. **Custom Abstract Classes** - Extending functionality with custom implementations
 
-The project maintains **81%+ test coverage** with all tests passing. Coverage reports are generated in the `tests/` directory.
+For in-depth technical documentation, see [`docs/MadMatcher Tools Documentation.md`](docs/MadMatcher%20Tools%20Documentation.md).
 
 ## Documentation
 
-For detailed documentation, visit our [Read the Docs page]().
+- **API Documentation**: Auto-generated from docstrings
+- **Examples**: Comprehensive Jupyter notebook with real examples in [`examples/madmatcher_examples.ipynb`](examples/madmatcher_examples.ipynb)
+- **Technical Documentation**: See [`docs/MadMatcher Tools Documentation.md`](docs/MadMatcher%20Tools%20Documentation.md)
 
 ## License
+
+This project is licensed under the -- License - see the LICENSE file for details.
+
+## Support
+
+For issues, questions, or feature requests, please:
+
+1. Check the documentation and examples
+2. Email us at entitymatchinginfo@gmail.com
