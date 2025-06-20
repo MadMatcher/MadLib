@@ -18,7 +18,9 @@
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="madmatcher_tools._internal.featurization.score" href="madmatcher_tools._internal.featurization.score.html" />
+    <link rel="prev" title="madmatcher_tools._internal.featurization.create_features" href="madmatcher_tools._internal.featurization.create_features.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -40,14 +42,26 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">madmatcher_tools._internal.featurization.featurize</a><ul>
-<li><a class="reference internal" href="#madmatcher_tools._internal.featurization.featurize"><code class="docutils literal notranslate"><span class="pre">featurize()</span></code></a></li>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../module.html">Module Index</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools.tools.html">madmatcher_tools.tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools._internal.tokenizer.tokenizer.Tokenizer.html">madmatcher_tools._internal.tokenizer.tokenizer.Tokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer.html">madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools._internal.feature.feature.Feature.html">madmatcher_tools._internal.feature.feature.Feature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html">madmatcher_tools._internal.ml_model.MLModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools._internal.labeler.Labeler.html">madmatcher_tools._internal.labeler.Labeler</a></li>
+<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools._internal.labeler.CustomLabeler.html">madmatcher_tools._internal.labeler.CustomLabeler</a></li>
+<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools._internal.featurization.create_features.html">madmatcher_tools._internal.featurization.create_features</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">madmatcher_tools._internal.featurization.featurize</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#madmatcher_tools._internal.featurization.featurize"><code class="docutils literal notranslate"><span class="pre">featurize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools._internal.featurization.score.html">madmatcher_tools._internal.featurization.score</a></li>
 </ul>
 </li>
 </ul>
-</div>
+
         </div>
       </div>
     </nav>
@@ -62,6 +76,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../module.html">Module Index</a></li>
       <li class="breadcrumb-item active">madmatcher_tools._internal.featurization.featurize</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/module_stubs/madmatcher_tools._internal.featurization.featurize.rst.txt" rel="nofollow"> View page source</a>
@@ -76,7 +91,7 @@
 <h1>madmatcher_tools._internal.featurization.featurize<a class="headerlink" href="#madmatcher-tools-internal-featurization-featurize" title="Link to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="madmatcher_tools._internal.featurization.featurize">
-<span class="sig-prename descclassname"><span class="pre">madmatcher_tools._internal.featurization.</span></span><span class="sig-name descname"><span class="pre">featurize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">candidates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'features'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_na</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/madmatcher_tools/_internal/featurization.html#featurize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools._internal.featurization.featurize" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">madmatcher_tools._internal.featurization.</span></span><span class="sig-name descname"><span class="pre">featurize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">candidates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_col</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'features'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_na</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/madmatcher_tools/_internal/featurization.html#featurize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools._internal.featurization.featurize" title="Link to this definition"></a></dt>
 <dd><p>applies the featurizer to the record pairs in candidates</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -86,7 +101,7 @@
 <li><p><strong>B</strong> (<em>pandas DataFrame</em>) – the records of table B</p></li>
 <li><p><strong>candidates</strong> (<em>pandas DataFrame</em>) – id pairs of A and B that are potential matches</p></li>
 <li><p><strong>output_col</strong> (<em>str</em>) – the name of the column for the resulting feature vectors, default <cite>fvs</cite></p></li>
-<li><p><strong>fill_na</strong> – value to fill in for missing data, default None</p></li>
+<li><p><strong>fill_na</strong> (<em>float</em>) – value to fill in for missing data, default 0.0</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -104,7 +119,10 @@
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="madmatcher_tools._internal.featurization.create_features.html" class="btn btn-neutral float-left" title="madmatcher_tools._internal.featurization.create_features" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="madmatcher_tools._internal.featurization.score.html" class="btn btn-neutral float-right" title="madmatcher_tools._internal.featurization.score" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 
