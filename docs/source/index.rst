@@ -1,21 +1,17 @@
-.. MadMatcher Tools documentation master file, created by
-   sphinx-quickstart on Mon Jun 16 15:24:13 2025.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+MadMatcher Tools Documentation
+==============================
 
-MadMatcher Tools documentation
-======================================
+Welcome to the MadMatcher Tools documentation.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   usage
-   module_index
+   module
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
+* :ref:`search` 

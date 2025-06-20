@@ -39,8 +39,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"></div>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../module.html">Module Index</a></li>
+</ul>
+
         </div>
       </div>
     </nav>
@@ -81,6 +84,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span> <span class="k">as</span> <span class="n">SparkDataFrame</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseEstimator</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xxhash</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._internal.ml_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">MLModel</span><span class="p">,</span> <span class="n">SKLearnModel</span><span class="p">,</span> <span class="n">SparkMLModel</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._internal.labeler</span><span class="w"> </span><span class="kn">import</span> <span class="n">Labeler</span><span class="p">,</span> <span class="n">CLILabeler</span><span class="p">,</span> <span class="n">GoldLabeler</span>
@@ -163,11 +167,11 @@
         <span class="n">fvs</span> <span class="o">=</span> <span class="n">fvs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;_hash_bucket&quot;</span><span class="p">,</span> <span class="s2">&quot;_rank_desc&quot;</span><span class="p">,</span> <span class="s2">&quot;_bucket_size&quot;</span><span class="p">,</span> <span class="s2">&quot;_percent_rank&quot;</span><span class="p">])</span>
 
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">bucket_size</span> <span class="o">&lt;</span> <span class="mi">1000</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;bucket_size must be &gt;= 1000&#39;</span><span class="p">)</span>
-
         <span class="k">if</span> <span class="n">percent</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">percent</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;percent must be in the range (0.0, 1.0]&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">bucket_size</span> <span class="o">&lt;</span> <span class="mi">1000</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;bucket_size must be &gt;= 1000&#39;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">score_column</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">score_column</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="n">score_column</span><span class="p">)</span>
@@ -218,26 +222,39 @@
         <span class="n">labeler</span> <span class="o">=</span> <span class="n">_create_labeler</span><span class="p">(</span><span class="n">labeler</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">nseeds</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;no seeds would be created&quot;</span><span class="p">)</span>
+    <span class="c1"># gold labeler overrides the score column with 1.0 for gold pairs and 0.0 for non-gold pairs</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">labeler</span><span class="p">,</span> <span class="n">GoldLabeler</span><span class="p">):</span>
+        <span class="n">gold_pairs</span> <span class="o">=</span> <span class="n">labeler</span><span class="o">.</span><span class="n">_gold</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">score_column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fvs</span><span class="o">.</span><span class="n">columns</span> <span class="ow">or</span> <span class="n">fvs</span><span class="p">[</span><span class="n">score_column</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()):</span>
+            <span class="n">is_gold_mask</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">in</span> <span class="n">gold_pairs</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">fvs</span><span class="p">[[</span><span class="s1">&#39;id1&#39;</span><span class="p">,</span> <span class="s1">&#39;id2&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()]</span>
+            <span class="n">fvs</span><span class="p">[</span><span class="n">score_column</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">is_gold_mask</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">)</span> <span class="ow">and</span> <span class="n">score_column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">fvs</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">fields</span><span class="p">]:</span>
+            <span class="n">fvs</span> <span class="o">=</span> <span class="n">fvs</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="n">score_column</span><span class="p">,</span> 
+                <span class="n">F</span><span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">struct</span><span class="p">(</span><span class="s1">&#39;id1&#39;</span><span class="p">,</span> <span class="s1">&#39;id2&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="n">F</span><span class="o">.</span><span class="n">struct</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">F</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">gold_pairs</span><span class="p">]),</span> <span class="mf">1.0</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">otherwise</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
+
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
         <span class="n">fvs</span> <span class="o">=</span> <span class="n">fvs</span><span class="p">[</span><span class="n">fvs</span><span class="p">[</span><span class="n">score_column</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()]</span>
+        <span class="n">fvs_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">fvs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">nseeds</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">fvs</span><span class="p">):</span>
-            <span class="k">return</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;number of seeds would exceed the size of the fvs DataFrame&quot;</span><span class="p">)</span>
-        <span class="n">maybe_pos</span> <span class="o">=</span> <span class="n">fvs</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="n">nseeds</span><span class="p">,</span> <span class="n">score_column</span><span class="p">)</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()</span>
-        <span class="n">maybe_neg</span> <span class="o">=</span> <span class="n">fvs</span><span class="o">.</span><span class="n">nsmallest</span><span class="p">(</span><span class="n">nseeds</span><span class="p">,</span> <span class="n">score_column</span><span class="p">)</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;number of seeds would exceed the size of the fvs DataFrame&quot;</span><span class="p">)</span>
+        <span class="n">maybe_pos</span> <span class="o">=</span> <span class="n">fvs</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="n">fvs_length</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">score_column</span><span class="p">)</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()</span>
+        <span class="n">maybe_neg</span> <span class="o">=</span> <span class="n">fvs</span><span class="o">.</span><span class="n">nsmallest</span><span class="p">(</span><span class="n">fvs_length</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">score_column</span><span class="p">)</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">nseeds</span> <span class="o">&gt;</span> <span class="n">fvs</span><span class="o">.</span><span class="n">count</span><span class="p">():</span>
-            <span class="k">return</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;number of seeds would exceed the size of the fvs DataFrame&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">score_column</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">score_column</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="n">score_column</span><span class="p">)</span>
         <span class="n">fvs</span> <span class="o">=</span> <span class="n">fvs</span><span class="o">.</span><span class="n">filter</span><span class="p">((</span><span class="o">~</span><span class="n">F</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">score_column</span><span class="p">))</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">score_column</span><span class="o">.</span><span class="n">isNotNull</span><span class="p">()))</span>
+        <span class="n">fvs_length</span> <span class="o">=</span> <span class="n">fvs</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">nseeds</span> <span class="o">&gt;</span> <span class="n">fvs_length</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;number of seeds would exceed the size of the fvs DataFrame&quot;</span><span class="p">)</span>
         <span class="c1"># lowest scoring vectors</span>
         <span class="n">maybe_neg</span> <span class="o">=</span> <span class="n">fvs</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">score_column</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>\
-                        <span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">nseeds</span><span class="p">)</span>\
+                        <span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">fvs_length</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span>\
                         <span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>\
                         <span class="o">.</span><span class="n">iterrows</span><span class="p">()</span>
         <span class="c1"># highest scoring vectors</span>
         <span class="n">maybe_pos</span> <span class="o">=</span> <span class="n">fvs</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">score_column</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>\
-                        <span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">nseeds</span><span class="p">)</span>\
+                        <span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">fvs_length</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span>\
                         <span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>\
                         <span class="o">.</span><span class="n">iterrows</span><span class="p">()</span>
 
@@ -245,7 +262,7 @@
     <span class="n">neg_count</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">seeds</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">while</span> <span class="n">pos_count</span> <span class="o">+</span> <span class="n">neg_count</span> <span class="o">&lt;</span> <span class="n">nseeds</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nseeds</span> <span class="o">*</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="k">while</span> <span class="n">pos_count</span> <span class="o">+</span> <span class="n">neg_count</span> <span class="o">&lt;</span> <span class="n">nseeds</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">fvs_length</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">ex</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">maybe_pos</span><span class="p">)</span> <span class="k">if</span> <span class="n">pos_count</span> <span class="o">&lt;=</span> <span class="n">neg_count</span> <span class="k">else</span> <span class="nb">next</span><span class="p">(</span><span class="n">maybe_neg</span><span class="p">)</span>
             <span class="n">label</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">labeler</span><span class="p">(</span><span class="n">ex</span><span class="p">[</span><span class="s1">&#39;id1&#39;</span><span class="p">],</span> <span class="n">ex</span><span class="p">[</span><span class="s1">&#39;id2&#39;</span><span class="p">]))</span>
@@ -392,7 +409,8 @@
         <span class="n">learner</span> <span class="o">=</span> <span class="n">EntropyActiveLearner</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">labeler</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;continuous&quot;</span><span class="p">:</span>
         <span class="n">learner</span> <span class="o">=</span> <span class="n">ContinuousEntropyActiveLearner</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">labeler</span><span class="p">)</span>
-
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mode must be either </span><span class="se">\&#39;</span><span class="s2">batch</span><span class="se">\&#39;</span><span class="s2"> or </span><span class="se">\&#39;</span><span class="s2">continuous</span><span class="se">\&#39;</span><span class="s2">, not </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">labeled_data</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">seeds</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">labeled_data</span></div>
 
