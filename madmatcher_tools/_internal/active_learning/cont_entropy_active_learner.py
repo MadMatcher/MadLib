@@ -173,7 +173,7 @@ class ContinuousEntropyActiveLearner:
             with persisted(fvs) as fvs:
                 n_fvs = fvs.count()
                 
-                if n_fvs <= len(seeds) + self._max_labeled:  
+                if n_fvs <= len(seeds) + self._queue_size:  
                     log.warning(f'Insufficient examples for active learning: {n_fvs} total, {len(seeds)} seeds. No unlabeled examples to select from. Labeling all examples.')
                     self._label_everything(fvs)
                     # Signal to main thread that we're done

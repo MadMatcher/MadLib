@@ -36,6 +36,8 @@ class Labeler(ABC):
 class GoldLabeler(Labeler):
 
     def __init__(self, gold):
+        if isinstance(gold, SparkDataFrame):
+            gold = gold.toPandas()
         self._gold = set(zip(gold['id1'], gold['id2']))
 
     def __call__(self, id1, id2):
@@ -45,6 +47,8 @@ class GoldLabeler(Labeler):
 class DelayedGoldLabeler(Labeler):
 
     def __init__(self, gold, delay_secs):
+        if isinstance(gold, SparkDataFrame):
+            gold = gold.toPandas()
         self._gold = set(zip(gold['id1'], gold['id2']))
         # the number of seconds that the labeler waits until it outputs the label
         # this is used to simulate human labeling

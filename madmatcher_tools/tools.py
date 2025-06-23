@@ -283,7 +283,8 @@ def label_data(
     mode: Literal["batch", "continuous"],
     labeler_spec: Union[Dict, Labeler],
     fvs: Union[pd.DataFrame, SparkDataFrame],
-    seeds: Optional[pd.DataFrame] = None
+    seeds: Optional[pd.DataFrame] = None,
+    **learner_kwargs
 ) -> pd.DataFrame:
     """Generate labeled data using active learning.
     
@@ -303,6 +304,8 @@ def label_data(
         The data that needs to be labeled
     seeds : pandas DataFrame, optional
         Initial labeled examples to start with
+    **learner_kwargs :
+        Additional keyword arguments to pass to the active learner constructor. For batch mode, see EntropyActiveLearner (e.g. batch_size, max_iter). For continuous mode, see ContinuousEntropyActiveLearner (e.g. queue_size, max_labeled, on_demand_stop).
         
     Returns
     -------
@@ -321,10 +324,10 @@ def label_data(
         seeds = create_seeds(fvs=fvs, nseeds=min(10, fvs.count()), labeler=labeler, score_column='score')
     
     if mode == "batch":
-        learner = EntropyActiveLearner(model, labeler)
+        learner = EntropyActiveLearner(model, labeler, **learner_kwargs)
     elif mode == "continuous":
-        learner = ContinuousEntropyActiveLearner(model, labeler)
+        learner = ContinuousEntropyActiveLearner(model, labeler, **learner_kwargs)
     else:
-        raise ValueError(f"mode must be either \'batch\' or \'continuous\', not {mode}")
+        raise ValueError(f"mode must be either 'batch' or 'continuous', not {mode}")
     labeled_data = learner.train(fvs, seeds)
     return labeled_data

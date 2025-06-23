@@ -1,13 +1,13 @@
-from typing import List, Optional, Callable, Any
+from typing import List, Optional, Callable, Any, Union
 import pandas as pd
 import numpy as np
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from pyspark.sql import SparkSession
+from pyspark.sql import DataFrame as SparkDataFrame
 import pickle
 from .storage import MemmapDataFrame
 from threading import Lock
-from joblib import Parallel, delayed
 from .utils import repartition_df
 from .tokenizer import (
     AlphaNumericTokenizer,
@@ -87,9 +87,42 @@ def get_extra_tokenizers():
     return EXTRA_TOKENIZERS
 
 
+def _tokenize_and_count(df_itr, token_col_map):
+
+    for df in df_itr:
+        yield pd.DataFrame({
+                col : df[t[1]].apply(t[0].tokenize) for col, t in token_col_map.items()
+                }).applymap(lambda x : len(x) if x is not None else None)
+
+
+def _drop_nulls(df, threshold):
+    numeric_cols = {f.name for f in df.schema
+                    if isinstance(f.dataType, (T.DoubleType, T.FloatType))}
+    checks = [
+        (
+            (df[c].isNull() | F.isnan(df[c]))
+            if c in numeric_cols
+            else df[c].isNull()
+        )
+        .cast('int').alias(c)
+        for c in df.columns
+    ]
+
+    null_percent = (
+        df
+        .select(*checks)
+        .agg(*[F.mean(c).alias(c) for c in df.columns])
+        .toPandas()
+        .iloc[0]
+    )
+
+    cols = null_percent.index[null_percent.lt(threshold)]
+    return df.select(*cols)
+
+
 def create_features(
-    A: pd.DataFrame,
-    B: pd.DataFrame,
+    A: Union[pd.DataFrame, SparkDataFrame],
+    B: Union[pd.DataFrame, SparkDataFrame],
     a_cols: List[str],
     b_cols: List[str],
     sim_functions: Optional[List[Callable[..., Any]]] = None,
@@ -102,9 +135,9 @@ def create_features(
     Parameters
     ----------
 
-    A : pandas DataFrame
+    A : Union[pd.DataFrame, SparkDataFrame]
         the records of table A
-    B : pandas DataFrame
+    B : Union[pd.DataFrame, SparkDataFrame]
         the records of table B
     a_cols : list
         The names of the columns for DataFrame A that should have features generated
@@ -120,43 +153,69 @@ def create_features(
 
     Returns
     -------
-    pandas DataFrame
-        a DataFrame containing initialized feature objects for columns in A, B
+    List[Callable]
+        a list containing initialized feature objects for columns in A, B
     """
     if sim_functions is None:
         sim_functions = SIM_FUNCTIONS
     if tokenizers is None:
         tokenizers = TOKENIZERS
+    if isinstance(A, SparkDataFrame):
+        # only keep a_cols and b_cols (if B is not None)
+        df = A.select(a_cols)
+        if B is not None:
+            df = df.unionAll(B.select(b_cols))
+        
+        df = repartition_df(df, 5000, [])
+        df = _drop_nulls(df, null_threshold)
+        cols_to_keep = df.columns
 
-    # only keep a_cols and b_cols (if B is not None)
-    df = A[a_cols]
-    if B is not None:
-        df = pd.concat([df, B[b_cols]])
+        numeric_cols = [c.name for c in df.schema if c.dataType in {T.IntegerType(), T.LongType(), T.FloatType(), T.DoubleType()}]
+        # cast everything to a string
+        df = df.select(*[F.col(c).cast('string') for c in df.columns])
 
-    # drop null columns
-    null_frac = df.isnull().mean()
-    cols_to_keep = null_frac[null_frac < null_threshold].index.tolist()
-    df = df[cols_to_keep]
+        token_cols = {}
+        for t in tokenizers:
+            for c in df.columns:
+                cname = t.out_col_name(c)
+                token_cols[cname] = (t, c)
 
-    # find numeric columns, and then cast everything to a string
-    numeric_cols = df.select_dtypes(include=[np.integer, np.floating]).columns.tolist()
-    df = df.astype(str)
+        schema = T.StructType([T.StructField(c, T.IntegerType()) for c in token_cols])
+        df = df.mapInPandas(lambda x : _tokenize_and_count(x, token_cols), schema=schema)
+        #record_count = df.count()
 
-    # create token columns map
-    token_cols = {}
-    for t in tokenizers:
-        for c in df.columns:
-            cname = t.out_col_name(c)
-            token_cols[cname] = (t, c)
+        avg_counts = df.agg(*[F.mean(c).alias(c) for c in token_cols])\
+                        .toPandas().iloc[0]
+    elif isinstance(A, pd.DataFrame):
+        # only keep a_cols and b_cols (if B is not None)
+        df = A[a_cols]
+        if B is not None:
+            df = pd.concat([df, B[b_cols]])
 
-    # get the average number of tokens for each tokenizer, column
-    results = {}
-    for new_col, (tokenizer, orig_col) in token_cols.items():
-        tokens = df[orig_col].apply(lambda x: tokenizer.tokenize(x) if pd.notnull(x) else None)
-        counts = tokens.apply(lambda x: len(x) if x is not None else np.nan)
-        results[new_col] = counts
-    counts_df = pd.DataFrame(results)
-    avg_counts = counts_df.mean()
+        # drop null columns
+        null_frac = df.isnull().mean()
+        cols_to_keep = null_frac[null_frac < null_threshold].index.tolist()
+        df = df[cols_to_keep]
+
+        # find numeric columns, and then cast everything to a string
+        numeric_cols = df.select_dtypes(include=[np.integer, np.floating]).columns.tolist()
+        df = df.astype(str)
+
+        # create token columns map
+        token_cols = {}
+        for t in tokenizers:
+            for c in df.columns:
+                cname = t.out_col_name(c)
+                token_cols[cname] = (t, c)
+
+        # get the average number of tokens for each tokenizer, column
+        results = {}
+        for new_col, (tokenizer, orig_col) in token_cols.items():
+            tokens = df[orig_col].apply(lambda x: tokenizer.tokenize(x) if pd.notnull(x) else None)
+            counts = tokens.apply(lambda x: len(x) if x is not None else np.nan)
+            results[new_col] = counts
+        counts_df = pd.DataFrame(results)
+        avg_counts = counts_df.mean()
 
     # add features to features list
     features = []
@@ -196,11 +255,11 @@ def featurize(
     ----------
     features : List[Callable]
         a DataFrame containing initialized feature objects for columns in A, B
-    A : pandas DataFrame
+    A : Union[pd.DataFrame, SparkDataFrame]
         the records of table A
-    B : pandas DataFrame
+    B : Union[pd.DataFrame, SparkDataFrame]
         the records of table B
-    candidates : pandas DataFrame
+    candidates : Union[pd.DataFrame, SparkDataFrame]
         id pairs of A and B that are potential matches
     output_col : str
         the name of the column for the resulting feature vectors, default `fvs`
@@ -231,15 +290,19 @@ def _build(A, B, features):
     if B is not None:
         B = _prepreprocess_table(B).persist()
     cache = BuildCache()
-    pool = Parallel(n_jobs=-1, backend='threading')
-    pool(delayed(f.build)(A, B, cache) for f in features)
+    
+    # Use sequential processing to avoid multiprocessing deadlocks with Spark
+    # Spark already provides its own multiprocessing, so we don't need joblib's
+    for f in features:
+        f.build(A, B, cache)
     cache.clear()
+    
     if B is not None:
-        delayed_build = delayed(_create_sqlite_df)
-        table_a_preproc, table_b_preproc = pool([delayed_build(A, True, B is None, features), delayed_build(B, False, True, features)])
+        table_a_preproc = _create_sqlite_df(A, True, B is None, features)
+        table_b_preproc = _create_sqlite_df(B, False, True, features)
         table_b_preproc.to_spark()
     else:
-        table_a_preproc = _create_sqlite_df(A, True, B is None)
+        table_a_preproc = _create_sqlite_df(A, True, B is None, features)
         table_b_preproc = table_a_preproc
 
     table_a_preproc.to_spark()
@@ -278,7 +341,8 @@ def _create_sqlite_df(df, pp_for_a, pp_for_b, features):
 def _get_processing_columns(df, pp_for_a, pp_for_b, features):
     data = df.limit(5).toPandas().set_index('_id')
     data = _preprocess_data(data, pp_for_a, pp_for_b, features)
-    return data.columns
+    # Exclude _id from processing columns since it's the index, not a feature
+    return [col for col in data.columns if col != '_id']
 
 
 def _preprocess_data(data, pp_for_a, pp_for_b, features):
