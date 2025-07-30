@@ -6,7 +6,7 @@ import numpy as np
 import time
 from sklearn.linear_model import LogisticRegression
 
-from madmatcher_tools.tools import down_sample, create_seeds, train_matcher, apply_matcher
+from MadLib.tools import down_sample, create_seeds, train_matcher, apply_matcher
 
 
 @pytest.mark.performance

@@ -1,8 +1,8 @@
 <!-- MadMatcher Documentation -->
 
-# MadMatcher Tools Technical Documentation
+# MadLib Technical Documentation
 
-This document provides an in-depth technical overview of MadMatcher Tools' functionality, internal workings, and advanced use cases. For quick start guide and basic usage, refer to the README.md file [insert link here]. For complete API reference, see the API documentation. [insert link here]
+This document provides an in-depth technical overview of MadLib' functionality, internal workings, and advanced use cases. For quick start guide and basic usage, refer to the README.md file [insert link here]. For complete API reference, see the API documentation. [insert link here]
 
 ## Understanding Entity Matching
 
@@ -559,7 +559,7 @@ _See [Built-in Labeler Classes](#built-in-labeler-classes) for available options
 **Example Process:**
 
 ```python
-from madmatcher_tools import GoldLabeler
+from MadLib import GoldLabeler
 
 # Suppose you have a DataFrame of known matches:
 gold_df = pd.DataFrame({
@@ -784,7 +784,7 @@ def apply_matcher(
 `df`: Your unlabeled data to predict on
 
 - What it is: A pandas DataFrame or Spark DataFrame containing record pairs with computed feature vectors
-- Data source: If you are using the MadMatcher Tools, it will be your output from `featurize()`
+- Data source: If you are using the MadLib, it will be your output from `featurize()`
 - Required content: Must contain a column with feature vectors (specified by feature_col parameter)
 - Schema requirement: Must have the same feature vector structure as the training data
 - Purpose: These are the new record pairs you want to classify as matches or non-matches
@@ -875,7 +875,7 @@ _See [Built-in Labeler Classes](#built-in-labeler-classes) for available options
 `fvs`: Pool of unlabeled feature vectors
 
 - What it is: A pandas DataFrame or Spark DataFrame containing feature vectors for record pairs that need labels
-- Data source: If you are using the MadMatcher Tools, it will be your output from `featurize()`
+- Data source: If you are using the MadLib, it will be your output from `featurize()`
 - Content requirements: Must contain feature vectors and any metadata needed for labeling decisions
 - Purpose: Provides the candidate pool from which active learning will select examples for labeling
 
@@ -925,7 +925,7 @@ MadMatcher provides several built-in labeler classes for different labeling work
   - Example:
 
     ```python
-    from madmatcher_tools import CustomLabeler
+    from MadLib import CustomLabeler
 
     class MyCustomLabeler(CustomLabeler):
         def label_pair(self, row1, row2):

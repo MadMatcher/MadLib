@@ -54,7 +54,7 @@ python tests/test_runner.py all --verbose
 
 ```bash
 # Run all tests with coverage
-pytest --cov=madmatcher_tools --cov-report=html --cov-fail-under=80
+pytest --cov=MadLib --cov-report=html --cov-fail-under=80
 
 # Run specific test types
 pytest tests/unit/ -m unit
@@ -145,14 +145,14 @@ Generate coverage reports:
 
 ```bash
 # Terminal report
-pytest --cov=madmatcher_tools --cov-report=term-missing
+pytest --cov=MadLib --cov-report=term-missing
 
 # HTML report (opens in browser)
-pytest --cov=madmatcher_tools --cov-report=html
+pytest --cov=MadLib --cov-report=html
 open htmlcov/index.html
 
 # XML report (for CI/CD)
-pytest --cov=madmatcher_tools --cov-report=xml
+pytest --cov=MadLib --cov-report=xml
 ```
 
 ## 🏷️ Test Markers
@@ -197,7 +197,7 @@ pytest -m "unit or integration"
 
 ```python
 import pytest
-from madmatcher_tools import your_module
+from MadLib import your_module
 
 @pytest.mark.unit
 class TestYourModule:
@@ -218,7 +218,7 @@ class TestYourModule:
 
 ```python
 import pytest
-from madmatcher_tools.tools import *
+from MadLib.tools import *
 
 @pytest.mark.integration
 class TestYourWorkflow:

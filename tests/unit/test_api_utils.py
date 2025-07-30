@@ -12,12 +12,12 @@ from unittest.mock import MagicMock, Mock, patch
 from sklearn.linear_model import LogisticRegression
 from sklearn.exceptions import NotFittedError
 
-from madmatcher_tools._internal.api_utils import (
+from MadLib._internal.api_utils import (
     _create_training_model, _create_matching_model, _create_labeler,
     AVAILABLE_LABELERS
 )
-from madmatcher_tools._internal.ml_model import MLModel, SKLearnModel, SparkMLModel
-from madmatcher_tools._internal.labeler import Labeler, CLILabeler, GoldLabeler
+from MadLib._internal.ml_model import MLModel, SKLearnModel, SparkMLModel
+from MadLib._internal.labeler import Labeler, CLILabeler, GoldLabeler
 
 
 class MockMLModel(MLModel):
@@ -153,7 +153,7 @@ class TestCreateTrainingModel:
         
         assert isinstance(result, SKLearnModel)
 
-    @patch('madmatcher_tools._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
+    @patch('MadLib._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
     def test_create_training_model_with_spark_dataframe(self, mock_convert, mock_labeled_data):
         mock_spark_df = MagicMock()
         mock_spark_df.toPandas.return_value = mock_labeled_data
@@ -161,7 +161,7 @@ class TestCreateTrainingModel:
         mock_spark_df.columns = mock_labeled_data.columns.tolist()
         mock_spark_df.__getitem__.side_effect = lambda key: mock_labeled_data[key]
         mock_spark_df.__iter__.side_effect = lambda: iter(mock_labeled_data)
-        with patch('madmatcher_tools._internal.ml_model.convert_to_array', return_value=mock_labeled_data):
+        with patch('MadLib._internal.ml_model.convert_to_array', return_value=mock_labeled_data):
             model_spec = {
                 'model_type': 'sklearn',
                 'model': LogisticRegression,
@@ -307,13 +307,13 @@ class TestCreateMatchingModel:
         """Test creating matching model with Spark Transformer."""
         mock_transformer = MagicMock()
         
-        with patch('madmatcher_tools._internal.api_utils.check_is_fitted') as mock_check_fitted:
+        with patch('MadLib._internal.api_utils.check_is_fitted') as mock_check_fitted:
             mock_check_fitted.side_effect = NotFittedError("Model not fitted")
             
             with pytest.raises(RuntimeError, match="Model must be trained to predict"):
                 _create_matching_model(mock_transformer)
 
-    @patch('madmatcher_tools._internal.api_utils.check_is_fitted')
+    @patch('MadLib._internal.api_utils.check_is_fitted')
     def test_create_matching_model_with_fitted_sklearn(self, mock_check_fitted):
         """Test creating matching model with fitted sklearn model."""
         # Create a mock sklearn model with the required attributes
@@ -331,7 +331,7 @@ class TestCreateMatchingModel:
         # Check that the model was created successfully
         assert result._model is not None
 
-    @patch('madmatcher_tools._internal.api_utils.check_is_fitted')
+    @patch('MadLib._internal.api_utils.check_is_fitted')
     def test_create_matching_model_with_unfitted_sklearn(self, mock_check_fitted):
         """Test creating matching model with unfitted sklearn model."""
         # Create a mock sklearn model with the required attributes
@@ -345,7 +345,7 @@ class TestCreateMatchingModel:
         with pytest.raises(RuntimeError, match="Model must be trained to predict"):
             _create_matching_model(mock_sklearn_model)
 
-    @patch('madmatcher_tools._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
+    @patch('MadLib._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
     def test_create_matching_model_with_spark_dataframe(self, mock_convert, sample_feature_vectors, mock_labeled_data):
         mock_spark_df = MagicMock()
         mock_spark_df.toPandas.return_value = sample_feature_vectors
@@ -353,7 +353,7 @@ class TestCreateMatchingModel:
         mock_spark_df.columns = sample_feature_vectors.columns.tolist()
         mock_spark_df.__getitem__.side_effect = lambda key: sample_feature_vectors[key]
         mock_spark_df.__iter__.side_effect = lambda: iter(sample_feature_vectors)
-        with patch('madmatcher_tools._internal.ml_model.convert_to_array', return_value=sample_feature_vectors):
+        with patch('MadLib._internal.ml_model.convert_to_array', return_value=sample_feature_vectors):
             model_spec = {
                 'model_type': 'sklearn',
                 'model': LogisticRegression,
@@ -368,7 +368,7 @@ class TestCreateMatchingModel:
                 assert isinstance(result, pd.DataFrame)
                 assert 'prediction' in result.columns
 
-    @patch('madmatcher_tools._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
+    @patch('MadLib._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
     def test_create_matching_model_with_execution_spark(self, mock_convert, sample_feature_vectors, mock_labeled_data):
         """Test create_matching_model with execution='spark' option."""
         model_spec = {

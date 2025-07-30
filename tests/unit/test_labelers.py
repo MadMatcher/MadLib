@@ -9,7 +9,7 @@ from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 from pyspark.sql.functions import col
 import time
 
-from madmatcher_tools._internal.labeler import (
+from MadLib._internal.labeler import (
     Labeler, GoldLabeler, DelayedGoldLabeler, CLILabeler, CustomLabeler
 )
 

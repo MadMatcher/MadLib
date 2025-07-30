@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from unittest.mock import MagicMock, patch
 
-from madmatcher_tools._internal.feature.feature import (
+from MadLib._internal.feature.feature import (
     Feature, ExactMatchFeature, RelDiffFeature, EditDistanceFeature,
     NeedlemanWunschFeature, SmithWatermanFeature
 )

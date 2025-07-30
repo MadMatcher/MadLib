@@ -8,7 +8,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType
 from pyspark import StorageLevel
 
-from madmatcher_tools._internal.utils import (
+from MadLib._internal.utils import (
     type_check, type_check_iterable, is_null, persisted, is_persisted,
     get_logger, PerfectHashFunction, SparseVec
 )
@@ -408,7 +408,7 @@ class TestUtilsIntegration:
 
     def test_repartition_df_basic(self):
         """Test repartition_df function."""
-        from madmatcher_tools._internal.utils import repartition_df
+        from MadLib._internal.utils import repartition_df
         # Mock Spark DataFrame
         mock_df = MagicMock()
         mock_df.count.return_value = 1000

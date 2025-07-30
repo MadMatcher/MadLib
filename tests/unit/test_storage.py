@@ -15,7 +15,7 @@ from unittest.mock import patch, MagicMock
 import pickle
 import sqlite3
 
-from madmatcher_tools._internal.storage import (
+from MadLib._internal.storage import (
     MemmapArray, MemmapDataFrame, SqliteDataFrame, SqliteDict,
     DistributableHashMap, LongIntHashMap, spark_to_pandas_stream
 )
@@ -54,8 +54,8 @@ class TestMemmapArray:
         assert mmap_arr._mmap_arr is not None
         np.testing.assert_array_equal(mmap_arr.values, arr)
 
-    @patch('madmatcher_tools._internal.storage.SparkFiles.get')
-    @patch('madmatcher_tools._internal.storage.os.path.exists')
+    @patch('MadLib._internal.storage.SparkFiles.get')
+    @patch('MadLib._internal.storage.os.path.exists')
     def test_memmap_array_init_spark(self, mock_exists, mock_get):
         """Test MemmapArray init on Spark."""
         arr = np.array([1, 2, 3])
@@ -67,8 +67,8 @@ class TestMemmapArray:
         mmap_arr.init()
         assert mmap_arr._mmap_arr is not None
 
-    @patch('madmatcher_tools._internal.storage.SparkFiles.get')
-    @patch('madmatcher_tools._internal.storage.os.path.exists')
+    @patch('MadLib._internal.storage.SparkFiles.get')
+    @patch('MadLib._internal.storage.os.path.exists')
     def test_memmap_array_init_spark_file_not_found(self, mock_exists, mock_get):
         """Test MemmapArray init when Spark file not found."""
         arr = np.array([1, 2, 3])
@@ -80,7 +80,7 @@ class TestMemmapArray:
         with pytest.raises(RuntimeError, match="cannot find database file"):
             mmap_arr.init()
 
-    @patch('madmatcher_tools._internal.storage.SparkContext.getOrCreate')
+    @patch('MadLib._internal.storage.SparkContext.getOrCreate')
     def test_memmap_array_to_spark(self, mock_spark_context):
         """Test MemmapArray to_spark method."""
         arr = np.array([1, 2, 3])
@@ -136,9 +136,9 @@ class TestMemmapDataFrame:
         with tempfile.NamedTemporaryFile() as tmp_file:
             mmap_df.write_chunk(tmp_file.fileno(), 2, b"test_data")
 
-    @patch('madmatcher_tools._internal.storage.spark_to_pandas_stream')
-    @patch('madmatcher_tools._internal.storage.F')
-    @patch('madmatcher_tools._internal.storage.SparkContext.getOrCreate')
+    @patch('MadLib._internal.storage.spark_to_pandas_stream')
+    @patch('MadLib._internal.storage.F')
+    @patch('MadLib._internal.storage.SparkContext.getOrCreate')
     def test_memmap_dataframe_from_spark_df(self, mock_spark_context, mock_f, mock_stream):
         """Test from_spark_df class method."""
         # Mock Spark context
@@ -178,7 +178,7 @@ class TestMemmapDataFrame:
             mmap_df._id_to_offset_map.init.assert_called_once()
             mmap_df._offset_arr.init.assert_called_once()
 
-    @patch('madmatcher_tools._internal.storage.SparkContext.getOrCreate')
+    @patch('MadLib._internal.storage.SparkContext.getOrCreate')
     def test_memmap_dataframe_to_spark(self, mock_spark_context):
         """Test MemmapDataFrame to_spark method."""
         mmap_df = MemmapDataFrame()
@@ -257,7 +257,7 @@ class TestSqliteDataFrame:
         assert sqlite_df._columns is None
         assert sqlite_df._local_tmp_file.exists()
 
-    @patch('madmatcher_tools._internal.storage.sqlite3.connect')
+    @patch('MadLib._internal.storage.sqlite3.connect')
     def test_sqlite_dataframe_init_db(self, mock_connect):
         """Test _init_db method."""
         sqlite_df = SqliteDataFrame()
@@ -270,7 +270,7 @@ class TestSqliteDataFrame:
         mock_connect.assert_called_once()
         mock_conn.execute.assert_called()
 
-    @patch('madmatcher_tools._internal.storage.sqlite3.connect')
+    @patch('MadLib._internal.storage.sqlite3.connect')
     def test_sqlite_dataframe_get_conn(self, mock_connect):
         """Test _get_conn method."""
         sqlite_df = SqliteDataFrame()
@@ -283,13 +283,13 @@ class TestSqliteDataFrame:
         # The actual connection string format may differ from expected
         mock_connect.assert_called_once()
 
-    @patch('madmatcher_tools._internal.storage.sqlite3.connect')
+    @patch('MadLib._internal.storage.sqlite3.connect')
     def test_sqlite_dataframe_to_spark(self, mock_connect):
         """Test to_spark method."""
         sqlite_df = SqliteDataFrame()
         mock_context = MagicMock()
         
-        with patch('madmatcher_tools._internal.storage.SparkContext.getOrCreate', return_value=mock_context):
+        with patch('MadLib._internal.storage.SparkContext.getOrCreate', return_value=mock_context):
             sqlite_df.to_spark()
             
             assert sqlite_df._on_spark is True
@@ -308,7 +308,7 @@ class TestSqliteDict:
         assert sqlite_dict._conn is None
         assert sqlite_dict._local_tmp_file.exists()
 
-    @patch('madmatcher_tools._internal.storage.sqlite3.connect')
+    @patch('MadLib._internal.storage.sqlite3.connect')
     def test_sqlite_dict_from_dict(self, mock_connect):
         """Test SqliteDict from_dict class method."""
         mock_conn = MagicMock()
@@ -321,7 +321,7 @@ class TestSqliteDict:
         # The commit is called multiple times during the process
         assert mock_conn.commit.called
 
-    @patch('madmatcher_tools._internal.storage.sqlite3.connect')
+    @patch('MadLib._internal.storage.sqlite3.connect')
     def test_sqlite_dict_init_deinit(self, mock_connect):
         """Test SqliteDict init and deinit methods."""
         mock_conn = MagicMock()
@@ -335,7 +335,7 @@ class TestSqliteDict:
         # but the connection is used
         assert mock_conn.execute.called
 
-    @patch('madmatcher_tools._internal.storage.sqlite3.connect')
+    @patch('MadLib._internal.storage.sqlite3.connect')
     def test_sqlite_dict_getitem(self, mock_connect):
         """Test SqliteDict __getitem__ method."""
         mock_conn = MagicMock()
@@ -440,7 +440,7 @@ class TestLongIntHashMap:
         hash_map = LongIntHashMap(arr)
         
         # Mock the hash_map_get_key function
-        with patch('madmatcher_tools._internal.storage.hash_map_get_key', return_value=1):
+        with patch('MadLib._internal.storage.hash_map_get_key', return_value=1):
             result = hash_map[42]
             assert result == 1
 
@@ -450,7 +450,7 @@ class TestLongIntHashMap:
         hash_map = LongIntHashMap(arr)
         
         # Mock the hash_map_get_keys function
-        with patch('madmatcher_tools._internal.storage.hash_map_get_keys', return_value=np.array([1, 2])):
+        with patch('MadLib._internal.storage.hash_map_get_keys', return_value=np.array([1, 2])):
             result = hash_map[np.array([42, 43])]
             np.testing.assert_array_equal(result, np.array([1, 2]))
 
@@ -467,7 +467,7 @@ class TestLongIntHashMap:
 class TestSparkToPandasStream:
     """Test spark_to_pandas_stream function."""
 
-    @patch('madmatcher_tools._internal.storage.pd.read_parquet')
+    @patch('MadLib._internal.storage.pd.read_parquet')
     def test_spark_to_pandas_stream(self, mock_read_parquet):
         """Test spark_to_pandas_stream function."""
         mock_df = MagicMock()
