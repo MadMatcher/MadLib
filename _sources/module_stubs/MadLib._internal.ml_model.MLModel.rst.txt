@@ -1,5 +1,5 @@
-﻿madmatcher\_tools.\_internal.ml\_model.MLModel
-==============================================
+﻿MadLib.\_internal.ml\_model.MLModel
+===================================
 
 .. currentmodule:: MadLib._internal.ml_model
 

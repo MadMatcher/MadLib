@@ -1,5 +1,5 @@
-﻿madmatcher\_tools.\_internal.tokenizer.tokenizer.Tokenizer
-==========================================================
+﻿MadLib.\_internal.tokenizer.tokenizer.Tokenizer
+===============================================
 
 .. currentmodule:: MadLib._internal.tokenizer.tokenizer
 

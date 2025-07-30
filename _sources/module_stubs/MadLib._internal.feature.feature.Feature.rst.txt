@@ -1,5 +1,5 @@
-﻿madmatcher\_tools.\_internal.feature.feature.Feature
-====================================================
+﻿MadLib.\_internal.feature.feature.Feature
+=========================================
 
 .. currentmodule:: MadLib._internal.feature.feature
 

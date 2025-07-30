@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>madmatcher_tools._internal.labeler &mdash; MadMatcher Tools 0.1 documentation</title>
+  <title>MadLib._internal.labeler &mdash; MadLib 0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
@@ -29,7 +29,7 @@
           
           
           <a href="../../../index.html" class="icon icon-home">
-            MadMatcher Tools
+            MadLib
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -50,7 +50,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../index.html">MadMatcher Tools</a>
+          <a href="../../../index.html">MadLib</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -59,7 +59,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">madmatcher_tools._internal.labeler</li>
+      <li class="breadcrumb-item active">MadLib._internal.labeler</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -68,7 +68,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for madmatcher_tools._internal.labeler</h1><div class="highlight"><pre>
+  <h1>Source code for MadLib._internal.labeler</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Labeler base class and implementations.</span>
 
@@ -91,7 +91,7 @@
 
 
 <div class="viewcode-block" id="Labeler">
-<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools._internal.labeler.Labeler.html#madmatcher_tools._internal.labeler.Labeler">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools._internal.labeler.Labeler.html#MadLib._internal.labeler.Labeler">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Labeler</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 
     <span class="nd">@abstractmethod</span>
@@ -110,6 +110,8 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">GoldLabeler</span><span class="p">(</span><span class="n">Labeler</span><span class="p">):</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gold</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gold</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">):</span>
+            <span class="n">gold</span> <span class="o">=</span> <span class="n">gold</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gold</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">gold</span><span class="p">[</span><span class="s1">&#39;id1&#39;</span><span class="p">],</span> <span class="n">gold</span><span class="p">[</span><span class="s1">&#39;id2&#39;</span><span class="p">]))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id1</span><span class="p">,</span> <span class="n">id2</span><span class="p">):</span>
@@ -119,6 +121,8 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">DelayedGoldLabeler</span><span class="p">(</span><span class="n">Labeler</span><span class="p">):</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gold</span><span class="p">,</span> <span class="n">delay_secs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gold</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">):</span>
+            <span class="n">gold</span> <span class="o">=</span> <span class="n">gold</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gold</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">gold</span><span class="p">[</span><span class="s1">&#39;id1&#39;</span><span class="p">],</span> <span class="n">gold</span><span class="p">[</span><span class="s1">&#39;id2&#39;</span><span class="p">]))</span>
         <span class="c1"># the number of seconds that the labeler waits until it outputs the label</span>
         <span class="c1"># this is used to simulate human labeling</span>
@@ -345,10 +349,10 @@
         <span class="nb">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;field&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">),</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;github&quot;</span><span class="p">))</span>
 
 <div class="viewcode-block" id="CustomLabeler">
-<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools._internal.labeler.CustomLabeler.html#madmatcher_tools._internal.labeler.CustomLabeler">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools._internal.labeler.CustomLabeler.html#MadLib._internal.labeler.CustomLabeler">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CustomLabeler</span><span class="p">(</span><span class="n">Labeler</span><span class="p">):</span>
 <div class="viewcode-block" id="CustomLabeler.__init__">
-<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools._internal.labeler.CustomLabeler.html#madmatcher_tools._internal.labeler.CustomLabeler.__init__">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools._internal.labeler.CustomLabeler.html#MadLib._internal.labeler.CustomLabeler.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a_df</span><span class="p">,</span> <span class="n">b_df</span><span class="p">,</span> <span class="n">id_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;_id&#39;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_a_df</span> <span class="o">=</span> <span class="n">a_df</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_b_df</span> <span class="o">=</span> <span class="n">b_df</span>
@@ -364,7 +368,7 @@
         <span class="k">return</span> <span class="n">label</span>
 
 <div class="viewcode-block" id="CustomLabeler.label_pair">
-<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools._internal.labeler.CustomLabeler.html#madmatcher_tools._internal.labeler.CustomLabeler.label_pair">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools._internal.labeler.CustomLabeler.html#MadLib._internal.labeler.CustomLabeler.label_pair">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">label_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row1</span><span class="p">,</span> <span class="n">row2</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>

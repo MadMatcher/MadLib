@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>madmatcher_tools.tools &mdash; MadMatcher Tools 0.1 documentation</title>
+  <title>MadLib.tools &mdash; MadLib 0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
@@ -29,7 +29,7 @@
           
           
           <a href="../../index.html" class="icon icon-home">
-            MadMatcher Tools
+            MadLib
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -50,7 +50,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">MadMatcher Tools</a>
+          <a href="../../index.html">MadLib</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -59,7 +59,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">madmatcher_tools.tools</li>
+      <li class="breadcrumb-item active">MadLib.tools</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -68,7 +68,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for madmatcher_tools.tools</h1><div class="highlight"><pre>
+  <h1>Source code for MadLib.tools</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Public API functions for MadMatcher.</span>
 
@@ -115,7 +115,7 @@
 
 
 <div class="viewcode-block" id="down_sample">
-<a class="viewcode-back" href="../../module_stubs/madmatcher_tools.tools.html#madmatcher_tools.tools.down_sample">[docs]</a>
+<a class="viewcode-back" href="../../module_stubs/madmatcher_tools.tools.html#MadLib.tools.down_sample">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">down_sample</span><span class="p">(</span>
     <span class="n">fvs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
     <span class="n">percent</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -191,7 +191,7 @@
 
 
 <div class="viewcode-block" id="create_seeds">
-<a class="viewcode-back" href="../../module_stubs/madmatcher_tools.tools.html#madmatcher_tools.tools.create_seeds">[docs]</a>
+<a class="viewcode-back" href="../../module_stubs/madmatcher_tools.tools.html#MadLib.tools.create_seeds">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_seeds</span><span class="p">(</span>
     <span class="n">fvs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
     <span class="n">nseeds</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -289,7 +289,7 @@
 
 
 <div class="viewcode-block" id="train_matcher">
-<a class="viewcode-back" href="../../module_stubs/madmatcher_tools.tools.html#madmatcher_tools.tools.train_matcher">[docs]</a>
+<a class="viewcode-back" href="../../module_stubs/madmatcher_tools.tools.html#MadLib.tools.train_matcher">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">train_matcher</span><span class="p">(</span>
     <span class="n">model_spec</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">MLModel</span><span class="p">],</span>
     <span class="n">labeled_data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
@@ -327,7 +327,7 @@
 
 
 <div class="viewcode-block" id="apply_matcher">
-<a class="viewcode-back" href="../../module_stubs/madmatcher_tools.tools.html#madmatcher_tools.tools.apply_matcher">[docs]</a>
+<a class="viewcode-back" href="../../module_stubs/madmatcher_tools.tools.html#MadLib.tools.apply_matcher">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">apply_matcher</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">MLModel</span><span class="p">,</span> <span class="n">SKLearnModel</span><span class="p">,</span> <span class="n">SparkMLModel</span><span class="p">],</span>
     <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
@@ -362,13 +362,14 @@
 
 
 <div class="viewcode-block" id="label_data">
-<a class="viewcode-back" href="../../module_stubs/madmatcher_tools.tools.html#madmatcher_tools.tools.label_data">[docs]</a>
+<a class="viewcode-back" href="../../module_stubs/madmatcher_tools.tools.html#MadLib.tools.label_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">label_data</span><span class="p">(</span>
     <span class="n">model_spec</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">MLModel</span><span class="p">],</span>
     <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="s2">&quot;continuous&quot;</span><span class="p">],</span>
     <span class="n">labeler_spec</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">Labeler</span><span class="p">],</span>
     <span class="n">fvs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
-    <span class="n">seeds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">seeds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">learner_kwargs</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate labeled data using active learning.</span>
 <span class="sd">    </span>
@@ -388,6 +389,8 @@
 <span class="sd">        The data that needs to be labeled</span>
 <span class="sd">    seeds : pandas DataFrame, optional</span>
 <span class="sd">        Initial labeled examples to start with</span>
+<span class="sd">    **learner_kwargs :</span>
+<span class="sd">        Additional keyword arguments to pass to the active learner constructor. For batch mode, see EntropyActiveLearner (e.g. batch_size, max_iter). For continuous mode, see ContinuousEntropyActiveLearner (e.g. queue_size, max_labeled, on_demand_stop).</span>
 <span class="sd">        </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -406,11 +409,11 @@
         <span class="n">seeds</span> <span class="o">=</span> <span class="n">create_seeds</span><span class="p">(</span><span class="n">fvs</span><span class="o">=</span><span class="n">fvs</span><span class="p">,</span> <span class="n">nseeds</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">fvs</span><span class="o">.</span><span class="n">count</span><span class="p">()),</span> <span class="n">labeler</span><span class="o">=</span><span class="n">labeler</span><span class="p">,</span> <span class="n">score_column</span><span class="o">=</span><span class="s1">&#39;score&#39;</span><span class="p">)</span>
     
     <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;batch&quot;</span><span class="p">:</span>
-        <span class="n">learner</span> <span class="o">=</span> <span class="n">EntropyActiveLearner</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">labeler</span><span class="p">)</span>
+        <span class="n">learner</span> <span class="o">=</span> <span class="n">EntropyActiveLearner</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">labeler</span><span class="p">,</span> <span class="o">**</span><span class="n">learner_kwargs</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;continuous&quot;</span><span class="p">:</span>
-        <span class="n">learner</span> <span class="o">=</span> <span class="n">ContinuousEntropyActiveLearner</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">labeler</span><span class="p">)</span>
+        <span class="n">learner</span> <span class="o">=</span> <span class="n">ContinuousEntropyActiveLearner</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">labeler</span><span class="p">,</span> <span class="o">**</span><span class="n">learner_kwargs</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mode must be either </span><span class="se">\&#39;</span><span class="s2">batch</span><span class="se">\&#39;</span><span class="s2"> or </span><span class="se">\&#39;</span><span class="s2">continuous</span><span class="se">\&#39;</span><span class="s2">, not </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mode must be either &#39;batch&#39; or &#39;continuous&#39;, not </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">labeled_data</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">seeds</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">labeled_data</span></div>
 

@@ -1,5 +1,5 @@
-﻿madmatcher\_tools.\_internal.labeler.Labeler
-============================================
+﻿MadLib.\_internal.labeler.Labeler
+=================================
 
 .. currentmodule:: MadLib._internal.labeler
 

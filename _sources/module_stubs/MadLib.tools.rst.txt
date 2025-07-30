@@ -1,5 +1,5 @@
-﻿madmatcher\_tools.tools
-=======================
+﻿MadLib.tools
+============
 
 .. automodule:: MadLib.tools
 
