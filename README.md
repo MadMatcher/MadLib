@@ -1,4 +1,4 @@
-# MadMatcher Tools
+# MadLib
 
 A comprehensive Python library for entity matching and record linkage, providing flexible and scalable solutions for matching and linking records across datasets using machine learning and active learning techniques.
 
@@ -15,13 +15,13 @@ A comprehensive Python library for entity matching and record linkage, providing
 Install from PyPI: [todo]
 
 ```bash
-pip install madmatcher-tools
+pip install MadLib
 ```
 
 For development dependencies:
 
 ```bash
-pip install madmatcher-tools[dev]
+pip install MadLib
 ```
 
 ### Requirements
@@ -46,12 +46,12 @@ pip install madmatcher-tools[dev]
 
 ## Quick Start
 
-Here's a simple example of using madmatcher-tools:
+Here's a simple example of using MadLib:
 
 ```python
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
-from madmatcher_tools import create_features, featurize, create_seeds, train_matcher
+from MadLib import create_features, featurize, create_seeds, train_matcher
 
 # Sample datasets
 df_a = pd.DataFrame({
@@ -98,7 +98,7 @@ predictions = apply_matcher(trained_model, fvs, 'features', 'prediction')
 
 ## Spark vs Pandas
 
-MadMatcher Tools supports both Pandas DataFrames and Spark DataFrames, allowing you to choose the best approach for your data size and processing requirements.
+MadLib supports both Pandas DataFrames and Spark DataFrames, allowing you to choose the best approach for your data size and processing requirements.
 
 ### When to Use Spark vs Pandas
 
@@ -118,9 +118,9 @@ MadMatcher Tools supports both Pandas DataFrames and Spark DataFrames, allowing 
 
 ### Setting Up a SparkSession
 
-MadMatcher Tools leverages Spark to enhance speed for large-scale record matching. Spark works by processing data in parallel, which significantly increases processing speed. On a local machine, Spark treats each CPU core as a worker node to distribute work efficiently.
+MadLib leverages Spark to enhance speed for large-scale record matching. Spark works by processing data in parallel, which significantly increases processing speed. On a local machine, Spark treats each CPU core as a worker node to distribute work efficiently.
 
-Before using Spark DataFrames with MadMatcher Tools, you need to set up a SparkSession:
+Before using Spark DataFrames with MadLib, you need to set up a SparkSession:
 
 ```python
 from pyspark.sql import SparkSession
@@ -128,7 +128,7 @@ from pyspark.sql import SparkSession
 # Create a SparkSession for local processing
 spark = SparkSession.builder \
     .master('local[*]') \
-    .appName('MadMatcher Tools') \
+    .appName('MadLib') \
     .getOrCreate()
 ```
 
@@ -137,7 +137,7 @@ spark = SparkSession.builder \
 - `master('local[*]')`: Uses all available CPU cores on your local machine
 - `master('local[4]')`: Uses exactly 4 CPU cores
 - `master(url)`: Uses the machine at URL as the driver
-- `appName('MadMatcher Tools')`: Names your Spark application for identification
+- `appName('MadLib')`: Names your Spark application for identification
 
 ### Converting Between Pandas and Spark
 
@@ -153,12 +153,12 @@ pandas_df = spark_df.toPandas()
 
 ```python
 from pyspark.sql import SparkSession
-from madmatcher_tools import create_features, featurize
+from MadLib import create_features, featurize
 
 # Set up Spark
 spark = SparkSession.builder \
     .master('local[*]') \
-    .appName('MadMatcher Tools') \
+    .appName('MadLib') \
     .getOrCreate()
 
 # Convert your data to Spark DataFrames
@@ -166,7 +166,7 @@ spark_df_a = spark.createDataFrame(df_a)
 spark_df_b = spark.createDataFrame(df_b)
 spark_candidates = spark.createDataFrame(candidates)
 
-# Use the same MadMatcher Tools functions
+# Use the same MadLib functions
 features = create_features(spark_df_a, spark_df_b, ['name', 'email'], ['name', 'email'])
 spark_fvs = featurize(features, spark_df_a, spark_df_b, spark_candidates)
 
@@ -184,13 +184,13 @@ from pyspark.sql import SparkSession
 # Connect to a Spark cluster
 spark = SparkSession.builder \
     .master('spark://your-cluster-master:7077') \
-    .appName('MadMatcher Tools Production') \
+    .appName('MadLib Production') \
     .config('spark.executor.memory', '8g') \
     .config('spark.driver.memory', '4g') \
     .config('spark.sql.adaptive.enabled', 'true') \
     .getOrCreate()
 
-# Your MadMatcher Tools code remains the same
+# Your MadLib code remains the same
 features = create_features(spark_df_a, spark_df_b, ['name', 'email'], ['name', 'email'])
 spark_fvs = featurize(features, spark_df_a, spark_df_b, spark_candidates)
 ```
@@ -249,17 +249,17 @@ Check out the comprehensive Jupyter notebook in `examples/madmatcher_examples.ip
 10. **Active Learning Labeling** - Efficient data labeling strategies
 11. **Custom Abstract Classes** - Extending functionality with custom implementations
 
-For in-depth technical documentation, see [`docs/MadMatcher Tools Documentation.md`](docs/MadMatcher%20Tools%20Documentation.md).
+For in-depth technical documentation, see [`docs/MadLib Documentation.md`](docs/MadLib%20Documentation.md).
 
 ## Documentation
 
 - **API Documentation**: Auto-generated from docstrings
 - **Examples**: Comprehensive Jupyter notebook with real examples in [`examples/madmatcher_examples.ipynb`](examples/madmatcher_examples.ipynb)
-- **Technical Documentation**: See [`docs/MadMatcher Tools Documentation.md`](docs/MadMatcher%20Tools%20Documentation.md)
+- **Technical Documentation**: See [`docs/MadLib Documentation.md`](docs/MadLib%20Documentation.md)
 
 ## License
 
-This project is licensed under the -- License - see the LICENSE file for details.
+This project is licensed under the BSD 3-Clause License - see the LICENSE file for details.
 
 ## Support
 
