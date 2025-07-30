@@ -3,19 +3,19 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "madmatcher-tools"
+name = "MadLib"
 version = "0.1.0"
 description = "Tools for entity matching and record linkage"
 readme = "README.md"
 requires-python = ">=3.8"
-license = "MIT"
+license = {file = "LICENSE"}
 authors = [
     { name = "Dev Ahluwalia" }
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: BSD License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -59,7 +59,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["madmatcher_tools"]
+packages = ["MadLib"]
 
 
 [tool.hatch.metadata]

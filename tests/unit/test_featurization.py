@@ -1,8 +1,8 @@
 import pytest
 import pandas as pd
 import numpy as np
-from madmatcher_tools._internal.featurization import create_features
-from madmatcher_tools._internal.feature.feature import ExactMatchFeature, RelDiffFeature
+from MadLib._internal.featurization import create_features
+from MadLib._internal.feature.feature import ExactMatchFeature, RelDiffFeature
 
 class DummyTokenizer:
     NAME = 'dummy_tokenizer'

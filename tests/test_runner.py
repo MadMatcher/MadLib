@@ -119,7 +119,7 @@ def main():
         cmd = base_cmd + [
             "tests/unit/",
             "tests/integration/",
-            "--cov=madmatcher_tools",
+            "--cov=MadLib",
             "--cov-report=term-missing",
             "--cov-report=xml",
             "--cov-fail-under=80"
@@ -152,7 +152,7 @@ def main():
             coverage_cmd = base_cmd + [
                 "tests/unit/",
                 "tests/integration/",
-                "--cov=madmatcher_tools",
+                "--cov=MadLib",
                 "--cov-report=term-missing",
                 "--cov-report=xml",
                 "--cov-fail-under=80"

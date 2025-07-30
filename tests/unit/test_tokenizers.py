@@ -5,12 +5,12 @@ import pandas as pd
 import numpy as np
 from unittest.mock import Mock, patch
 
-from madmatcher_tools.tools import get_base_tokenizers, get_base_sim_functions
-from madmatcher_tools import Tokenizer
+from MadLib.tools import get_base_tokenizers, get_base_sim_functions
+from MadLib import Tokenizer
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
-from madmatcher_tools._internal.tokenizer.vectorizer import TFIDFVectorizer, SIFVectorizer
-from madmatcher_tools._internal.feature.token_feature import _jaccard, _overlap_coeff
-from madmatcher_tools._internal.utils import is_null
+from MadLib._internal.tokenizer.vectorizer import TFIDFVectorizer, SIFVectorizer
+from MadLib._internal.feature.token_feature import _jaccard, _overlap_coeff
+from MadLib._internal.utils import is_null
 
 
 @pytest.mark.unit

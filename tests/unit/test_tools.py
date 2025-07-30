@@ -1,5 +1,5 @@
 """
-Unit tests for madmatcher_tools.tools module.
+Unit tests for MadLib.tools module.
 
 Tests all public API functions with various input types and edge cases.
 """
@@ -11,10 +11,10 @@ from unittest.mock import Mock, patch, MagicMock
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 
-from madmatcher_tools.tools import (
+from MadLib.tools import (
     down_sample, create_seeds, train_matcher, apply_matcher, label_data
 )
-from madmatcher_tools import Labeler, MLModel
+from MadLib import Labeler, MLModel
 
 
 @pytest.mark.unit
@@ -69,8 +69,8 @@ class TestDownSample:
         assert len(result) == 0
         assert list(result.columns) == ['id2', 'score']
 
-    @patch('madmatcher_tools.tools.SparkDataFrame')
-    @patch('madmatcher_tools.tools.isinstance')
+    @patch('MadLib.tools.SparkDataFrame')
+    @patch('MadLib.tools.isinstance')
     def test_down_sample_spark_bucket_size_too_small(self, mock_isinstance, mock_spark_dataframe):
         """Test down_sample with Spark DataFrame and bucket_size < 1000."""
         # Mock isinstance to return True for SparkDataFrame
@@ -94,8 +94,8 @@ class TestDownSample:
         with pytest.raises(ValueError, match="bucket_size must be >= 1000"):
             down_sample(mock_df, percent=0.5, search_id_column='id2', bucket_size=500)
 
-    @patch('madmatcher_tools.tools.SparkDataFrame')
-    @patch('madmatcher_tools.tools.isinstance')
+    @patch('MadLib.tools.SparkDataFrame')
+    @patch('MadLib.tools.isinstance')
     def test_down_sample_spark_invalid_percent(self, mock_isinstance, mock_spark_dataframe):
         """Test down_sample with Spark DataFrame and invalid percent."""
         # Mock isinstance to return True for SparkDataFrame
@@ -196,8 +196,8 @@ class TestCreateSeeds:
         assert len(seeds) <= 2
         assert 'label' in seeds.columns
 
-    @patch('madmatcher_tools.tools.SparkDataFrame')
-    @patch('madmatcher_tools.tools.isinstance')
+    @patch('MadLib.tools.SparkDataFrame')
+    @patch('MadLib.tools.isinstance')
     def test_create_seeds_spark_too_many_seeds(self, mock_isinstance, mock_spark_dataframe):
         """Test create_seeds with Spark DataFrame and too many seeds."""
         # Mock isinstance to return True for SparkDataFrame
@@ -219,9 +219,9 @@ class TestCreateSeeds:
         with pytest.raises(ValueError, match="number of seeds would exceed"):
             create_seeds(mock_df, nseeds=10, labeler=labeler)
 
-    @patch('madmatcher_tools.tools.F')
-    @patch('madmatcher_tools.tools.SparkDataFrame')
-    @patch('madmatcher_tools.tools.isinstance')
+    @patch('MadLib.tools.F')
+    @patch('MadLib.tools.SparkDataFrame')
+    @patch('MadLib.tools.isinstance')
     def test_create_seeds_spark_custom_score_column(self, mock_isinstance, mock_spark_dataframe, mock_F):
         """Test create_seeds with Spark DataFrame and custom score column (pure mock, no SparkContext needed)."""
         # Mock F.col to return a mock column object
@@ -415,7 +415,7 @@ class TestTrainMatcher:
         with pytest.raises((TypeError, ValueError, AttributeError)):
             train_matcher('not_a_model_spec', pd.DataFrame({'id1': [1], 'id2': [2], 'features': [[1.0]], 'label': [1.0]}))
 
-    @patch('madmatcher_tools._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
+    @patch('MadLib._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
     def test_train_matcher_spark_dataframe(self, mock_convert, mock_labeled_data):
         mock_spark_df = MagicMock()
         mock_spark_df.toPandas.return_value = mock_labeled_data
@@ -423,7 +423,7 @@ class TestTrainMatcher:
         mock_spark_df.columns = mock_labeled_data.columns.tolist()
         mock_spark_df.__getitem__.side_effect = lambda key: mock_labeled_data[key]
         mock_spark_df.__iter__.side_effect = lambda: iter(mock_labeled_data)
-        with patch('madmatcher_tools._internal.ml_model.convert_to_array', return_value=mock_labeled_data):
+        with patch('MadLib._internal.ml_model.convert_to_array', return_value=mock_labeled_data):
             model_spec = {
                 'model_type': 'sklearn',
                 'model': LogisticRegression,
@@ -500,7 +500,7 @@ class TestApplyMatcher:
         with pytest.raises((TypeError, ValueError, AttributeError)):
             apply_matcher('not_a_model', pd.DataFrame({'id1': [1], 'id2': [2], 'features': [[1.0]]}), 'features', 'output')
 
-    @patch('madmatcher_tools._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
+    @patch('MadLib._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
     def test_apply_matcher_spark_dataframe(self, mock_convert, sample_feature_vectors, mock_labeled_data):
         mock_spark_df = MagicMock()
         mock_spark_df.toPandas.return_value = sample_feature_vectors
@@ -508,7 +508,7 @@ class TestApplyMatcher:
         mock_spark_df.columns = sample_feature_vectors.columns.tolist()
         mock_spark_df.__getitem__.side_effect = lambda key: sample_feature_vectors[key]
         mock_spark_df.__iter__.side_effect = lambda: iter(sample_feature_vectors)
-        with patch('madmatcher_tools._internal.ml_model.convert_to_array', return_value=sample_feature_vectors):
+        with patch('MadLib._internal.ml_model.convert_to_array', return_value=sample_feature_vectors):
             model_spec = {
                 'model_type': 'sklearn',
                 'model': LogisticRegression,
@@ -526,8 +526,8 @@ class TestApplyMatcher:
 class TestLabelData:
     """Test label_data function."""
 
-    @patch('madmatcher_tools.tools.create_seeds')
-    @patch('madmatcher_tools.tools.EntropyActiveLearner')
+    @patch('MadLib.tools.create_seeds')
+    @patch('MadLib.tools.EntropyActiveLearner')
     def test_label_data_batch_mode(self, mock_learner_class, mock_create_seeds,
                                  sample_feature_vectors, gold_labels):
         """Test label_data in batch mode."""
@@ -550,8 +550,8 @@ class TestLabelData:
         mock_learner_class.assert_called_once()
         mock_learner.train.assert_called_once()
 
-    @patch('madmatcher_tools.tools.create_seeds')
-    @patch('madmatcher_tools.tools.ContinuousEntropyActiveLearner')
+    @patch('MadLib.tools.create_seeds')
+    @patch('MadLib.tools.ContinuousEntropyActiveLearner')
     def test_label_data_continuous_mode(self, mock_learner_class, mock_create_seeds,
                                       sample_feature_vectors, gold_labels):
         """Test label_data in continuous mode."""
@@ -576,13 +576,13 @@ class TestLabelData:
         mock_learner_class.assert_called_once()
         mock_learner.train.assert_called_once()
 
-    @patch('madmatcher_tools.tools.create_seeds')
+    @patch('MadLib.tools.create_seeds')
     def test_label_data_with_existing_seeds(self, mock_create_seeds,
                                           sample_feature_vectors, gold_labels):
         """Test label_data with pre-existing seeds."""
         existing_seeds = pd.DataFrame({'id1': [1], 'id2': [101], 'label': [1.0]})
         
-        with patch('madmatcher_tools.tools.EntropyActiveLearner') as mock_learner_class:
+        with patch('MadLib.tools.EntropyActiveLearner') as mock_learner_class:
             mock_learner = Mock()
             mock_learner.train.return_value = existing_seeds
             mock_learner_class.return_value = mock_learner
@@ -599,7 +599,7 @@ class TestLabelData:
             mock_create_seeds.assert_not_called()
             mock_learner.train.assert_called_once()
 
-    @patch('madmatcher_tools.tools.SparkSession')
+    @patch('MadLib.tools.SparkSession')
     def test_label_data_spark_dataframe_conversion(self, mock_spark_session):
         """Test label_data with pandas DataFrame that gets converted to Spark."""
         mock_spark = Mock()
@@ -615,8 +615,8 @@ class TestLabelData:
         # Fix the gold labeler format
         labeler_spec = {'name': 'gold', 'gold': {'id1': [1], 'id2': [101]}}
         
-        with patch('madmatcher_tools.tools.create_seeds') as mock_create_seeds:
-            with patch('madmatcher_tools.tools.EntropyActiveLearner') as mock_learner_class:
+        with patch('MadLib.tools.create_seeds') as mock_create_seeds:
+            with patch('MadLib.tools.EntropyActiveLearner') as mock_learner_class:
                 mock_learner = Mock()
                 mock_learner_class.return_value = mock_learner
                 mock_learner.train.return_value = pd.DataFrame({'id1': [1], 'id2': [101], 'label': [1.0]})
@@ -626,7 +626,7 @@ class TestLabelData:
                 mock_spark.createDataFrame.assert_called_once_with(fvs)
                 assert isinstance(result, pd.DataFrame)
 
-    @patch('madmatcher_tools.tools.SparkSession')
+    @patch('MadLib.tools.SparkSession')
     def test_label_data_continuous_mode(self, mock_spark_session):
         """Test label_data with continuous mode."""
         mock_spark = Mock()
@@ -642,8 +642,8 @@ class TestLabelData:
         # Fix the gold labeler format
         labeler_spec = {'name': 'gold', 'gold': {'id1': [1], 'id2': [101]}}
         
-        with patch('madmatcher_tools.tools.create_seeds') as mock_create_seeds:
-            with patch('madmatcher_tools.tools.ContinuousEntropyActiveLearner') as mock_learner_class:
+        with patch('MadLib.tools.create_seeds') as mock_create_seeds:
+            with patch('MadLib.tools.ContinuousEntropyActiveLearner') as mock_learner_class:
                 mock_learner = Mock()
                 mock_learner_class.return_value = mock_learner
                 mock_learner.train.return_value = pd.DataFrame({'id1': [1], 'id2': [101], 'label': [1.0]})
@@ -653,7 +653,7 @@ class TestLabelData:
                 mock_learner_class.assert_called_once()
                 assert isinstance(result, pd.DataFrame)
 
-    @patch('madmatcher_tools.tools.SparkSession')
+    @patch('MadLib.tools.SparkSession')
     def test_label_data_continuous_mode_spark(self, mock_spark_session):
         """Test label_data with continuous mode and Spark DataFrame."""
         mock_spark = Mock()
@@ -669,8 +669,8 @@ class TestLabelData:
         # Fix the gold labeler format
         labeler_spec = {'name': 'gold', 'gold': {'id1': [1], 'id2': [101]}}
         
-        with patch('madmatcher_tools.tools.create_seeds') as mock_create_seeds:
-            with patch('madmatcher_tools.tools.ContinuousEntropyActiveLearner') as mock_learner_class:
+        with patch('MadLib.tools.create_seeds') as mock_create_seeds:
+            with patch('MadLib.tools.ContinuousEntropyActiveLearner') as mock_learner_class:
                 mock_learner = Mock()
                 mock_learner_class.return_value = mock_learner
                 mock_learner.train.return_value = pd.DataFrame({'id1': [1], 'id2': [101], 'label': [1.0]})
@@ -797,7 +797,7 @@ class TestEdgeCases:
         
         assert len(result) <= len(fvs)
 
-    @patch('madmatcher_tools._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
+    @patch('MadLib._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
     def test_train_matcher_spark_dataframe(self, mock_convert, mock_labeled_data):
         mock_spark_df = MagicMock()
         mock_spark_df.toPandas.return_value = mock_labeled_data
@@ -805,7 +805,7 @@ class TestEdgeCases:
         mock_spark_df.columns = mock_labeled_data.columns.tolist()
         mock_spark_df.__getitem__.side_effect = lambda key: mock_labeled_data[key]
         mock_spark_df.__iter__.side_effect = lambda: iter(mock_labeled_data)
-        with patch('madmatcher_tools._internal.ml_model.convert_to_array', return_value=mock_labeled_data):
+        with patch('MadLib._internal.ml_model.convert_to_array', return_value=mock_labeled_data):
             model_spec = {
                 'model_type': 'sklearn',
                 'model': LogisticRegression,
@@ -815,7 +815,7 @@ class TestEdgeCases:
             assert hasattr(model, 'trained_model')
             assert isinstance(model.trained_model, LogisticRegression)
 
-    @patch('madmatcher_tools._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
+    @patch('MadLib._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
     def test_apply_matcher_spark_dataframe(self, mock_convert, sample_feature_vectors, mock_labeled_data):
         mock_spark_df = MagicMock()
         mock_spark_df.toPandas.return_value = sample_feature_vectors
@@ -823,7 +823,7 @@ class TestEdgeCases:
         mock_spark_df.columns = sample_feature_vectors.columns.tolist()
         mock_spark_df.__getitem__.side_effect = lambda key: sample_feature_vectors[key]
         mock_spark_df.__iter__.side_effect = lambda: iter(sample_feature_vectors)
-        with patch('madmatcher_tools._internal.ml_model.convert_to_array', return_value=sample_feature_vectors):
+        with patch('MadLib._internal.ml_model.convert_to_array', return_value=sample_feature_vectors):
             model_spec = {
                 'model_type': 'sklearn',
                 'model': LogisticRegression,
@@ -840,7 +840,7 @@ class TestEdgeCases:
         """Test label_data with provided seeds (should not create new seeds)."""
         existing_seeds = pd.DataFrame({'id1': [1], 'id2': [101], 'label': [1.0]})
         
-        with patch('madmatcher_tools.tools.EntropyActiveLearner') as mock_learner_class:
+        with patch('MadLib.tools.EntropyActiveLearner') as mock_learner_class:
             mock_learner = Mock()
             mock_learner_class.return_value = mock_learner
             mock_learner.train.return_value = existing_seeds

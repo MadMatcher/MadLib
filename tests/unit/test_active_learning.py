@@ -7,12 +7,12 @@ from unittest.mock import Mock, patch, MagicMock
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, IntegerType, ArrayType, DoubleType
 
-from madmatcher_tools._internal.active_learning.ent_active_learner import EntropyActiveLearner
-from madmatcher_tools._internal.active_learning.cont_entropy_active_learner import (
+from MadLib._internal.active_learning.ent_active_learner import EntropyActiveLearner
+from MadLib._internal.active_learning.cont_entropy_active_learner import (
     ContinuousEntropyActiveLearner, PQueueItem
 )
-from madmatcher_tools._internal.ml_model import MLModel
-from madmatcher_tools._internal.labeler import Labeler
+from MadLib._internal.ml_model import MLModel
+from MadLib._internal.labeler import Labeler
 
 
 @pytest.mark.unit
@@ -271,7 +271,7 @@ class TestEntropyActiveLearner:
         result_ids = [row._id for row in result.collect()]
         assert set(result_ids) == {1, 3}
 
-    @patch('madmatcher_tools._internal.active_learning.ent_active_learner.SparkSession')
+    @patch('MadLib._internal.active_learning.ent_active_learner.SparkSession')
     def test_entropy_active_learner_label_everything(self, mock_spark_session, spark_session):
         """Test _label_everything method."""
         class TestMLModel(MLModel):
@@ -352,8 +352,8 @@ class TestEntropyActiveLearner:
         assert len(result) == 2
         assert result['labeled_in_iteration'].iloc[0] == -2
 
-    @patch('madmatcher_tools._internal.active_learning.ent_active_learner.SparkSession')
-    @patch('madmatcher_tools._internal.active_learning.ent_active_learner.persisted')
+    @patch('MadLib._internal.active_learning.ent_active_learner.SparkSession')
+    @patch('MadLib._internal.active_learning.ent_active_learner.persisted')
     def test_entropy_active_learner_train_small_dataset(self, mock_persisted, mock_spark_session, spark_session):
         """Test train method with small dataset that triggers label_everything."""
         class TestMLModel(MLModel):
@@ -433,8 +433,8 @@ class TestEntropyActiveLearner:
             assert mock_label_everything.called
             assert isinstance(result, pd.DataFrame)
 
-    @patch('madmatcher_tools._internal.active_learning.ent_active_learner.SparkSession')
-    @patch('madmatcher_tools._internal.active_learning.ent_active_learner.persisted')
+    @patch('MadLib._internal.active_learning.ent_active_learner.SparkSession')
+    @patch('MadLib._internal.active_learning.ent_active_learner.persisted')
     def test_entropy_active_learner_train_with_user_stop(self, mock_persisted, mock_spark_session, spark_session):
         """Test EntropyActiveLearner training with user stopping."""
         class TestMLModel(MLModel):

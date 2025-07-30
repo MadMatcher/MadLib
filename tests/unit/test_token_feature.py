@@ -10,11 +10,11 @@ import numpy as np
 import pandas as pd
 from unittest.mock import MagicMock, patch
 
-from madmatcher_tools._internal.feature.token_feature import (
+from MadLib._internal.feature.token_feature import (
     TokenFeature, JaccardFeature, OverlapCoeffFeature, CosineFeature, MongeElkanFeature,
     _overlap, _jaccard, _overlap_coeff
 )
-from madmatcher_tools._internal.tokenizer.tokenizer import Tokenizer
+from MadLib._internal.tokenizer.tokenizer import Tokenizer
 
 
 class MockTokenizer(Tokenizer):
@@ -86,7 +86,7 @@ class TestTokenFeatureBase:
 
     def test_token_feature_invalid_tokenizer(self):
         """Test TokenFeature with invalid tokenizer type."""
-        with pytest.raises(TypeError, match=r"tokenizer must be type <class 'madmatcher_tools._internal.tokenizer.tokenizer.Tokenizer'>"):
+        with pytest.raises(TypeError, match=r"tokenizer must be type <class 'MadLib._internal.tokenizer.tokenizer.Tokenizer'>"):
             class TestTokenFeature(TokenFeature):
                 def sim_func(self, x, y):
                     return 0.0

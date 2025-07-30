@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.base import BaseEstimator
-from madmatcher_tools._internal.ml_model import SKLearnModel, SparkMLModel
+from MadLib._internal.ml_model import SKLearnModel, SparkMLModel
 from unittest.mock import MagicMock, patch
 
 class DummyEstimator(BaseEstimator):
@@ -106,7 +106,7 @@ def test_spark_ml_model_init_with_unfitted_model():
 def test_spark_ml_model_init_with_fitted_model():
     transformer = DummySparkTransformer()
     # Mock the Transformer import
-    with patch('madmatcher_tools._internal.ml_model.Transformer', MockTransformer):
+    with patch('MadLib._internal.ml_model.Transformer', MockTransformer):
         model = SparkMLModel(transformer)
         assert model._trained_model is not None
         assert model._model == DummySparkTransformer
@@ -128,17 +128,17 @@ def test_spark_ml_model_properties():
 def test_spark_ml_model_predict_with_pandas_df():
     model = SparkMLModel(DummySparkTransformer)
     # Mock SparkSession
-    with patch('madmatcher_tools._internal.ml_model.SparkSession') as mock_spark_session:
+    with patch('MadLib._internal.ml_model.SparkSession') as mock_spark_session:
         mock_spark = MagicMock()
         mock_spark_session.builder.getOrCreate.return_value = mock_spark
         mock_spark.createDataFrame.return_value = MagicMock()
         
         # Mock convert_to_vector
-        with patch('madmatcher_tools._internal.ml_model.convert_to_vector') as mock_convert:
+        with patch('MadLib._internal.ml_model.convert_to_vector') as mock_convert:
             mock_convert.return_value = MagicMock()
             
             # Mock F.col
-            with patch('madmatcher_tools._internal.ml_model.F') as mock_F:
+            with patch('MadLib._internal.ml_model.F') as mock_F:
                 mock_F.col.return_value = MagicMock()
                 mock_F.col.return_value.alias.return_value = MagicMock()
                 
@@ -169,7 +169,7 @@ def test_spark_ml_model_entropy_without_trained_model():
 def test_spark_ml_model_entropy_component():
     model = SparkMLModel(DummySparkTransformer)
     # Test _entropy_component method
-    with patch('madmatcher_tools._internal.ml_model.F') as mock_F:
+    with patch('MadLib._internal.ml_model.F') as mock_F:
         mock_get_item = MagicMock()
         mock_get_item.getItem.return_value = MagicMock()
         mock_F.when.return_value.otherwise.return_value = 0.5
@@ -179,7 +179,7 @@ def test_spark_ml_model_entropy_component():
 def test_spark_ml_model_entropy_expr():
     model = SparkMLModel(DummySparkTransformer)
     # Test _entropy_expr method
-    with patch('madmatcher_tools._internal.ml_model.F') as mock_F:
+    with patch('MadLib._internal.ml_model.F') as mock_F:
         mock_F.col.return_value = MagicMock()
         mock_F.when.return_value.otherwise.return_value = 0.5
         result = model._entropy_expr('probs', classes=2)
@@ -204,7 +204,7 @@ def test_sklearn_model_train_with_spark_df(sample_df):
     mock_spark_df = MagicMock()
     mock_spark_df.toPandas.return_value = sample_df
     
-    with patch('madmatcher_tools._internal.ml_model.convert_to_array') as mock_convert:
+    with patch('MadLib._internal.ml_model.convert_to_array') as mock_convert:
         mock_convert.return_value = mock_spark_df
         model.train(mock_spark_df, 'features', 'label')
         assert model._trained_model is not None 

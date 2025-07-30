@@ -5,11 +5,11 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 
-from madmatcher_tools.tools import (
+from MadLib.tools import (
     down_sample, create_seeds, train_matcher, apply_matcher, featurize, 
     create_features
 )
-from madmatcher_tools import Labeler, MLModel, Feature
+from MadLib import Labeler, MLModel, Feature
 
 
 @pytest.mark.integration

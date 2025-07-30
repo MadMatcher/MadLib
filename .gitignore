@@ -4,3 +4,7 @@
 .coverage.**
 .DS_Store
 .coverage
+all_tests.txt
+coverage.xml
+tests/SUMMARY.md
+unit_tests.txt

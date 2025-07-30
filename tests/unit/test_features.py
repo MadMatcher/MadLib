@@ -5,10 +5,10 @@ import pandas as pd
 import numpy as np
 from unittest.mock import Mock, patch, MagicMock
 
-from madmatcher_tools.tools import create_features, featurize
-from madmatcher_tools._internal.feature.feature import Feature
-from madmatcher_tools._internal.feature.vector_feature import TFIDFFeature, SIFFeature
-from madmatcher_tools._internal.tokenizer.tokenizer import Tokenizer
+from MadLib.tools import create_features, featurize
+from MadLib._internal.feature.feature import Feature
+from MadLib._internal.feature.vector_feature import TFIDFFeature, SIFFeature
+from MadLib._internal.tokenizer.tokenizer import Tokenizer
 
 
 @pytest.mark.unit
@@ -180,12 +180,12 @@ class TestFeaturize:
         assert isinstance(result, pd.DataFrame)
         assert len(result) == len(valid_candidates)
 
-    @patch('madmatcher_tools._internal.utils.repartition_df', side_effect=lambda df, part_size, by=None: df)
+    @patch('MadLib._internal.utils.repartition_df', side_effect=lambda df, part_size, by=None: df)
     def test_featurize_with_spark_dataframes(self, mock_repartition, sample_dataframe_a, sample_dataframe_b, sample_candidates):
         """Test featurize with Spark DataFrames (should convert to pandas)."""
         from pyspark.sql import SparkSession
         
-        with patch('madmatcher_tools._internal.featurization.SparkSession') as mock_spark_session:
+        with patch('MadLib._internal.featurization.SparkSession') as mock_spark_session:
             mock_spark = MagicMock()
             mock_spark_session.builder.getOrCreate.return_value = mock_spark
             
@@ -228,12 +228,12 @@ class TestFeaturize:
         assert isinstance(result, pd.DataFrame)
         assert 'features' in result.columns
 
-    @patch('madmatcher_tools._internal.utils.repartition_df', side_effect=lambda df, part_size, by=None: df)
+    @patch('MadLib._internal.utils.repartition_df', side_effect=lambda df, part_size, by=None: df)
     def test_featurize_with_spark_candidates(self, mock_repartition, sample_dataframe_a, sample_dataframe_b, sample_candidates):
         """Test featurize with Spark DataFrame candidates."""
         from pyspark.sql import SparkSession
         
-        with patch('madmatcher_tools._internal.featurization.SparkSession') as mock_spark_session:
+        with patch('MadLib._internal.featurization.SparkSession') as mock_spark_session:
             mock_spark = Mock()
             mock_spark_session.builder.getOrCreate.return_value = mock_spark
             
@@ -253,12 +253,12 @@ class TestFeaturize:
             assert mock_spark_df.toPandas() is not None
             assert mock_spark_df.count() == len(sample_candidates)
 
-    @patch('madmatcher_tools._internal.utils.repartition_df', side_effect=lambda df, part_size, by=None: df)
+    @patch('MadLib._internal.utils.repartition_df', side_effect=lambda df, part_size, by=None: df)
     def test_featurize_with_spark_table_a(self, mock_repartition, sample_dataframe_a, sample_dataframe_b, sample_candidates):
         """Test featurize with Spark DataFrame table A."""
         from pyspark.sql import SparkSession
         
-        with patch('madmatcher_tools._internal.featurization.SparkSession') as mock_spark_session:
+        with patch('MadLib._internal.featurization.SparkSession') as mock_spark_session:
             mock_spark = Mock()
             mock_spark_session.builder.getOrCreate.return_value = mock_spark
             
@@ -278,12 +278,12 @@ class TestFeaturize:
             assert mock_spark_df.toPandas() is not None
             assert mock_spark_df.count() == len(sample_dataframe_a)
 
-    @patch('madmatcher_tools._internal.utils.repartition_df', side_effect=lambda df, part_size, by=None: df)
+    @patch('MadLib._internal.utils.repartition_df', side_effect=lambda df, part_size, by=None: df)
     def test_featurize_with_spark_table_b(self, mock_repartition, sample_dataframe_a, sample_dataframe_b, sample_candidates):
         """Test featurize with Spark DataFrame table B."""
         from pyspark.sql import SparkSession
         
-        with patch('madmatcher_tools._internal.featurization.SparkSession') as mock_spark_session:
+        with patch('MadLib._internal.featurization.SparkSession') as mock_spark_session:
             mock_spark = Mock()
             mock_spark_session.builder.getOrCreate.return_value = mock_spark
             
@@ -303,12 +303,12 @@ class TestFeaturize:
             assert mock_spark_df.toPandas() is not None
             assert mock_spark_df.count() == len(sample_dataframe_b)
 
-    @patch('madmatcher_tools._internal.utils.repartition_df', side_effect=lambda df, part_size, by=None: df)
+    @patch('MadLib._internal.utils.repartition_df', side_effect=lambda df, part_size, by=None: df)
     def test_create_features_with_spark_dataframes(self, mock_repartition, sample_dataframe_a, sample_dataframe_b):
         """Test create_features with Spark DataFrames."""
         from pyspark.sql import SparkSession
         
-        with patch('madmatcher_tools._internal.featurization.SparkSession') as mock_spark_session:
+        with patch('MadLib._internal.featurization.SparkSession') as mock_spark_session:
             mock_spark = Mock()
             mock_spark_session.builder.getOrCreate.return_value = mock_spark
             
@@ -328,12 +328,12 @@ class TestFeaturize:
             assert mock_spark_df.toPandas() is not None
             assert mock_spark_df.count() == len(sample_dataframe_a)
 
-    @patch('madmatcher_tools._internal.utils.repartition_df', side_effect=lambda df, part_size, by=None: df)
+    @patch('MadLib._internal.utils.repartition_df', side_effect=lambda df, part_size, by=None: df)
     def test_create_features_with_spark_table_b(self, mock_repartition, sample_dataframe_a, sample_dataframe_b):
         """Test create_features with Spark DataFrame table B."""
         from pyspark.sql import SparkSession
         
-        with patch('madmatcher_tools._internal.featurization.SparkSession') as mock_spark_session:
+        with patch('MadLib._internal.featurization.SparkSession') as mock_spark_session:
             mock_spark = Mock()
             mock_spark_session.builder.getOrCreate.return_value = mock_spark
             
