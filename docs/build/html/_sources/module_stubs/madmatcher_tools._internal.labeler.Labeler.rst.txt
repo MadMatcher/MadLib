@@ -1,7 +1,7 @@
 ﻿madmatcher\_tools.\_internal.labeler.Labeler
 ============================================
 
-.. currentmodule:: madmatcher_tools._internal.labeler
+.. currentmodule:: MadLib._internal.labeler
 
 .. autoclass:: Labeler
 

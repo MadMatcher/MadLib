@@ -1,7 +1,7 @@
 ﻿madmatcher\_tools.\_internal.tokenizer.tokenizer.Tokenizer
 ==========================================================
 
-.. currentmodule:: madmatcher_tools._internal.tokenizer.tokenizer
+.. currentmodule:: MadLib._internal.tokenizer.tokenizer
 
 .. autoclass:: Tokenizer
 

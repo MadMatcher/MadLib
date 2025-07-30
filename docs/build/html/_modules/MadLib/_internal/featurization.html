@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>madmatcher_tools._internal.featurization &mdash; MadMatcher Tools 0.1 documentation</title>
+  <title>MadLib._internal.featurization &mdash; MadLib 0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
@@ -29,7 +29,7 @@
           
           
           <a href="../../../index.html" class="icon icon-home">
-            MadMatcher Tools
+            MadLib
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -50,7 +50,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../index.html">MadMatcher Tools</a>
+          <a href="../../../index.html">MadLib</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -59,7 +59,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">madmatcher_tools._internal.featurization</li>
+      <li class="breadcrumb-item active">MadLib._internal.featurization</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -68,17 +68,17 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for madmatcher_tools._internal.featurization</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span>
+  <h1>Source code for MadLib._internal.featurization</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyspark.sql.functions</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyspark.sql.types</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">T</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql</span><span class="w"> </span><span class="kn">import</span> <span class="n">SparkSession</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span> <span class="k">as</span> <span class="n">SparkDataFrame</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.storage</span><span class="w"> </span><span class="kn">import</span> <span class="n">MemmapDataFrame</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">threading</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lock</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">joblib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">repartition_df</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.tokenizer</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AlphaNumericTokenizer</span><span class="p">,</span>
@@ -147,31 +147,64 @@
 
 
 <div class="viewcode-block" id="get_base_sim_functions">
-<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools.tools.html#madmatcher_tools._internal.featurization.get_base_sim_functions">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools.tools.html#MadLib._internal.featurization.get_base_sim_functions">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_base_sim_functions</span><span class="p">():</span>
     <span class="k">return</span> <span class="n">SIM_FUNCTIONS</span></div>
 
 
 
 <div class="viewcode-block" id="get_base_tokenizers">
-<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools.tools.html#madmatcher_tools._internal.featurization.get_base_tokenizers">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools.tools.html#MadLib._internal.featurization.get_base_tokenizers">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_base_tokenizers</span><span class="p">():</span>
     <span class="k">return</span> <span class="n">TOKENIZERS</span></div>
 
 
 
 <div class="viewcode-block" id="get_extra_tokenizers">
-<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools.tools.html#madmatcher_tools._internal.featurization.get_extra_tokenizers">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools.tools.html#MadLib._internal.featurization.get_extra_tokenizers">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_extra_tokenizers</span><span class="p">():</span>
     <span class="k">return</span> <span class="n">EXTRA_TOKENIZERS</span></div>
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_tokenize_and_count</span><span class="p">(</span><span class="n">df_itr</span><span class="p">,</span> <span class="n">token_col_map</span><span class="p">):</span>
+
+    <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">df_itr</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+                <span class="n">col</span> <span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tokenize</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">token_col_map</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">})</span><span class="o">.</span><span class="n">applymap</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_drop_nulls</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
+    <span class="n">numeric_cols</span> <span class="o">=</span> <span class="p">{</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">schema</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">dataType</span><span class="p">,</span> <span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">DoubleType</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">FloatType</span><span class="p">))}</span>
+    <span class="n">checks</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span>
+            <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">isNull</span><span class="p">()</span> <span class="o">|</span> <span class="n">F</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">numeric_cols</span>
+            <span class="k">else</span> <span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">isNull</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+    <span class="p">]</span>
+
+    <span class="n">null_percent</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">df</span>
+        <span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="o">*</span><span class="n">checks</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">F</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">])</span>
+        <span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="n">cols</span> <span class="o">=</span> <span class="n">null_percent</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">null_percent</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="n">threshold</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="o">*</span><span class="n">cols</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="create_features">
-<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools.tools.html#madmatcher_tools._internal.featurization.create_features">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools.tools.html#MadLib._internal.featurization.create_features">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_features</span><span class="p">(</span>
-    <span class="n">A</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-    <span class="n">B</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">A</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
+    <span class="n">B</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
     <span class="n">a_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="n">b_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="n">sim_functions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -184,9 +217,9 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    A : pandas DataFrame</span>
+<span class="sd">    A : Union[pd.DataFrame, SparkDataFrame]</span>
 <span class="sd">        the records of table A</span>
-<span class="sd">    B : pandas DataFrame</span>
+<span class="sd">    B : Union[pd.DataFrame, SparkDataFrame]</span>
 <span class="sd">        the records of table B</span>
 <span class="sd">    a_cols : list</span>
 <span class="sd">        The names of the columns for DataFrame A that should have features generated</span>
@@ -202,43 +235,69 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    pandas DataFrame</span>
-<span class="sd">        a DataFrame containing initialized feature objects for columns in A, B</span>
+<span class="sd">    List[Callable]</span>
+<span class="sd">        a list containing initialized feature objects for columns in A, B</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">sim_functions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">sim_functions</span> <span class="o">=</span> <span class="n">SIM_FUNCTIONS</span>
     <span class="k">if</span> <span class="n">tokenizers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">tokenizers</span> <span class="o">=</span> <span class="n">TOKENIZERS</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">):</span>
+        <span class="c1"># only keep a_cols and b_cols (if B is not None)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">a_cols</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">B</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">unionAll</span><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">b_cols</span><span class="p">))</span>
+        
+        <span class="n">df</span> <span class="o">=</span> <span class="n">repartition_df</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">_drop_nulls</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">null_threshold</span><span class="p">)</span>
+        <span class="n">cols_to_keep</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
 
-    <span class="c1"># only keep a_cols and b_cols (if B is not None)</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">a_cols</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">B</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">,</span> <span class="n">B</span><span class="p">[</span><span class="n">b_cols</span><span class="p">]])</span>
+        <span class="n">numeric_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">schema</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">dataType</span> <span class="ow">in</span> <span class="p">{</span><span class="n">T</span><span class="o">.</span><span class="n">IntegerType</span><span class="p">(),</span> <span class="n">T</span><span class="o">.</span><span class="n">LongType</span><span class="p">(),</span> <span class="n">T</span><span class="o">.</span><span class="n">FloatType</span><span class="p">(),</span> <span class="n">T</span><span class="o">.</span><span class="n">DoubleType</span><span class="p">()}]</span>
+        <span class="c1"># cast everything to a string</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">F</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="s1">&#39;string&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">])</span>
 
-    <span class="c1"># drop null columns</span>
-    <span class="n">null_frac</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-    <span class="n">cols_to_keep</span> <span class="o">=</span> <span class="n">null_frac</span><span class="p">[</span><span class="n">null_frac</span> <span class="o">&lt;</span> <span class="n">null_threshold</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cols_to_keep</span><span class="p">]</span>
+        <span class="n">token_cols</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tokenizers</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">cname</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">out_col_name</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                <span class="n">token_cols</span><span class="p">[</span><span class="n">cname</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
 
-    <span class="c1"># find numeric columns, and then cast everything to a string</span>
-    <span class="n">numeric_cols</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">StructType</span><span class="p">([</span><span class="n">T</span><span class="o">.</span><span class="n">StructField</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">IntegerType</span><span class="p">())</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">token_cols</span><span class="p">])</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">mapInPandas</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="n">_tokenize_and_count</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">token_cols</span><span class="p">),</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span>
+        <span class="c1">#record_count = df.count()</span>
 
-    <span class="c1"># create token columns map</span>
-    <span class="n">token_cols</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tokenizers</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="n">cname</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">out_col_name</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
-            <span class="n">token_cols</span><span class="p">[</span><span class="n">cname</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+        <span class="n">avg_counts</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">F</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">token_cols</span><span class="p">])</span>\
+                        <span class="o">.</span><span class="n">toPandas</span><span class="p">()</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="c1"># only keep a_cols and b_cols (if B is not None)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">a_cols</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">B</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">,</span> <span class="n">B</span><span class="p">[</span><span class="n">b_cols</span><span class="p">]])</span>
 
-    <span class="c1"># get the average number of tokens for each tokenizer, column</span>
-    <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">new_col</span><span class="p">,</span> <span class="p">(</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">orig_col</span><span class="p">)</span> <span class="ow">in</span> <span class="n">token_cols</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">tokens</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">orig_col</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">notnull</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">counts</span> <span class="o">=</span> <span class="n">tokens</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
-        <span class="n">results</span><span class="p">[</span><span class="n">new_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">counts</span>
-    <span class="n">counts_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
-    <span class="n">avg_counts</span> <span class="o">=</span> <span class="n">counts_df</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="c1"># drop null columns</span>
+        <span class="n">null_frac</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">cols_to_keep</span> <span class="o">=</span> <span class="n">null_frac</span><span class="p">[</span><span class="n">null_frac</span> <span class="o">&lt;</span> <span class="n">null_threshold</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cols_to_keep</span><span class="p">]</span>
+
+        <span class="c1"># find numeric columns, and then cast everything to a string</span>
+        <span class="n">numeric_cols</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+        <span class="c1"># create token columns map</span>
+        <span class="n">token_cols</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tokenizers</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">cname</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">out_col_name</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                <span class="n">token_cols</span><span class="p">[</span><span class="n">cname</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+
+        <span class="c1"># get the average number of tokens for each tokenizer, column</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">new_col</span><span class="p">,</span> <span class="p">(</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">orig_col</span><span class="p">)</span> <span class="ow">in</span> <span class="n">token_cols</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">tokens</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">orig_col</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">notnull</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">counts</span> <span class="o">=</span> <span class="n">tokens</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">new_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">counts</span>
+        <span class="n">counts_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+        <span class="n">avg_counts</span> <span class="o">=</span> <span class="n">counts_df</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
     <span class="c1"># add features to features list</span>
     <span class="n">features</span> <span class="o">=</span> <span class="p">[]</span>
@@ -265,7 +324,7 @@
 
 
 <div class="viewcode-block" id="featurize">
-<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools.tools.html#madmatcher_tools._internal.featurization.featurize">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools.tools.html#MadLib._internal.featurization.featurize">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">featurize</span><span class="p">(</span>
     <span class="n">features</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">],</span>
     <span class="n">A</span><span class="p">,</span>
@@ -281,11 +340,11 @@
 <span class="sd">    ----------</span>
 <span class="sd">    features : List[Callable]</span>
 <span class="sd">        a DataFrame containing initialized feature objects for columns in A, B</span>
-<span class="sd">    A : pandas DataFrame</span>
+<span class="sd">    A : Union[pd.DataFrame, SparkDataFrame]</span>
 <span class="sd">        the records of table A</span>
-<span class="sd">    B : pandas DataFrame</span>
+<span class="sd">    B : Union[pd.DataFrame, SparkDataFrame]</span>
 <span class="sd">        the records of table B</span>
-<span class="sd">    candidates : pandas DataFrame</span>
+<span class="sd">    candidates : Union[pd.DataFrame, SparkDataFrame]</span>
 <span class="sd">        id pairs of A and B that are potential matches</span>
 <span class="sd">    output_col : str</span>
 <span class="sd">        the name of the column for the resulting feature vectors, default `fvs`</span>
@@ -317,15 +376,19 @@
     <span class="k">if</span> <span class="n">B</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">B</span> <span class="o">=</span> <span class="n">_prepreprocess_table</span><span class="p">(</span><span class="n">B</span><span class="p">)</span><span class="o">.</span><span class="n">persist</span><span class="p">()</span>
     <span class="n">cache</span> <span class="o">=</span> <span class="n">BuildCache</span><span class="p">()</span>
-    <span class="n">pool</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">&#39;threading&#39;</span><span class="p">)</span>
-    <span class="n">pool</span><span class="p">(</span><span class="n">delayed</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">build</span><span class="p">)(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">features</span><span class="p">)</span>
+    
+    <span class="c1"># Use sequential processing to avoid multiprocessing deadlocks with Spark</span>
+    <span class="c1"># Spark already provides its own multiprocessing, so we don&#39;t need joblib&#39;s</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">features</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
     <span class="n">cache</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    
     <span class="k">if</span> <span class="n">B</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">delayed_build</span> <span class="o">=</span> <span class="n">delayed</span><span class="p">(</span><span class="n">_create_sqlite_df</span><span class="p">)</span>
-        <span class="n">table_a_preproc</span><span class="p">,</span> <span class="n">table_b_preproc</span> <span class="o">=</span> <span class="n">pool</span><span class="p">([</span><span class="n">delayed_build</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">B</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="n">features</span><span class="p">),</span> <span class="n">delayed_build</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">features</span><span class="p">)])</span>
+        <span class="n">table_a_preproc</span> <span class="o">=</span> <span class="n">_create_sqlite_df</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">B</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span>
+        <span class="n">table_b_preproc</span> <span class="o">=</span> <span class="n">_create_sqlite_df</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span>
         <span class="n">table_b_preproc</span><span class="o">.</span><span class="n">to_spark</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">table_a_preproc</span> <span class="o">=</span> <span class="n">_create_sqlite_df</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">B</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">table_a_preproc</span> <span class="o">=</span> <span class="n">_create_sqlite_df</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">B</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span>
         <span class="n">table_b_preproc</span> <span class="o">=</span> <span class="n">table_a_preproc</span>
 
     <span class="n">table_a_preproc</span><span class="o">.</span><span class="n">to_spark</span><span class="p">()</span>
@@ -364,7 +427,8 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_processing_columns</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pp_for_a</span><span class="p">,</span> <span class="n">pp_for_b</span><span class="p">,</span> <span class="n">features</span><span class="p">):</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;_id&#39;</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">_preprocess_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pp_for_a</span><span class="p">,</span> <span class="n">pp_for_b</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span>
+    <span class="c1"># Exclude _id from processing columns since it&#39;s the index, not a feature</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span> <span class="o">!=</span> <span class="s1">&#39;_id&#39;</span><span class="p">]</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_preprocess_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pp_for_a</span><span class="p">,</span> <span class="n">pp_for_b</span><span class="p">,</span> <span class="n">features</span><span class="p">):</span>
@@ -455,7 +519,7 @@
 
 
 <div class="viewcode-block" id="score">
-<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools._internal.featurization.score.html#madmatcher_tools._internal.featurization.score">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools._internal.featurization.score.html#MadLib._internal.featurization.score">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">score</span><span class="p">(</span>
         <span class="n">fvs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
         <span class="n">features</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>

@@ -1,7 +1,7 @@
 ﻿madmatcher\_tools.\_internal.tokenizer.vectorizer.Vectorizer
 ============================================================
 
-.. currentmodule:: madmatcher_tools._internal.tokenizer.vectorizer
+.. currentmodule:: MadLib._internal.tokenizer.vectorizer
 
 .. autoclass:: Vectorizer
 

@@ -1,7 +1,7 @@
 ﻿madmatcher\_tools.tools
 =======================
 
-.. automodule:: madmatcher_tools.tools
+.. automodule:: MadLib.tools
 
    
    .. rubric:: Functions
