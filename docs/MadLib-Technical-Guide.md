@@ -1,6 +1,10 @@
 # MadLib Technical Guide
 
-This document provides an in-depth technical overview of MadLib's functionality, internal workings, and advanced use cases. For quick start guide and basic usage, refer to the [README file](`https://github.com/dahluwalia/MadLib/blob/main/README.md`). For complete API reference, see the API documentation. _todo when docs are live_ [insert link here]
+This document provides an in-depth technical overview of MadLib's functionality, internal workings, and advanced use cases. 
+
+For quick start guide and basic usage, refer to the [README file](https://github.com/dahluwalia/MadLib/blob/main/README.md). 
+
+For an overview of the API, see the [API Docs todo when live]().
 
 ## Understanding Entity Matching
 
