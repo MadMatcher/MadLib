@@ -229,7 +229,7 @@ For additional SparkSession configuration options (storage limits, memory settin
 
 ## Examples
 
-Check out the comprehensive [Python notebook insert link here](`examples/madlib_examples.ipynb`) for detailed usage examples including:
+Check out the comprehensive [`Python notebook`](`https://github.com/dahluwalia/MadLib/blob/main/examples/madlib_examples.ipynb`) for detailed usage examples including:
 
 ### Table of Contents
 
@@ -245,7 +245,7 @@ Check out the comprehensive [Python notebook insert link here](`examples/madlib_
 10. **Active Learning Labeling** - Efficient data labeling strategies
 11. **Custom Abstract Classes** - Extending functionality with custom implementations
 
-For in-depth technical documentation, see [MadLib-Technical-Guide insert link here](docs/MadLib%20Documentation.md).
+For in-depth API documentation, see the [`MadLib Technical Guide`](https://github.com/dahluwalia/MadLib/blob/main/docs/MadLib-Technical-Guide.md).
 
 ## License
 
