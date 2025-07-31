@@ -245,7 +245,7 @@ Check out the comprehensive [Python notebook](https://github.com/dahluwalia/MadL
 10. **Active Learning Labeling** - Efficient data labeling strategies
 11. **Custom Abstract Classes** - Extending functionality with custom implementations
     
-For an overfiew of the API, see the [API Docs todo when live]().
+For an overview of the API, see the [API Docs todo when live]().
 
 For in-depth API documentation and explanations, see the [MadLib Technical Guide](https://github.com/dahluwalia/MadLib/blob/main/docs/MadLib-Technical-Guide.md).
 
