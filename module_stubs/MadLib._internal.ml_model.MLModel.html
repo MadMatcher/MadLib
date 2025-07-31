@@ -154,25 +154,25 @@ for training, prediction, confidence estimation, and entropy calculation.</p>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#MadLib._internal.ml_model.MLModel.__init__" title="MadLib._internal.ml_model.MLModel.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#MadLib._internal.ml_model.MLModel.__init__" title="MadLib._internal.ml_model.MLModel.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#MadLib._internal.ml_model.MLModel.entropy" title="MadLib._internal.ml_model.MLModel.entropy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">entropy</span></code></a>(df, vector_col, output_col)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#MadLib._internal.ml_model.MLModel.entropy" title="MadLib._internal.ml_model.MLModel.entropy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">entropy</span></code></a>(df, vector_col, output_col)</p></td>
 <td><p>Calculate entropy of predictions.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#MadLib._internal.ml_model.MLModel.params_dict" title="MadLib._internal.ml_model.MLModel.params_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">params_dict</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#MadLib._internal.ml_model.MLModel.params_dict" title="MadLib._internal.ml_model.MLModel.params_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">params_dict</span></code></a>()</p></td>
 <td><p>Get a dictionary of model parameters.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#MadLib._internal.ml_model.MLModel.predict" title="MadLib._internal.ml_model.MLModel.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(df, vector_col, output_col)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#MadLib._internal.ml_model.MLModel.predict" title="MadLib._internal.ml_model.MLModel.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(df, vector_col, output_col)</p></td>
 <td><p>Make predictions using the trained model.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#MadLib._internal.ml_model.MLModel.prediction_conf" title="MadLib._internal.ml_model.MLModel.prediction_conf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prediction_conf</span></code></a>(df, vector_col, label_column)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#MadLib._internal.ml_model.MLModel.prediction_conf" title="MadLib._internal.ml_model.MLModel.prediction_conf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prediction_conf</span></code></a>(df, vector_col, label_column)</p></td>
 <td><p>Calculate prediction confidence scores.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#MadLib._internal.ml_model.MLModel.prep_fvs" title="MadLib._internal.ml_model.MLModel.prep_fvs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prep_fvs</span></code></a>(fvs[, feature_col])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#MadLib._internal.ml_model.MLModel.prep_fvs" title="MadLib._internal.ml_model.MLModel.prep_fvs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prep_fvs</span></code></a>(fvs[, feature_col])</p></td>
 <td><p>Prepare feature vectors for model input.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#MadLib._internal.ml_model.MLModel.train" title="MadLib._internal.ml_model.MLModel.train"><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code></a>(df, vector_col, label_column)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#MadLib._internal.ml_model.MLModel.train" title="MadLib._internal.ml_model.MLModel.train"><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code></a>(df, vector_col, label_column)</p></td>
 <td><p>Train the model on the given data.</p></td>
 </tr>
 </tbody>
@@ -180,16 +180,16 @@ for training, prediction, confidence estimation, and entropy calculation.</p>
 <p class="rubric">Attributes</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#id0" title="MadLib._internal.ml_model.MLModel.nan_fill"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nan_fill</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id0" title="MadLib._internal.ml_model.MLModel.nan_fill"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nan_fill</span></code></a></p></td>
 <td><p>Value to use for filling NaN values in feature vectors.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#MadLib._internal.ml_model.MLModel.trained_model" title="MadLib._internal.ml_model.MLModel.trained_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trained_model</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#MadLib._internal.ml_model.MLModel.trained_model" title="MadLib._internal.ml_model.MLModel.trained_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trained_model</span></code></a></p></td>
 <td><p>The trained ML Model object</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#id1" title="MadLib._internal.ml_model.MLModel.use_floats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">use_floats</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id1" title="MadLib._internal.ml_model.MLModel.use_floats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">use_floats</span></code></a></p></td>
 <td><p>Whether the model uses float32 or float64 precision.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#id2" title="MadLib._internal.ml_model.MLModel.use_vectors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">use_vectors</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#id2" title="MadLib._internal.ml_model.MLModel.use_vectors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">use_vectors</span></code></a></p></td>
 <td><p>Whether the model expects feature vectors in vector format.</p></td>
 </tr>
 </tbody>
@@ -323,7 +323,7 @@ based on the model’s requirements.</p>
 <dd class="field-even"><p>The trained model (self)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#MadLib._internal.ml_model.MLModel" title="MadLib._internal.ml_model.MLModel">MLModel</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="#MadLib._internal.ml_model.MLModel" title="MadLib._internal.ml_model.MLModel">MLModel</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -337,7 +337,7 @@ based on the model’s requirements.</p>
 <dd class="field-odd"><p>The trained ML Model object</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html#MadLib._internal.ml_model.MLModel" title="MadLib._internal.ml_model.MLModel">MLModel</a></p>
+<dd class="field-even"><p><a class="reference internal" href="#MadLib._internal.ml_model.MLModel" title="MadLib._internal.ml_model.MLModel">MLModel</a></p>
 </dd>
 </dl>
 </dd></dl>

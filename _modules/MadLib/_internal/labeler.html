@@ -97,7 +97,7 @@
 
 
 <div class="viewcode-block" id="Labeler">
-<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools._internal.labeler.Labeler.html#MadLib._internal.labeler.Labeler">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MadLib._internal.labeler.Labeler.html#MadLib._internal.labeler.Labeler">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Labeler</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 
     <span class="nd">@abstractmethod</span>
@@ -355,10 +355,10 @@
         <span class="nb">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;field&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">),</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;github&quot;</span><span class="p">))</span>
 
 <div class="viewcode-block" id="CustomLabeler">
-<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools._internal.labeler.CustomLabeler.html#MadLib._internal.labeler.CustomLabeler">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MadLib._internal.labeler.CustomLabeler.html#MadLib._internal.labeler.CustomLabeler">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CustomLabeler</span><span class="p">(</span><span class="n">Labeler</span><span class="p">):</span>
 <div class="viewcode-block" id="CustomLabeler.__init__">
-<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools._internal.labeler.CustomLabeler.html#MadLib._internal.labeler.CustomLabeler.__init__">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MadLib._internal.labeler.CustomLabeler.html#MadLib._internal.labeler.CustomLabeler.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a_df</span><span class="p">,</span> <span class="n">b_df</span><span class="p">,</span> <span class="n">id_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;_id&#39;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_a_df</span> <span class="o">=</span> <span class="n">a_df</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_b_df</span> <span class="o">=</span> <span class="n">b_df</span>
@@ -374,7 +374,7 @@
         <span class="k">return</span> <span class="n">label</span>
 
 <div class="viewcode-block" id="CustomLabeler.label_pair">
-<a class="viewcode-back" href="../../../module_stubs/madmatcher_tools._internal.labeler.CustomLabeler.html#MadLib._internal.labeler.CustomLabeler.label_pair">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MadLib._internal.labeler.CustomLabeler.html#MadLib._internal.labeler.CustomLabeler.label_pair">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">label_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row1</span><span class="p">,</span> <span class="n">row2</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>

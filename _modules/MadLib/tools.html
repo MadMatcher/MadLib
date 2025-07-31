@@ -70,7 +70,7 @@
              
   <h1>Source code for MadLib.tools</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Public API functions for MadMatcher.</span>
+<span class="sd">Public API functions for MadLib.</span>
 
 <span class="sd">This module provides the main functions that users will interact with.</span>
 <span class="sd">Implementation details are hidden in the _internal package.</span>
@@ -115,7 +115,7 @@
 
 
 <div class="viewcode-block" id="down_sample">
-<a class="viewcode-back" href="../../module_stubs/madmatcher_tools.tools.html#MadLib.tools.down_sample">[docs]</a>
+<a class="viewcode-back" href="../../module_stubs/MadLib.tools.html#MadLib.tools.down_sample">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">down_sample</span><span class="p">(</span>
     <span class="n">fvs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
     <span class="n">percent</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -191,7 +191,7 @@
 
 
 <div class="viewcode-block" id="create_seeds">
-<a class="viewcode-back" href="../../module_stubs/madmatcher_tools.tools.html#MadLib.tools.create_seeds">[docs]</a>
+<a class="viewcode-back" href="../../module_stubs/MadLib.tools.html#MadLib.tools.create_seeds">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_seeds</span><span class="p">(</span>
     <span class="n">fvs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
     <span class="n">nseeds</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -289,7 +289,7 @@
 
 
 <div class="viewcode-block" id="train_matcher">
-<a class="viewcode-back" href="../../module_stubs/madmatcher_tools.tools.html#MadLib.tools.train_matcher">[docs]</a>
+<a class="viewcode-back" href="../../module_stubs/MadLib.tools.html#MadLib.tools.train_matcher">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">train_matcher</span><span class="p">(</span>
     <span class="n">model_spec</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">MLModel</span><span class="p">],</span>
     <span class="n">labeled_data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
@@ -327,7 +327,7 @@
 
 
 <div class="viewcode-block" id="apply_matcher">
-<a class="viewcode-back" href="../../module_stubs/madmatcher_tools.tools.html#MadLib.tools.apply_matcher">[docs]</a>
+<a class="viewcode-back" href="../../module_stubs/MadLib.tools.html#MadLib.tools.apply_matcher">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">apply_matcher</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">MLModel</span><span class="p">,</span> <span class="n">SKLearnModel</span><span class="p">,</span> <span class="n">SparkMLModel</span><span class="p">],</span>
     <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
@@ -362,7 +362,7 @@
 
 
 <div class="viewcode-block" id="label_data">
-<a class="viewcode-back" href="../../module_stubs/madmatcher_tools.tools.html#MadLib.tools.label_data">[docs]</a>
+<a class="viewcode-back" href="../../module_stubs/MadLib.tools.html#MadLib.tools.label_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">label_data</span><span class="p">(</span>
     <span class="n">model_spec</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">MLModel</span><span class="p">],</span>
     <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="s2">&quot;continuous&quot;</span><span class="p">],</span>
