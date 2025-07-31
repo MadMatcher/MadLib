@@ -21,7 +21,7 @@ pip install MadLib
 Install from GitHub:
 
 ```bash
-pip install git+https://github.com/dahluwalia/madlib.git
+pip install git+https://github.com/MadMatcher/madlib.git
 ```
 
 ### Requirements
@@ -229,7 +229,7 @@ For additional SparkSession configuration options (storage limits, memory settin
 
 ## Examples
 
-Check out the comprehensive [Python notebook](https://github.com/dahluwalia/MadLib/blob/main/examples/madlib_examples.ipynb) for detailed usage examples including:
+Check out the comprehensive [Python notebook](https://github.com/MadMatcher/MadLib/blob/main/examples/madlib_examples.ipynb) for detailed usage examples including:
 
 ### Table of Contents
 
@@ -247,7 +247,7 @@ Check out the comprehensive [Python notebook](https://github.com/dahluwalia/MadL
     
 For an overview of the API, see the [API Docs todo when live]().
 
-For in-depth API documentation and explanations, see the [MadLib Technical Guide](https://github.com/dahluwalia/MadLib/blob/main/docs/MadLib-Technical-Guide.md).
+For in-depth API documentation and explanations, see the [MadLib Technical Guide](https://github.com/MadMatcher/MadLib/blob/main/docs/MadLib-Technical-Guide.md).
 
 ## License
 
