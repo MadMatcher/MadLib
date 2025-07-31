@@ -13,8 +13,8 @@ import pandas as pd
 import numpy as np
 import pyspark.sql.types as T    
 from copy import deepcopy, copy
-from ..utils import persisted, get_logger, repartition_df, type_check
-from ..labeler import Labeler
+from ..utils import persisted, get_logger, repartition_df, type_check, save_training_data_streaming, load_training_data_streaming, adjust_labeled_examples_for_existing_data
+from ..labeler import Labeler, WebUILabeler
 from ..ml_model import MLModel, SKLearnModel, convert_to_array, convert_to_vector
 from pyspark.ml.functions import vector_to_array, array_to_vector
 from queue import PriorityQueue, Queue, Empty
@@ -31,7 +31,7 @@ log = get_logger(__name__)
     
 class ContinuousEntropyActiveLearner:    
     
-    def __init__(self, model, labeler, queue_size=50, max_labeled=100000, on_demand_stop=True):    
+    def __init__(self, model, labeler, queue_size=50, max_labeled=100000, on_demand_stop=True, parquet_file_path='active-matcher-training-data.parquet'):    
         """
 
         Parameters
@@ -50,12 +50,14 @@ class ContinuousEntropyActiveLearner:
 
         on_demand_stop : bool
             if True, the active learning will stop when the user stops labeling
-
+        
+        parquet_file_path : str
+            path to save/load training data parquet file
         """
 
         if isinstance(labeler, dict):
             labeler = _create_labeler(labeler)
-        self._check_init_args(model, labeler, queue_size, max_labeled, on_demand_stop)
+        self._check_init_args(model, labeler, queue_size, max_labeled, on_demand_stop, parquet_file_path)
 
         self._queue_size = queue_size
         self._max_labeled = max_labeled
@@ -63,9 +65,12 @@ class ContinuousEntropyActiveLearner:
         self._min_batch_size = 3
         self._labeler = labeler
         self._model = copy(model)
+        self._parquet_file_path = parquet_file_path
         self.local_training_fvs_ = None
+        self._terminate_if_label_everything = False
+
     
-    def _check_init_args(self, model, labeler, queue_size, max_labeled, on_demand_stop):
+    def _check_init_args(self, model, labeler, queue_size, max_labeled, on_demand_stop, parquet_file_path):
 
         type_check(model, 'model', MLModel)
         type_check(labeler, 'labeler', Labeler)
@@ -76,6 +81,7 @@ class ContinuousEntropyActiveLearner:
         if max_labeled <= 0 :
             raise ValueError('max_labeled must be > 0')
         type_check(on_demand_stop, 'on_demand_stop', bool)
+        type_check(parquet_file_path, 'parquet_file_path', str)
 
     def _select_training_vectors(self, fvs, ids):
         return fvs.filter(F.col('_id').isin(ids))
@@ -123,6 +129,18 @@ class ContinuousEntropyActiveLearner:
 
         stop_training = Event()
 
+        # Load existing training data if available
+        existing_training_data = load_training_data_streaming(self._parquet_file_path, log)
+        
+        if existing_training_data is not None:
+            seeds = existing_training_data
+            log.info(f'Using {len(seeds)} existing labeled examples')
+            
+        if not self._on_demand_stop:
+            remaining_examples = adjust_labeled_examples_for_existing_data(
+                len(seeds), self._max_labeled)
+            log.info(f'Remaining examples to label: {remaining_examples}')
+
         training_thread = Thread(target=self._training_loop, args=(to_be_label_queue, labeled_queue, stop_training, fvs, seeds))
         training_thread.start()
         # run labeler in main thread
@@ -130,6 +148,8 @@ class ContinuousEntropyActiveLearner:
         #log.info('running training')
         terminate = False
         pos, neg = self._get_pos_negative(seeds.dropna(subset=['label']))
+        if isinstance(self._labeler, WebUILabeler):
+            log.warning(f"Records are almost ready to be labeled.")
         # if on_demand_stop is True, the active learning will stop when the user stops labeling
         # if on_demand_stop is False, the active learning will run until the max_labeled examples are labeled
         while (not terminate and self._on_demand_stop) or (nlabeled < self._max_labeled and not self._on_demand_stop):
@@ -161,6 +181,8 @@ class ContinuousEntropyActiveLearner:
         training_thread.join()
 
         labeled_data = self.local_training_fvs_.dropna(subset=['label']).copy()
+        if isinstance(self._labeler, WebUILabeler):
+            log.warning("Active learning is complete.")
         return labeled_data
 
 
@@ -173,13 +195,13 @@ class ContinuousEntropyActiveLearner:
             with persisted(fvs) as fvs:
                 n_fvs = fvs.count()
                 
-                if n_fvs <= len(seeds) + self._queue_size:  
-                    log.warning(f'Insufficient examples for active learning: {n_fvs} total, {len(seeds)} seeds. No unlabeled examples to select from. Labeling all examples.')
-                    self._label_everything(fvs)
-                    # Signal to main thread that we're done
-                    stop_event.set()
-                    return
-            
+                if n_fvs <= len(seeds) + self._max_labeled and not self._on_demand_stop:
+                    if self._terminate_if_label_everything:
+                        log.info('running al to completion would label everything, labeling all fvs and returning')
+                        return self._label_everything(fvs)
+                    else:
+                        log.info('running al to completion would label everything, but self._terminate_if_label_everything is False so AL will still run')
+
                 self.local_training_fvs_ = seeds.copy()
                 self.local_training_fvs_.set_index('_id', drop=False, inplace=True)
                 # seed feature vectors
@@ -214,7 +236,10 @@ class ContinuousEntropyActiveLearner:
                         df['labeled_in_iteration'] = float(i)
                         self.local_training_fvs_.loc[df.index, 'label'] = df['label']
                         self.local_training_fvs_.loc[df.index, 'labeled_in_iteration'] = df['labeled_in_iteration']
-                    
+
+                        # Save new examples immediately after labeling
+                        save_training_data_streaming(df, self._parquet_file_path, log)
+
                     # train model
                     #log.info('training model')
                     training_fvs = spark.createDataFrame(self.local_training_fvs_, schema=schema)\

@@ -84,6 +84,12 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">request</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
 
@@ -401,6 +407,286 @@
         <span class="nb">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;field&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">),</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;github&quot;</span><span class="p">))</span></div>
 
         
+<span class="k">class</span><span class="w"> </span><span class="nc">WebUILabeler</span><span class="p">(</span><span class="n">Labeler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Web interface for labeling pairs of records.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a_df, b_df : Union[pd.DataFrame, SparkDataFrame]</span>
+<span class="sd">    id_col : str, default &#39;_id&#39;</span>
+<span class="sd">    flask_port : int, default 5005</span>
+<span class="sd">    streamlit_port : int, default 8501</span>
+<span class="sd">    flask_host : str, default &#39;127.0.0.1&#39;   </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a_df</span><span class="p">,</span> <span class="n">b_df</span><span class="p">,</span> <span class="n">id_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;_id&#39;</span><span class="p">,</span> <span class="n">flask_port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5005</span><span class="p">,</span> <span class="n">streamlit_port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8501</span><span class="p">,</span> <span class="n">flask_host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;127.0.0.1&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_a_df</span> <span class="o">=</span> <span class="n">a_df</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_b_df</span> <span class="o">=</span> <span class="n">b_df</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id_col</span> <span class="o">=</span> <span class="n">id_col</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_all_fields</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Will be set on first use</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_fields</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flask_port</span> <span class="o">=</span> <span class="n">flask_port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_streamlit_port</span> <span class="o">=</span> <span class="n">streamlit_port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flask_host</span> <span class="o">=</span> <span class="n">flask_host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_pair</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_fields_mem</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flask_app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="c1"># Store the original DataFrame column order</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_column_order</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">a_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_flask_routes</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flask_thread</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_streamlit_proc</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server_started</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># Do NOT start servers here</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_flask_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nd">@self</span><span class="o">.</span><span class="n">_flask_app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/get_pair&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">get_pair</span><span class="p">():</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_pair</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">id1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id_col</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="n">id2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id_col</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span>
+                        <span class="s1">&#39;row1&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="s1">&#39;row2&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                        <span class="s1">&#39;fields&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_current_fields_mem</span><span class="p">)</span>
+                    <span class="p">})</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;waiting&#39;</span><span class="p">}),</span> <span class="mi">204</span>
+
+        <span class="nd">@self</span><span class="o">.</span><span class="n">_flask_app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/submit_label&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">submit_label</span><span class="p">():</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;label&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">})</span>
+
+        <span class="nd">@self</span><span class="o">.</span><span class="n">_flask_app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/update_fields&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">update_fields</span><span class="p">():</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_current_fields</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;fields&#39;</span><span class="p">,</span> <span class="p">[]))</span>
+                <span class="c1"># Also update the memory version for immediate use</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_current_fields_mem</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_fields</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">})</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_server_started</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_server_started</span><span class="p">:</span>
+            <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;werkzeug&#39;</span><span class="p">)</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_flask_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span>
+                <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_flask_app</span><span class="o">.</span><span class="n">run</span><span class="p">,</span>
+                <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flask_host</span><span class="p">,</span> <span class="s1">&#39;port&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flask_port</span><span class="p">,</span> <span class="s1">&#39;debug&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;use_reloader&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+                <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_flask_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+            <span class="c1"># Launch Streamlit UI as a subprocess</span>
+            <span class="n">app_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_streamlit_app_code</span><span class="p">()</span>
+            <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.py&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">app_code</span><span class="p">)</span>
+                <span class="n">app_path</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">streamlit_cmd</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;streamlit&quot;</span><span class="p">,</span> <span class="s2">&quot;run&quot;</span><span class="p">,</span> <span class="n">app_path</span><span class="p">,</span> <span class="s2">&quot;--server.port&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_streamlit_port</span><span class="p">),</span> <span class="s2">&quot;--server.headless&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_streamlit_proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">streamlit_cmd</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_server_started</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id1</span><span class="p">,</span> <span class="n">id2</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_server_started</span><span class="p">()</span>
+        <span class="n">row1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_row</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_a_df</span><span class="p">,</span> <span class="n">id1</span><span class="p">)</span>
+        <span class="n">row2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_row</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_b_df</span><span class="p">,</span> <span class="n">id2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_fields</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_all_fields</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">row1</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_fields</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_current_fields</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_all_fields</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="c1"># Block if a previous pair is still waiting for a label</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_pair</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_current_pair</span> <span class="o">=</span> <span class="p">(</span><span class="n">row1</span><span class="p">,</span> <span class="n">row2</span><span class="p">)</span>
+            <span class="c1"># Use the persisted field selection, fallback to all fields if not set</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_current_fields_mem</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_fields</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_fields</span> <span class="k">else</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_all_fields</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Wait for label to be set by UI</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span>
+            <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_current_pair</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="c1"># Don&#39;t clear _current_fields_mem - preserve the field selection</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">label</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_row</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">row_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fetch a single row from a DataFrame as a dict.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_id_col</span><span class="p">]</span> <span class="o">==</span> <span class="n">row_id</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No row with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id_col</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">row_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">rows</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># Spark DataFrame</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id_col</span><span class="p">)</span> <span class="o">==</span> <span class="n">row_id</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">rows</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No row with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_id_col</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">row_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">asDict</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_streamlit_app_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">column_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_column_order</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">import streamlit as st</span>
+<span class="s1">import requests</span>
+<span class="s1">import time</span>
+<span class="s1">import os</span>
+<span class="s1">import json</span>
+<span class="s1">import tempfile</span>
+<span class="s1">import textwrap</span>
+<span class="s1">import pandas as pd</span>
+
+<span class="s1">st.title(&quot;Active Matcher Web Labeler&quot;)</span>
+
+<span class="s1">FLASK_URL = &quot;http://</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_flask_host</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_flask_port</span><span class="si">}</span><span class="s1">&quot;</span>
+
+<span class="s1">if &#39;last_pair&#39; not in st.session_state:</span>
+<span class="s1">    st.session_state[&#39;last_pair&#39;] = None</span>
+
+<span class="s1">if &#39;selected_fields&#39; not in st.session_state:</span>
+<span class="s1">    st.session_state[&#39;selected_fields&#39;] = </span><span class="si">{</span><span class="n">column_order</span><span class="si">}</span>
+
+<span class="s1">if st.session_state.get(&#39;stopped&#39;, False):</span>
+<span class="s1">    st.write(&quot;Labeling stopped.&quot;)</span>
+<span class="s1">else:</span>
+<span class="s1">    pair = None</span>
+<span class="s1">    try:</span>
+<span class="s1">        resp = requests.get(FLASK_URL + &#39;/get_pair&#39;, timeout=10)</span>
+<span class="s1">        if resp.status_code == 200:</span>
+<span class="s1">            data = resp.json()</span>
+<span class="s1">            row1 = data[&#39;row1&#39;]</span>
+<span class="s1">            row2 = data[&#39;row2&#39;]</span>
+<span class="s1">            fields = data[&#39;fields&#39;]</span>
+<span class="s1">            st.session_state[&#39;last_pair&#39;] = (row1, row2, fields)</span>
+<span class="s1">            pair = (row1, row2, fields)</span>
+<span class="s1">        if resp.status_code == 204:</span>
+<span class="s1">            pair = None</span>
+<span class="s1">    except Exception as e:</span>
+<span class="s1">        pair = st.session_state[&#39;last_pair&#39;]</span>
+
+<span class="s1">    if pair is not None:</span>
+<span class="s1">        row1, row2, fields = pair</span>
+<span class="s1">        st.subheader(&quot;Do these two records refer to the same entity?&quot;)</span>
+<span class="s1">        # Interactive field selection</span>
+<span class="s1">        all_fields = </span><span class="si">{</span><span class="n">column_order</span><span class="si">}</span>
+<span class="s1">        </span>
+<span class="s1">        # Function to send field updates to backend</span>
+<span class="s1">        def update_backend_fields(new_fields):</span>
+<span class="s1">            try:</span>
+<span class="s1">                requests.post(FLASK_URL + &#39;/update_fields&#39;, json=</span><span class="se">{{</span><span class="s1">&#39;fields&#39;: new_fields</span><span class="se">}}</span><span class="s1">, timeout=10)</span>
+<span class="s1">            except Exception as e:</span>
+<span class="s1">                st.error(f&quot;Failed to update fields: </span><span class="se">{{</span><span class="s1">e</span><span class="se">}}</span><span class="s1">&quot;)</span>
+<span class="s1">        </span>
+<span class="s1">        # Use the fields from the backend to ensure consistency</span>
+<span class="s1">        current_selection = fields</span>
+<span class="s1">        </span>
+<span class="s1">        # Create multiselect with callback</span>
+<span class="s1">        selected_fields = st.multiselect(</span>
+<span class="s1">            &quot;Fields to display:&quot;,</span>
+<span class="s1">            options=all_fields,</span>
+<span class="s1">            default=current_selection,</span>
+<span class="s1">            key=&#39;field_selector&#39;,</span>
+<span class="s1">        )</span>
+<span class="s1">        </span>
+<span class="s1">        # Send updates to backend when selection changes</span>
+<span class="s1">        # Convert to sets for proper comparison</span>
+<span class="s1">        if set(selected_fields) != set(current_selection):</span>
+<span class="s1">            update_backend_fields(selected_fields)</span>
+<span class="s1">        def wrap(val, width=40):</span>
+<span class="s1">            return textwrap.fill(str(val), width=width, break_long_words=False)</span>
+<span class="s1">        table_data = []</span>
+<span class="s1">        # Maintain original column order by filtering all_fields to only include selected_fields</span>
+<span class="s1">        ordered_fields = [f for f in all_fields if f in selected_fields]</span>
+<span class="s1">        for f in ordered_fields:</span>
+<span class="s1">            a_val = wrap(row1.get(f, &#39;&#39;), width=40)</span>
+<span class="s1">            b_val = wrap(row2.get(f, &#39;&#39;), width=40)</span>
+<span class="s1">            table_data.append((f, a_val, b_val))  # Do NOT wrap f</span>
+<span class="s1">        # Render as HTML table for perfect wrapping</span>
+<span class="s1">        table_html = &quot;&quot;&quot;&lt;table&gt;</span>
+<span class="s1">&lt;thead&gt;</span>
+<span class="s1">&lt;tr&gt;</span>
+<span class="s1">  &lt;th style=&#39;white-space:nowrap&#39;&gt;Field&lt;/th&gt;</span>
+<span class="s1">  &lt;th style=&#39;max-width:300px;word-break:break-word;white-space:pre-wrap;&#39;&gt;From A&lt;/th&gt;</span>
+<span class="s1">  &lt;th style=&#39;max-width:300px;word-break:break-word;white-space:pre-wrap;&#39;&gt;From B&lt;/th&gt;</span>
+<span class="s1">&lt;/tr&gt;</span>
+<span class="s1">&lt;/thead&gt;</span>
+<span class="s1">&lt;tbody&gt;</span>
+<span class="s1">&quot;&quot;&quot;</span>
+<span class="s1">        for f, a_val, b_val in table_data:</span>
+<span class="s1">            table_html += f&quot;&lt;tr&gt;&lt;td style=&#39;white-space:nowrap&#39;&gt;</span><span class="se">{{</span><span class="s1">f</span><span class="se">}}</span><span class="s1">&lt;/td&gt;&lt;td style=&#39;max-width:300px;word-break:break-word;white-space:pre-wrap;&#39;&gt;</span><span class="se">{{</span><span class="s1">a_val</span><span class="se">}}</span><span class="s1">&lt;/td&gt;&lt;td style=&#39;max-width:300px;word-break:break-word;white-space:pre-wrap;&#39;&gt;</span><span class="se">{{</span><span class="s1">b_val</span><span class="se">}}</span><span class="s1">&lt;/td&gt;&lt;/tr&gt;&quot;</span>
+<span class="s1">        table_html += &quot;&lt;/tbody&gt;&lt;/table&gt;&quot;</span>
+<span class="s1">        st.markdown(table_html, unsafe_allow_html=True)</span>
+<span class="s1">        </span>
+<span class="s1">        # Add light blue button styling</span>
+<span class="s1">        st.markdown(&quot;&quot;&quot;</span>
+<span class="s1">        &lt;style&gt;</span>
+<span class="s1">        .stButton &gt; button </span><span class="se">{{</span>
+<span class="s1">            background-color: #87CEEB !important;</span>
+<span class="s1">            color: #000000 !important;</span>
+<span class="s1">            border: 2px solid #4682B4 !important;</span>
+<span class="s1">            font-weight: bold !important;</span>
+<span class="s1">            border-radius: 8px !important;</span>
+<span class="s1">            padding: 8px 16px !important;</span>
+<span class="s1">        </span><span class="se">}}</span>
+<span class="s1">        .stButton &gt; button:hover </span><span class="se">{{</span>
+<span class="s1">            background-color: #4682B4 !important;</span>
+<span class="s1">            color: white !important;</span>
+<span class="s1">            transform: translateY(-1px) !important;</span>
+<span class="s1">            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;</span>
+<span class="s1">        </span><span class="se">}}</span>
+<span class="s1">        &lt;/style&gt;</span>
+<span class="s1">        &quot;&quot;&quot;, unsafe_allow_html=True)</span>
+<span class="s1">        </span>
+<span class="s1">        col1, col2, col3, col4 = st.columns(4)</span>
+<span class="s1">        if &#39;label_sent&#39; not in st.session_state:</span>
+<span class="s1">            st.session_state[&#39;label_sent&#39;] = False</span>
+<span class="s1">        def send_label(label):</span>
+<span class="s1">            try:</span>
+<span class="s1">                requests.post(FLASK_URL + &#39;/submit_label&#39;, json=</span><span class="se">{{</span><span class="s1">&#39;label&#39;: label</span><span class="se">}}</span><span class="s1">, timeout=10)</span>
+<span class="s1">                st.session_state[&#39;label_sent&#39;] = True</span>
+<span class="s1">                if label == -1.0:</span>
+<span class="s1">                    st.session_state[&#39;stopped&#39;] = True</span>
+<span class="s1">            except Exception as e:</span>
+<span class="s1">                st.error(f&quot;Failed to send label: </span><span class="se">{{</span><span class="s1">e</span><span class="se">}}</span><span class="s1">&quot;)</span>
+<span class="s1">        with col1:</span>
+<span class="s1">            if st.button(&quot;Yes (y)&quot;, key=&quot;yes_btn&quot;):</span>
+<span class="s1">                send_label(1.0)</span>
+<span class="s1">        with col2:</span>
+<span class="s1">            if st.button(&quot;No (n)&quot;, key=&quot;no_btn&quot;):</span>
+<span class="s1">                send_label(0.0)</span>
+<span class="s1">        with col3:</span>
+<span class="s1">            if st.button(&quot;Unsure (u)&quot;, key=&quot;unsure_btn&quot;):</span>
+<span class="s1">                send_label(2.0)</span>
+<span class="s1">        with col4:</span>
+<span class="s1">            if st.button(&quot;Stop (s)&quot;, key=&quot;stop_btn&quot;):</span>
+<span class="s1">                send_label(-1.0)</span>
+<span class="s1">        if st.session_state[&#39;label_sent&#39;]:</span>
+<span class="s1">            if st.session_state.get(&#39;stopped&#39;, False):</span>
+<span class="s1">                st.write(&quot;Labeling stopped.&quot;)</span>
+<span class="s1">            else:</span>
+<span class="s1">                st.success(&quot;Label sent! Waiting for next pair...&quot;)</span>
+<span class="s1">                st.session_state[&#39;label_sent&#39;] = False</span>
+<span class="s1">                time.sleep(0.3)  # Give backend time to update</span>
+<span class="s1">                st.rerun()</span>
+<span class="s1">    else:</span>
+<span class="s1">        st.write(&quot;No pair to label. Waiting...&quot;)</span>
+<span class="s1">        time.sleep(0.2)</span>
+<span class="s1">        st.rerun()</span>
+<span class="s1">&#39;&#39;&#39;</span>
+
+
 </pre></div>
 
            </div>

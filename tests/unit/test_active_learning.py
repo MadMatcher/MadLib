@@ -404,7 +404,12 @@ class TestEntropyActiveLearner:
         
         model = TestMLModel()
         labeler = TestLabeler()
-        learner = EntropyActiveLearner(model, labeler, batch_size=10, max_iter=50)
+        # Use a unique parquet file path for this test to avoid conflicts
+        import tempfile
+        import os
+        temp_parquet = tempfile.NamedTemporaryFile(suffix='.parquet', delete=False)
+        temp_parquet.close()
+        learner = EntropyActiveLearner(model, labeler, batch_size=10, max_iter=50, parquet_file_path=temp_parquet.name)
         learner._terminate_if_label_everything = True
         
         # Create test data
@@ -432,6 +437,12 @@ class TestEntropyActiveLearner:
             
             assert mock_label_everything.called
             assert isinstance(result, pd.DataFrame)
+        
+        # Clean up temporary file
+        try:
+            os.unlink(temp_parquet.name)
+        except OSError:
+            pass  # File might already be deleted
 
     @patch('MadLib._internal.active_learning.ent_active_learner.SparkSession')
     @patch('MadLib._internal.active_learning.ent_active_learner.persisted')
@@ -507,7 +518,12 @@ class TestEntropyActiveLearner:
         
         model = TestMLModel()
         labeler = TestLabeler()
-        learner = EntropyActiveLearner(model, labeler, batch_size=1, max_iter=10)
+        # Use a unique parquet file path for this test to avoid conflicts
+        import tempfile
+        import os
+        temp_parquet = tempfile.NamedTemporaryFile(suffix='.parquet', delete=False)
+        temp_parquet.close()
+        learner = EntropyActiveLearner(model, labeler, batch_size=1, max_iter=10, parquet_file_path=temp_parquet.name)
         
         # Create test data
         data = [(1, 101, 201, [0.1, 0.2]), (2, 102, 202, [0.3, 0.4]), (3, 103, 203, [0.5, 0.6])]
@@ -534,6 +550,12 @@ class TestEntropyActiveLearner:
             
             assert isinstance(result, pd.DataFrame)
             assert labeler.call_count >= 2  # Should have called labeler at least twice
+        
+        # Clean up temporary file
+        try:
+            os.unlink(temp_parquet.name)
+        except OSError:
+            pass  # File might already be deleted
 
     def test_entropy_active_learner_train_with_no_positive_negative(self, spark_session):
         """Test EntropyActiveLearner with no positive or negative examples."""
@@ -960,7 +982,12 @@ class TestContinuousEntropyActiveLearner:
         ]
         seeds = pd.DataFrame(seeds_data)
         
-        learner = ContinuousEntropyActiveLearner(model, labeler, queue_size=5)
+        # Use a unique parquet file path for this test to avoid conflicts
+        import tempfile
+        import os
+        temp_parquet = tempfile.NamedTemporaryFile(suffix='.parquet', delete=False)
+        temp_parquet.close()
+        learner = ContinuousEntropyActiveLearner(model, labeler, queue_size=5, parquet_file_path=temp_parquet.name)
         
         # This should handle the empty candidates gracefully
         result = learner.train(fvs, seeds)
@@ -968,6 +995,12 @@ class TestContinuousEntropyActiveLearner:
         # Should return labeled data
         assert isinstance(result, pd.DataFrame)
         assert len(result) >= 2  # At least the seeds
+        
+        # Clean up temporary file
+        try:
+            os.unlink(temp_parquet.name)
+        except OSError:
+            pass  # File might already be deleted
 
 
 @pytest.mark.unit
