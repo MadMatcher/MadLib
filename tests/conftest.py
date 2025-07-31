@@ -1,5 +1,5 @@
 """
-Pytest configuration and shared fixtures for MadMatcher tests.
+Pytest configuration and shared fixtures for MadLib tests.
 """
 
 import pytest
@@ -15,7 +15,7 @@ from pathlib import Path
 def spark_session():
     """Create a Spark session for testing."""
     spark = SparkSession.builder \
-        .appName("MadMatcherTests") \
+        .appName("MadLibTests") \
         .master("local[2]") \
         .config("spark.sql.warehouse.dir", tempfile.mkdtemp()) \
         .config("spark.sql.shuffle.partitions", "2") \

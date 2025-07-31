@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test runner script for MadMatcher test suite.
+Test runner script for MadLib test suite.
 
 This script provides convenient commands for running different types of tests
 and generating coverage reports.
@@ -35,7 +35,7 @@ def run_command(cmd, description):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="MadMatcher Test Runner")
+    parser = argparse.ArgumentParser(description="MadLib Test Runner")
     parser.add_argument(
         "test_type",
         choices=["all", "unit", "integration", "performance", "coverage", "quick"],

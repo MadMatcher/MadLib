@@ -1,5 +1,5 @@
 """
-Public API functions for MadMatcher.
+Public API functions for MadLib.
 
 This module provides the main functions that users will interact with.
 Implementation details are hidden in the _internal package.

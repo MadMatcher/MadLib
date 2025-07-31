@@ -1,4 +1,4 @@
-"""Performance tests for MadMatcher scalability and efficiency."""
+"""Performance tests for MadLib scalability and efficiency."""
 
 import pytest
 import pandas as pd

@@ -1,4 +1,4 @@
-"""Integration tests for complete MadMatcher workflows."""
+"""Integration tests for complete MadLib workflows."""
 
 import pytest
 import pandas as pd

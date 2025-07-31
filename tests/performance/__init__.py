@@ -1,1 +1,1 @@
-# Performance tests for MadMatcher scalability 
+# Performance tests for MadLib scalability 

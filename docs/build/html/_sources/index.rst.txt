@@ -1,7 +1,7 @@
-MadMatcher Tools Documentation
+MadLib Tools Documentation
 ==============================
 
-Welcome to the MadMatcher Tools documentation.
+Welcome to the MadLib Tools documentation.
 
 .. toctree::
    :maxdepth: 2

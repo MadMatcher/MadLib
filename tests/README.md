@@ -1,6 +1,6 @@
-# MadMatcher Test Suite
+# MadLib Test Suite
 
-This comprehensive test suite provides thorough testing of the MadMatcher package with **80% code coverage target** across unit, integration, and performance tests.
+This comprehensive test suite provides thorough testing of the MadLib package with **80% code coverage target** across unit, integration, and performance tests.
 
 ## 🏗️ Test Structure
 

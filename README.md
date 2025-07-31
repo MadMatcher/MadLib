@@ -4,10 +4,10 @@ A comprehensive Python library for entity matching and record linkage, providing
 
 ## Features
 
-- **Machine Learning Models**: Support for both scikit-learn and PySpark ML models
+- **Machine Learning Models**: Support for both Scikit-Learn and PySpark ML models
 - **Active Learning**: Efficient labeling with batch and continuous modes
-- **Similarity Functions**: TF-IDF, Jaccard, Cosine, SIF embeddings, and more
-- **Flexible Labeling**: CLI-based and programmatic labeling interfaces
+- **Similarity Functions**: TF-IDF, Jaccard, Overlap, SIF embeddings, and Cosine Similarity
+- **Flexible Labeling**: CLI-based, Web-based, and Gold-based labeling interfaces
 - **Scalable Processing**: Can leverage PySpark for handling large datasets
 
 ## Installation
@@ -18,10 +18,10 @@ Install from PyPI: [todo]
 pip install MadLib
 ```
 
-For development dependencies:
+Install from GitHub:
 
 ```bash
-pip install MadLib
+pip install git+https://github.com/dahluwalia/madlib.git
 ```
 
 ### Requirements
@@ -29,20 +29,25 @@ pip install MadLib
 **Core Dependencies:**
 
 - Python 3.8+
-- numpy>=1.20.0
-- pandas>=1.3.0
-- scikit-learn>=1.0.0
-- pyspark>=3.2.0
-- pyarrow>=11.0.0
-- joblib>=1.1.0
-- threadpoolctl>=3.0.0
-- scipy>=1.7.0
-- numba>=0.56.0
-- tqdm>=4.62.0
+- flask>=2.0.0
+- joblib==1.2.0
+- mmh3==3.0.0
+- numba==0.60.0
+- numpy==1.26.0
+- numpydoc==1.5.0
+- pandas==1.5.2
+- pyarrow==14.0.0
+- py_stringmatching==0.4.6
+- pyspark==3.5.3
+- requests>=2.25.0
+- scikit_learn==1.3.1
+- scipy==1.15.2
+- streamlit>=1.0.0
 - tabulate>=0.8.9
+- threadpoolctl==3.1.0
+- tqdm==4.64.1
+- xgboost==1.7.3
 - xxhash>=3.0.0
-- py-stringmatching>=0.4.0
-- mmh3>=3.0.0
 
 ## Quick Start
 
@@ -106,15 +111,13 @@ MadLib supports both Pandas DataFrames and Spark DataFrames, allowing you to cho
 
 - Working with smaller datasets
 - Prototyping and development
-- Simple single-machine processing
-- You prefer familiar Pandas syntax
+- You prefer Pandas syntax
 
 **Use Spark when:**
 
 - Working with large datasets
-- Need distributed processing across multiple CPU cores or multiple machines
 - Processing data that doesn't fit in memory
-- Require scalable, production-ready performance
+- You prefer familiar Spark syntax
 
 ### Setting Up a SparkSession
 
@@ -174,6 +177,7 @@ spark_fvs = featurize(features, spark_df_a, spark_df_b, spark_candidates)
 print(f"Feature vectors count: {spark_fvs.count()}")
 ```
 
+<!---
 ### Running on a Spark Cluster
 
 For production deployments on a Spark cluster:
@@ -194,6 +198,7 @@ spark = SparkSession.builder \
 features = create_features(spark_df_a, spark_df_b, ['name', 'email'], ['name', 'email'])
 spark_fvs = featurize(features, spark_df_a, spark_df_b, spark_candidates)
 ```
+--->
 
 For additional SparkSession configuration options (storage limits, memory settings, etc.), refer to the [official PySpark documentation](https://spark.apache.org/docs/latest/api/python/reference/pyspark.sql/api/pyspark.sql.SparkSession.html).
 
@@ -202,22 +207,12 @@ For additional SparkSession configuration options (storage limits, memory settin
 ### Core Functions
 
 - **`create_features(A, B, a_cols, b_cols, sim_functions=None, tokenizers=None, null_threshold=0.5)`**: Generate feature objects for comparing records
-- **`featurize(features, A, B, candidates, output_col='features', fill_na=0.0)`**: Apply features to candidate pairs
-- **`down_sample(fvs, percent, search_id_column, score_column='score', bucket_size=1000)`**: Reduce dataset size by sampling
-- **`create_seeds(fvs, nseeds, labeler, score_column='score')`**: Generate labeled training examples
+- **`featurize(features, A, B, candidates, output_col='features', fill_na=0.0)`**: Apply features to candidate pairs and obtain feature vectors
+- **`down_sample(fvs, percent, search_id_column, score_column='score', bucket_size=1000)`**: Reduce dataset size by intelligently sampling to get matches and non-matches
+- **`create_seeds(fvs, nseeds, labeler, score_column='score')`**: Create labeled training examples
 - **`train_matcher(model_spec, labeled_data, feature_col='features', label_col='label')`**: Train a matching model
 - **`apply_matcher(model, df, feature_col, output_col)`**: Apply trained model for predictions
-- **`label_data(model_spec, mode, labeler_spec, fvs, seeds=None)`**: Generate labeled data using active learning
-
-### Feature Types
-
-- **Exact Match**: Binary exact string matching
-- **TF-IDF**: Term frequency-inverse document frequency similarity
-- **Jaccard**: Jaccard coefficient for set similarity
-- **Cosine**: Cosine similarity between vectors
-- **SIF**: Smooth Inverse Frequency embeddings
-- **Overlap Coefficient**: Normalized overlap between sets
-- **Relative Difference**: Numerical difference normalization
+- **`label_data(model_spec, mode, labeler_spec, fvs, seeds=None)`**: Created labeled data using active learning and only label the most informative pairs
 
 ### Model Support
 
@@ -227,13 +222,14 @@ For additional SparkSession configuration options (storage limits, memory settin
 
 ### Active Learning
 
-- **Batch Mode**: Process multiple examples at once
-- **Continuous Mode**: Interactive labeling with real-time model updates
-- **Entropy-based Selection**: Focus on most uncertain examples
+#### **Entropy-based Selection**: Focus on most uncertain examples
+
+- **Batch Mode**: Label in batches before training a new model
+- **Continuous Mode**: Continuously label data as new models are being trained at the same time
 
 ## Examples
 
-Check out the comprehensive Jupyter notebook in `examples/madmatcher_examples.ipynb` for detailed usage examples including:
+Check out the comprehensive [Python notebook insert link here](`examples/madlib_examples.ipynb`) for detailed usage examples including:
 
 ### Table of Contents
 
@@ -249,13 +245,7 @@ Check out the comprehensive Jupyter notebook in `examples/madmatcher_examples.ip
 10. **Active Learning Labeling** - Efficient data labeling strategies
 11. **Custom Abstract Classes** - Extending functionality with custom implementations
 
-For in-depth technical documentation, see [`docs/MadLib Documentation.md`](docs/MadLib%20Documentation.md).
-
-## Documentation
-
-- **API Documentation**: Auto-generated from docstrings
-- **Examples**: Comprehensive Jupyter notebook with real examples in [`examples/madmatcher_examples.ipynb`](examples/madmatcher_examples.ipynb)
-- **Technical Documentation**: See [`docs/MadLib Documentation.md`](docs/MadLib%20Documentation.md)
+For in-depth technical documentation, see [MadLib-Technical-Guide insert link here](docs/MadLib%20Documentation.md).
 
 ## License
 

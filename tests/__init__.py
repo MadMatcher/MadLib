@@ -1,6 +1,6 @@
-# MadMatcher Test Suite
+# MadLib Test Suite
 """
-Comprehensive test suite for MadMatcher package.
+Comprehensive test suite for MadLib package.
 
 This test suite covers:
 - Unit tests for individual components

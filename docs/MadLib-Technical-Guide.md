@@ -1,8 +1,6 @@
-<!-- MadMatcher Documentation -->
+# MadLib Technical Guide
 
-# MadLib Technical Documentation
-
-This document provides an in-depth technical overview of MadLib' functionality, internal workings, and advanced use cases. For quick start guide and basic usage, refer to the README.md file [insert link here]. For complete API reference, see the API documentation. [insert link here]
+This document provides an in-depth technical overview of MadLib's functionality, internal workings, and advanced use cases. For quick start guide and basic usage, refer to the [README file](`https://github.com/dahluwalia/MadLib/blob/main/README.md`). For complete API reference, see the API documentation. _todo when docs are live_ [insert link here]
 
 ## Understanding Entity Matching
 
@@ -94,7 +92,7 @@ Features are created through two main components:
 
 2. **Similarity Functions**  
    What they are: Methods to compute how similar two sets of tokens are  
-   Available functions in MadMatcher:
+   Available similarity functions in MadLib (as of July 31, 2025):
    - TF-IDF: Term frequency-inverse document frequency similarity
    - Jaccard: Set-based similarity using intersection over union
    - SIF: Smooth inverse frequency similarity
@@ -103,7 +101,7 @@ Features are created through two main components:
 
 ### Understanding Your Similiarity Functions
 
-When using MadMatcher, it's crucial to understand how your chosen similarity functions work:
+When using MadLib, it's crucial to understand how your chosen similarity functions work:
 
 **Why This Matters:**
 
@@ -906,37 +904,283 @@ uncertain_examples = [
 
 ## Built-in Labeler Classes
 
-MadMatcher provides several built-in labeler classes for different labeling workflows. You can use these directly or extend them for custom logic. All labelers inherit from the public `Labeler` abstract class:
+MadLib provides several built-in labeler classes for different labeling workflows. You can use these directly or extend them for custom logic. All labelers inherit from the public `Labeler` abstract class:
 
-- **GoldLabeler**: For automated labeling using a gold standard set of matches.
+### GoldLabeler
 
-  - Usage: `GoldLabeler(gold)` where `gold` is a DataFrame with columns `id1` and `id2` for known matches.
-  - Returns `1.0` for pairs in the gold set, `0.0` otherwise.
+**Purpose**: Automated labeling using a gold set of known matches.
 
-- **CLILabeler**: For interactive, command-line labeling by a human.
+**Usage**: `GoldLabeler(gold)`
 
-  - Usage: `CLILabeler(a_df, b_df, id_col='_id')`
-  - Presents record pairs to the user in the terminal and asks for a label (`yes`, `no`, `unsure`, or `stop`).
-  - Useful for manual review and active learning.
+**Parameters**:
 
-- **CustomLabeler**: For advanced users who want to implement their own labeling logic.
+- `gold` (DataFrame): A pandas DataFrame containing known matches with columns `id1` and `id2`
+  - `id1`: Record IDs from dataset A
+  - `id2`: Record IDs from dataset B that match the corresponding `id1` records
 
-  - Usage: Subclass `CustomLabeler` and implement the `label_pair(row1, row2)` method.
-  - Example:
+**When to use**:
 
-    ```python
-    from MadLib import CustomLabeler
+- You have a ground truth dataset of known matches
+- You want to automate the labeling process completely
+- You're testing or validating your matching pipeline
 
-    class MyCustomLabeler(CustomLabeler):
-        def label_pair(self, row1, row2):
-            # Custom logic here
-            return 1.0 if row1['email'] == row2['email'] else 0.0
-    ```
+**How it works**:
 
-- **ThresholdLabeler** (example): For rule-based labeling using similarity scores.
-  - See the example above for how to implement this by extending `Labeler`.
+- Returns `1.0` for record pairs that exist in the gold standard DataFrame
+- Returns `0.0` for all other pairs
+- No human interaction required
+
+**Example**:
+
+```python
+# Create gold standard data
+gold_matches = pd.DataFrame({
+    'id1': [1, 3, 5],      # Records from dataset A
+    'id2': [101, 103, 105] # Matching records from dataset B
+})
+
+# Create labeler
+gold_labeler = GoldLabeler(gold_matches)
+
+# Use in active learning
+labeled_data = label_data(
+    model_spec=model_config,
+    mode='batch',
+    labeler_spec=gold_labeler,
+    fvs=feature_vectors
+)
+```
+
+### CLILabeler
+
+**Purpose**: Interactive command-line labeling for human review.
+
+**Usage**: `CLILabeler(a_df, b_df, id_col='_id')`
+
+**Parameters**:
+
+- `a_df` (DataFrame): Your first dataset (pandas or Spark DataFrame)
+- `b_df` (DataFrame): Your second dataset (pandas or Spark DataFrame)
+- `id_col` (str, default='\_id'): Column name containing unique record identifiers
+  - **When to change**: If your datasets use a different column name for unique IDs
+  - **Example**: Use `id_col='customer_id'` if your ID column is named 'customer_id'
+
+**When to use**:
+
+- You need human judgment for labeling decisions
+- You want to review record pairs interactively
+- You don't have access to a web browser or you prefer command-line tools
+
+**How it works**:
+
+- Displays record pairs side-by-side in the terminal
+- Prompts for user input: `yes` (match), `no` (non-match), `unsure` (skip), or `stop` (end labeling)
+- Shows all available fields by default
+- Returns the appropriate label (1.0, 0.0, or skips the pair)
+
+**Example**:
+
+```python
+# Create CLI labeler with custom ID column
+cli_labeler = CLILabeler(
+    a_df=customers_df,
+    b_df=prospects_df,
+    id_col='customer_id'  # Custom ID column name
+)
+
+# Use in seed creation
+seeds = create_seeds(
+    fvs=feature_vectors,
+    nseeds=50,
+    labeler=cli_labeler
+)
+```
+
+### WebUILabeler
+
+**Purpose**: Interactive web-based labeling with a modern Streamlit interface.
+
+**Usage**: `WebUILabeler(a_df, b_df, id_col='_id', flask_port=5005, streamlit_port=8501, flask_host='127.0.0.1')`
+
+**Parameters**:
+
+- `a_df` (DataFrame): Your first dataset (pandas or Spark DataFrame)
+- `b_df` (DataFrame): Your second dataset (pandas or Spark DataFrame)
+- `id_col` (str, default='\_id'): Column name containing unique record identifiers
+  - **When to change**: If your datasets use a different column name for unique IDs
+- `flask_port` (int, default=5005): Port for the Flask backend API
+  - **When to change**: If port 5005 is already in use by another application
+  - **Example**: Use `flask_port=5006` if 5005 is occupied
+- `streamlit_port` (int, default=8501): Port for the Streamlit frontend
+  - **When to change**: If port 8501 is already in use by another application
+  - **Example**: Use `streamlit_port=8502` if 8501 is occupied
+- `flask_host` (str, default='127.0.0.1'): Host address for the Flask server
+  - **When to change**: If you need to access the interface from other machines on the network
+  - **Example**: Use `flask_host='0.0.0.0'` to allow external access
+
+**When to use**:
+
+- You prefer a graphical interface over command-line
+- You're working in a Python notebook or web-based environment
+
+**How it works**:
+
+- Automatically starts a Flask backend server and Streamlit frontend
+- Provides side-by-side record comparison with field selection
+
+**Example**:
+
+```python
+# Create web labeler with custom configuration
+web_labeler = WebUILabeler(
+    a_df=customers_df,
+    b_df=prospects_df,
+    id_col='customer_id',
+    flask_port=5006,      # Custom port if 5005 is busy
+    streamlit_port=8502,  # Custom port if 8501 is busy
+    flask_host='0.0.0.0'  # Allow external access
+)
+
+# Use in active learning
+labeled_data = label_data(
+    model_spec=model_config,
+    mode='continuous',
+    labeler_spec=web_labeler,
+    fvs=feature_vectors,
+    parquet_file_path='web-labeling-data.parquet'
+)
+```
+
+### CustomLabeler
+
+**Purpose**: Advanced users who want to implement their own labeling logic.
+
+**Usage**: Subclass `CustomLabeler` and implement the `label_pair(row1, row2)` method.
+
+**Parameters** (constructor):
+
+- `a_df` (DataFrame): Your first dataset
+- `b_df` (DataFrame): Your second dataset
+- `id_col` (str, default='\_id'): Column name containing unique record identifiers
+
+**When to use**:
+
+- You have domain-specific labeling rules
+- You need access to full record data for complex decision making
+- You want to integrate external data sources or APIs
+
+**How it works**:
+
+- Allows implementation of complex matching logic
+- Can integrate with external systems or databases
+- Returns custom labels (typically 1.0 for match, 0.0 for non-match)
+
+**Example**:
+
+```python
+from MadLib import CustomLabeler
+
+class EmailDomainLabeler(CustomLabeler):
+    """Labeler that matches records based on email domain and name similarity"""
+
+    def label_pair(self, row1, row2):
+        # Extract email domains
+        email1 = row1.get('email', '')
+        email2 = row2.get('email', '')
+
+        if email1 and email2:
+            domain1 = email1.split('@')[-1].lower()
+            domain2 = email2.split('@')[-1].lower()
+
+            # Check if same domain
+            if domain1 == domain2:
+                # Check name similarity
+                name1 = row1.get('name', '').lower()
+                name2 = row2.get('name', '').lower()
+
+                # Simple word overlap
+                words1 = set(name1.split())
+                words2 = set(name2.split())
+                overlap = len(words1 & words2) / max(len(words1 | words2), 1)
+
+                return 1.0 if overlap >= 0.5 else 0.0
+
+        return 0.0
+
+# Create custom labeler
+custom_labeler = EmailDomainLabeler(customers_df, prospects_df)
+
+# Use in seed creation
+seeds = create_seeds(
+    fvs=feature_vectors,
+    nseeds=100,
+    labeler=custom_labeler
+)
+```
+
+### Labeler Configuration in Functions
+
+When using labelers with `create_seeds()` or `label_data()`, you can pass them in these two ways:
+
+**Direct instantiation**:
+
+```python
+labeler = CLILabeler(a_df, b_df, id_col='customer_id')
+seeds = create_seeds(fvs, nseeds=50, labeler=labeler)
+```
+
+**Dictionary configuration**:
+
+```python
+labeler_config = {
+    'name': 'cli',           # Labeler type: 'cli', 'gold', 'webui'
+    'a_df': customers_df,    # Required for CLI and WebUI
+    'b_df': prospects_df,    # Required for CLI and WebUI
+    'id_col': 'customer_id'  # Optional, defaults to '_id'
+}
+
+seeds = create_seeds(fvs, nseeds=50, labeler=labeler_config)
+```
 
 Refer to this section when choosing or instantiating a labeler for functions like `create_seeds`, `label_data`, or any workflow that requires labeling record pairs.
+
+### Training Data Persistence
+
+MadLib automatically saves and loads training data during active learning and seed creation processes to ensure you don't lose your labeling progress. This is especially important for long labeling sessions or when working with large datasets.
+
+#### Automatic Training Data Saving
+
+When using `label_data()` or `create_seeds()`, MadLib automatically:
+
+1. **Saves Progress**: The system saves the training data after a batch (for batch active learning), or after an example is labeled (for continuous active learning) to a Parquet file (default: `active-matcher-training-data.parquet`)
+
+2. **Resumes from Previous Session**: If you restart the labeling process, MadLib automatically detects and loads previously labeled data
+
+3. **Incremental Updates**: New labeled pairs are appended to existing training data without overwriting previous work
+
+#### Configuration Options
+
+You can customize where the training data is saved:
+
+````python
+# Custom file path for training data
+label_data(
+    model_spec=model_config,
+    mode='batch',
+    labeler_spec=labeler_config,
+    fvs=feature_vectors,
+    parquet_file_path='my-custom-training-data.parquet'  # Custom path
+)
+
+#### File Format
+
+Training data is saved in Parquet format with the following schema:
+
+- `_id`: Unique identifier for each record pair
+- `id1`: Record ID from dataset A
+- `id2`: Record ID from dataset B
+- `features`: Feature vector (array of floats)
+- `label`: Ground truth label (1.0 for match, 0.0 for non-match)
 
 ## Custom Feature Development
 
@@ -981,7 +1225,7 @@ class PhoneNumberFeature(Featurizer):
             return 0.3  # Same last 4 digits (might be related)
         else:
             return 0.0  # Different numbers
-```
+````
 
 ## Best Practices
 

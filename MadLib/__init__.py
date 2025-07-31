@@ -1,5 +1,5 @@
 """
-MadMatcher - A toolkit for entity matching and record linkage.
+MadLib - A toolkit for entity matching.
 
 This package provides tools for creating, training, and applying entity matchers
 using various tokenization, featurization, and machine learning techniques.
