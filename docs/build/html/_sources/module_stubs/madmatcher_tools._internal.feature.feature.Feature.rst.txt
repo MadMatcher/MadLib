@@ -1,7 +1,7 @@
 ﻿madmatcher\_tools.\_internal.feature.feature.Feature
 ====================================================
 
-.. currentmodule:: madmatcher_tools._internal.feature.feature
+.. currentmodule:: MadLib._internal.feature.feature
 
 .. autoclass:: Feature
 

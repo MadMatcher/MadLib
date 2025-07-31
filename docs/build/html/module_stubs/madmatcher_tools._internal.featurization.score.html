@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>madmatcher_tools._internal.featurization.score &mdash; MadMatcher Tools 0.1 documentation</title>
+  <title>madmatcher_tools._internal.featurization.score &mdash; MadLib 0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
@@ -18,8 +18,7 @@
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="madmatcher_tools._internal.featurization.featurize" href="madmatcher_tools._internal.featurization.featurize.html" /> 
+    <link rel="search" title="Search" href="../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -31,7 +30,7 @@
           
           
           <a href="../index.html" class="icon icon-home">
-            MadMatcher Tools
+            MadLib
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -42,23 +41,8 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../module.html">Module Index</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools.tools.html">madmatcher_tools.tools</a></li>
-<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools._internal.tokenizer.tokenizer.Tokenizer.html">madmatcher_tools._internal.tokenizer.tokenizer.Tokenizer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer.html">madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools._internal.feature.feature.Feature.html">madmatcher_tools._internal.feature.feature.Feature</a></li>
-<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools._internal.ml_model.MLModel.html">madmatcher_tools._internal.ml_model.MLModel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools._internal.labeler.Labeler.html">madmatcher_tools._internal.labeler.Labeler</a></li>
-<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools._internal.labeler.CustomLabeler.html">madmatcher_tools._internal.labeler.CustomLabeler</a></li>
-<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools._internal.featurization.create_features.html">madmatcher_tools._internal.featurization.create_features</a></li>
-<li class="toctree-l2"><a class="reference internal" href="madmatcher_tools._internal.featurization.featurize.html">madmatcher_tools._internal.featurization.featurize</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">madmatcher_tools._internal.featurization.score</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#madmatcher_tools._internal.featurization.score"><code class="docutils literal notranslate"><span class="pre">score()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../module.html">Module Index</a></li>
 </ul>
 
         </div>
@@ -67,7 +51,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">MadMatcher Tools</a>
+          <a href="../index.html">MadLib</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -75,7 +59,6 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../module.html">Module Index</a></li>
       <li class="breadcrumb-item active">madmatcher_tools._internal.featurization.score</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/module_stubs/madmatcher_tools._internal.featurization.score.rst.txt" rel="nofollow"> View page source</a>
@@ -89,8 +72,8 @@
   <section id="madmatcher-tools-internal-featurization-score">
 <h1>madmatcher_tools._internal.featurization.score<a class="headerlink" href="#madmatcher-tools-internal-featurization-score" title="Link to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="madmatcher_tools._internal.featurization.score">
-<span class="sig-prename descclassname"><span class="pre">madmatcher_tools._internal.featurization.</span></span><span class="sig-name descname"><span class="pre">score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fvs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/madmatcher_tools/_internal/featurization.html#score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#madmatcher_tools._internal.featurization.score" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="MadLib._internal.featurization.score">
+<span class="sig-prename descclassname"><span class="pre">MadLib._internal.featurization.</span></span><span class="sig-name descname"><span class="pre">score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fvs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../_modules/MadLib/_internal/featurization.html#score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MadLib._internal.featurization.score" title="Link to this definition"></a></dt>
 <dd><p>computes a score by summing up the positively correlated features score in the feature vectors</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -108,9 +91,7 @@
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="madmatcher_tools._internal.featurization.featurize.html" class="btn btn-neutral float-left" title="madmatcher_tools._internal.featurization.featurize" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-    </div>
+          <footer>
 
   <hr/>
 

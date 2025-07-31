@@ -1,7 +1,7 @@
 ﻿madmatcher\_tools.\_internal.ml\_model.MLModel
 ==============================================
 
-.. currentmodule:: madmatcher_tools._internal.ml_model
+.. currentmodule:: MadLib._internal.ml_model
 
 .. autoclass:: MLModel
 

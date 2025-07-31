@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>madmatcher_tools._internal.tokenizer.vectorizer &mdash; MadMatcher Tools 0.1 documentation</title>
+  <title>MadLib._internal.tokenizer.vectorizer &mdash; MadLib 0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
 
@@ -29,7 +29,7 @@
           
           
           <a href="../../../../index.html" class="icon icon-home">
-            MadMatcher Tools
+            MadLib
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -50,7 +50,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../../index.html">MadMatcher Tools</a>
+          <a href="../../../../index.html">MadLib</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -59,7 +59,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">madmatcher_tools._internal.tokenizer.vectorizer</li>
+      <li class="breadcrumb-item active">MadLib._internal.tokenizer.vectorizer</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -68,7 +68,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for madmatcher_tools._internal.tokenizer.vectorizer</h1><div class="highlight"><pre>
+  <h1>Source code for MadLib._internal.tokenizer.vectorizer</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Vectorizer implementations.</span>
 
@@ -92,28 +92,28 @@
 <span class="n">log</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Vectorizer">
-<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer.html#madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer">[docs]</a>
+<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer.html#MadLib._internal.tokenizer.vectorizer.Vectorizer">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Vectorizer</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class for all vectorizers.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="Vectorizer.build_from_doc_freqs">
-<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer.html#madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer.build_from_doc_freqs">[docs]</a>
+<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer.html#MadLib._internal.tokenizer.vectorizer.Vectorizer.build_from_doc_freqs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">build_from_doc_freqs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doc_freqs</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 <div class="viewcode-block" id="Vectorizer.out_col_name">
-<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer.html#madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer.out_col_name">[docs]</a>
+<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer.html#MadLib._internal.tokenizer.vectorizer.Vectorizer.out_col_name">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">out_col_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 <div class="viewcode-block" id="Vectorizer.init">
-<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer.html#madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer.init">[docs]</a>
+<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer.html#MadLib._internal.tokenizer.vectorizer.Vectorizer.init">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 <div class="viewcode-block" id="Vectorizer.vectorize">
-<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer.html#madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer.vectorize">[docs]</a>
+<a class="viewcode-back" href="../../../../module_stubs/madmatcher_tools._internal.tokenizer.vectorizer.Vectorizer.html#MadLib._internal.tokenizer.vectorizer.Vectorizer.vectorize">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">vectorize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 </div>

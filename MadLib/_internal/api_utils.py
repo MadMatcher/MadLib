@@ -1,6 +1,6 @@
 from typing import Union, Dict
 from .ml_model import MLModel, SKLearnModel, SparkMLModel
-from .labeler import Labeler, CLILabeler, GoldLabeler
+from .labeler import Labeler, CLILabeler, GoldLabeler, WebUILabeler
 from pyspark.ml import Transformer
 from sklearn.utils.validation import check_is_fitted
 from sklearn.exceptions import NotFittedError
@@ -19,6 +19,12 @@ AVAILABLE_LABELERS = {
         'description': 'Labeler that uses a gold standard set of matches',
         'required_args': ['gold'],
         'optional_args': []
+    },
+    'webui': {
+        'class': WebUILabeler,
+        'description': 'Web-based interactive labeler with Streamlit UI',
+        'required_args': ['a_df', 'b_df'],
+        'optional_args': ['id_col', 'flask_port', 'streamlit_port', 'flask_host']
     }
 }
 
