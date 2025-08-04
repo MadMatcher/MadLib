@@ -14,8 +14,13 @@ from pyspark.sql import DataFrame as SparkDataFrame
 from sklearn.base import BaseEstimator
 import xxhash
 import numpy as np
+import pickle
+from pathlib import Path
+import logging
+import sys
 
 from ._internal.ml_model import MLModel, SKLearnModel, SparkMLModel
+from ._internal.utils import get_logger
 from ._internal.labeler import Labeler, CLILabeler, GoldLabeler
 from ._internal.active_learning.ent_active_learner import EntropyActiveLearner
 from ._internal.active_learning.cont_entropy_active_learner import ContinuousEntropyActiveLearner
@@ -27,6 +32,7 @@ from ._internal.featurization import (
     featurize
 )
 from ._internal.api_utils import _create_matching_model, _create_labeler, _create_training_model
+logger = get_logger(__name__)
 
 # Re-export the public functions
 __all__ = [
@@ -39,7 +45,11 @@ __all__ = [
     'create_seeds',
     'train_matcher',
     'apply_matcher',
-    'label_data'
+    'label_data',
+    'save_features',
+    'load_features',
+    'save_dataframe',
+    'load_dataframe'
 ]
 
 
@@ -331,3 +341,109 @@ def label_data(
         raise ValueError(f"mode must be either 'batch' or 'continuous', not {mode}")
     labeled_data = learner.train(fvs, seeds)
     return labeled_data
+
+
+def save_features(features, path):
+    """
+    Save a list of feature objects to disk using pickle serialization.
+    
+    Parameters
+    ----------
+    features : List[Callable]
+        List of feature objects to save
+    path : str
+        Path where to save the features file
+        
+    Returns
+    -------
+    None
+    """
+    path = Path(path)
+    
+    logger.info(f"Saving {len(features)} features to {path}")
+    with open(path, 'wb') as f:
+        pickle.dump(features, f)
+    logger.info(f"Successfully saved features to {path}")
+
+
+def load_features(path):
+    """
+    Load a list of feature objects from disk using pickle deserialization.
+    
+    Parameters
+    ----------
+    path : str
+        Path to the saved features file
+        
+    Returns
+    -------
+    List[Callable]
+        List of loaded feature objects
+    """
+    path = Path(path)
+    logger.info(f"Loading features from {path}")
+    with open(path, 'rb') as f:
+        features = pickle.load(f)
+    logger.info(f"Successfully loaded {len(features)} features from {path}")
+    return features
+
+
+def save_dataframe(dataframe, path):
+    """
+    Save a DataFrame to disk, automatically detecting whether it's a pandas or Spark DataFrame.
+    
+    Parameters
+    ----------
+    dataframe : Union[pd.DataFrame, pyspark.sql.DataFrame]
+        DataFrame to save (pandas or Spark)
+    path : str
+        Path where to save the DataFrame
+        
+    Returns
+    -------
+    None
+    """
+    path = Path(path)
+    if isinstance(dataframe, pd.DataFrame):
+        logger.info(f"Saving pandas DataFrame with shape {dataframe.shape} to {path}")
+        dataframe.to_parquet(path)
+        logger.info(f"Successfully saved pandas DataFrame to {path}")
+    elif isinstance(dataframe, SparkDataFrame):
+        logger.info(f"Saving Spark DataFrame to {path}")
+        dataframe.write.mode('overwrite').parquet(str(path))
+        logger.info(f"Successfully saved Spark DataFrame to {path}")
+    else:
+        raise TypeError(f"Unsupported DataFrame type: {type(dataframe)}. "
+                       f"Expected pandas.DataFrame or pyspark.sql.DataFrame")
+
+
+def load_dataframe(path, df_type):
+    """
+    Load a DataFrame from disk based on the specified type.
+    
+    Parameters
+    ----------
+    path : str
+        Path to the saved DataFrame file
+    df_type : str
+        Type of DataFrame to load ('pandas' or 'sparkdf')
+        
+    Returns
+    -------
+    Union[pd.DataFrame, pyspark.sql.DataFrame]
+        Loaded DataFrame
+    """    
+    path = Path(path)
+    logger.info(f"Loading DataFrame from {path} as {df_type}")
+    if df_type.lower() == 'pandas':
+        dataframe = pd.read_parquet(path)
+        logger.info(f"Successfully loaded pandas DataFrame with shape {dataframe.shape} from {path}")
+        return dataframe
+    elif df_type.lower() == 'sparkdf':
+        spark = SparkSession.builder.getOrCreate()
+        dataframe = spark.read.parquet(str(path))
+        logger.info(f"Successfully loaded Spark DataFrame from {path}")
+        return dataframe
+    else:
+        raise ValueError(f"Unsupported DataFrame type: {df_type}. "
+                        f"Expected 'pandas' or 'sparkdf'")

@@ -271,7 +271,9 @@ def featurize(
         DataFrame with feature vectors created with the following schema:
         (`id2`, `id1`, `fv`, other columns from candidates)
     """
+    return_pandas = False
     spark = SparkSession.builder.getOrCreate()
+    return_pandas = isinstance(A, pd.DataFrame) and isinstance(B, pd.DataFrame)
     if isinstance(A, pd.DataFrame):
         A = spark.createDataFrame(A)
     if isinstance(B, pd.DataFrame):
@@ -280,8 +282,7 @@ def featurize(
         candidates = spark.createDataFrame(candidates)
     table_a_preproc, table_b_preproc = _build(A, B, features)
     fvs = _gen_fvs(candidates, table_a_preproc, table_b_preproc, output_col, fill_na, features)
-    fvs = fvs.toPandas()
-    return fvs
+    return fvs.toPandas() if return_pandas else fvs
 
 
 def _build(A, B, features):

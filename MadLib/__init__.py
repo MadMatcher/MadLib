@@ -23,7 +23,11 @@ from .tools import (
     create_seeds,
     train_matcher,
     apply_matcher,
-    label_data
+    label_data,
+    save_features,
+    load_features,
+    save_dataframe,
+    load_dataframe
 )
 
 __all__ = [
@@ -45,5 +49,9 @@ __all__ = [
     'create_seeds',
     'train_matcher',
     'apply_matcher',
-    'label_data'
+    'label_data',
+    'save_features',
+    'load_features',
+    'save_dataframe',
+    'load_dataframe'
 ] 
