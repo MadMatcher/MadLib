@@ -245,7 +245,7 @@ Check out the comprehensive [Python notebook](https://github.com/MadMatcher/MadL
 10. **Active Learning Labeling** - Efficient data labeling strategies
 11. **Custom Abstract Classes** - Extending functionality with custom implementations
     
-For an overview of the API, see the [API Docs todo when live]().
+For an overview of the API, see the [API Docs](https://madmatcher.github.io/MadLib/).
 
 For in-depth API documentation and explanations, see the [MadLib Technical Guide](https://github.com/MadMatcher/MadLib/blob/main/docs/MadLib-Technical-Guide.md).
 

@@ -6,7 +6,7 @@ For quick start guide and basic usage, refer to the [README file](https://github
 
 For an interactive walkthrough, refer to the [Python Notebook](https://github.com/MadMatcher/MadLib/blob/main/examples/madlib_examples.ipynb).
 
-For a general overview of the API, see the [API Docs todo when live]().
+For a general overview of the API, see the [API Docs](https://madmatcher.github.io/MadLib/).
 
 ## Understanding Entity Matching
 
