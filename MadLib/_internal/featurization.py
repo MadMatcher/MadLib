@@ -247,7 +247,7 @@ def featurize(
     candidates,
     output_col: str = 'feature_vectors',
     fill_na: float = 0.0,
-) -> pd.DataFrame:
+) -> Union[pd.DataFrame, SparkDataFrame]:
     """
     applies the featurizer to the record pairs in candidates
 
@@ -267,9 +267,11 @@ def featurize(
         value to fill in for missing data, default 0.0
     Returns
     -------
-    pandas DataFrame
+    Union[pd.DataFrame, SparkDataFrame]
         DataFrame with feature vectors created with the following schema:
-        (`id2`, `id1`, `fv`, other columns from candidates)
+        (`id2`, `id1`, `fv`, other columns from candidates).
+        Returns pandas DataFrame if inputs A and B are pandas DataFrames,
+        otherwise returns Spark DataFrame.
     """
     return_pandas = False
     spark = SparkSession.builder.getOrCreate()
