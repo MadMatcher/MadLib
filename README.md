@@ -98,7 +98,7 @@ model_spec = {
 trained_model = train_matcher(model_spec, seeds)
 
 # Apply the model to make predictions
-predictions = apply_matcher(trained_model, fvs, 'features', 'prediction')
+predictions = apply_matcher(trained_model, fvs, 'feature_vectors', 'prediction')
 ```
 
 ## Spark vs Pandas
@@ -207,10 +207,10 @@ For additional SparkSession configuration options (storage limits, memory settin
 ### Core Functions
 
 - **`create_features(A, B, a_cols, b_cols, sim_functions=None, tokenizers=None, null_threshold=0.5)`**: Generate feature objects for comparing records
-- **`featurize(features, A, B, candidates, output_col='features', fill_na=0.0)`**: Apply features to candidate pairs and obtain feature vectors
+- **`featurize(features, A, B, candidates, output_col='feature_vectors', fill_na=0.0)`**: Apply features to candidate pairs and obtain feature vectors
 - **`down_sample(fvs, percent, search_id_column, score_column='score', bucket_size=1000)`**: Reduce dataset size by intelligently sampling to get matches and non-matches
 - **`create_seeds(fvs, nseeds, labeler, score_column='score')`**: Create labeled training examples
-- **`train_matcher(model_spec, labeled_data, feature_col='features', label_col='label')`**: Train a matching model
+- **`train_matcher(model_spec, labeled_data, feature_col='feature_vectors', label_col='label')`**: Train a matching model
 - **`apply_matcher(model, df, feature_col, output_col)`**: Apply trained model for predictions
 - **`label_data(model_spec, mode, labeler_spec, fvs, seeds=None)`**: Created labeled data using active learning and only label the most informative pairs
 
@@ -244,7 +244,7 @@ Check out the comprehensive [Python notebook](https://github.com/MadMatcher/MadL
 9. **Applying a Matcher** - Making predictions on new data
 10. **Active Learning Labeling** - Efficient data labeling strategies
 11. **Custom Abstract Classes** - Extending functionality with custom implementations
-    
+
 For an overview of the API, see the [API Docs](https://madmatcher.github.io/MadLib/).
 
 For in-depth API documentation and explanations, see the [MadLib Technical Guide](https://github.com/MadMatcher/MadLib/blob/main/docs/MadLib-Technical-Guide.md).

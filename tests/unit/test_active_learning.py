@@ -53,14 +53,14 @@ class TestEntropyActiveLearner:
                         '_id': [1, 2, 3],
                         'id1': [101, 102, 103],
                         'id2': [201, 202, 203],
-                        'features': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+                        'feature_vectors': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
                     })
                 if not isinstance(result, pd.DataFrame):
                     result = pd.DataFrame({
                         '_id': [1, 2, 3],
                         'id1': [101, 102, 103],
                         'id2': [201, 202, 203],
-                        'features': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+                        'feature_vectors': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
                     })
                 result[output_col] = 0.5
                 return spark_session.createDataFrame(result)
@@ -228,14 +228,14 @@ class TestEntropyActiveLearner:
                         '_id': [1, 2, 3],
                         'id1': [101, 102, 103],
                         'id2': [201, 202, 203],
-                        'features': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+                        'feature_vectors': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
                     })
                 if not isinstance(result, pd.DataFrame):
                     result = pd.DataFrame({
                         '_id': [1, 2, 3],
                         'id1': [101, 102, 103],
                         'id2': [201, 202, 203],
-                        'features': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+                        'feature_vectors': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
                     })
                 result[output_col] = 0.5
                 return spark_session.createDataFrame(result)
@@ -306,14 +306,14 @@ class TestEntropyActiveLearner:
                         '_id': [1, 2, 3],
                         'id1': [101, 102, 103],
                         'id2': [201, 202, 203],
-                        'features': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+                        'feature_vectors': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
                     })
                 if not isinstance(result, pd.DataFrame):
                     result = pd.DataFrame({
                         '_id': [1, 2, 3],
                         'id1': [101, 102, 103],
                         'id2': [201, 202, 203],
-                        'features': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+                        'feature_vectors': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
                     })
                 result[output_col] = 0.5
                 return spark_session.createDataFrame(result)
@@ -427,7 +427,7 @@ class TestEntropyActiveLearner:
             '_id': [1, 2],
             'id1': [101, 102],
             'id2': [201, 202],
-            'features': [[0.1, 0.2], [0.3, 0.4]],
+            'feature_vectors': [[0.1, 0.2], [0.3, 0.4]],
             'label': [1.0, 0.0]  # Mix of positive and negative
         })
         
@@ -480,14 +480,14 @@ class TestEntropyActiveLearner:
                         '_id': [1, 2, 3],
                         'id1': [101, 102, 103],
                         'id2': [201, 202, 203],
-                        'features': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+                        'feature_vectors': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
                     })
                 if not isinstance(result, pd.DataFrame):
                     result = pd.DataFrame({
                         '_id': [1, 2, 3],
                         'id1': [101, 102, 103],
                         'id2': [201, 202, 203],
-                        'features': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
+                        'feature_vectors': [[0.1, 0.2], [0.3, 0.4], [0.5, 0.6]]
                     })
                 result[output_col] = 0.5
                 return spark_session.createDataFrame(result)
@@ -540,7 +540,7 @@ class TestEntropyActiveLearner:
             '_id': [1, 2],
             'id1': [101, 102],
             'id2': [201, 202],
-            'features': [[0.1, 0.2], [0.3, 0.4]],
+            'feature_vectors': [[0.1, 0.2], [0.3, 0.4]],
             'label': [1.0, 0.0]  # Mix of positive and negative
         })
         
@@ -603,7 +603,7 @@ class TestEntropyActiveLearner:
             '_id': [1, 2],
             'id1': [101, 102],
             'id2': [201, 202],
-            'features': [[0.1, 0.2], [0.3, 0.4]],
+            'feature_vectors': [[0.1, 0.2], [0.3, 0.4]],
             'label': [1.0, 1.0]  # All positive
         })
         
@@ -899,15 +899,15 @@ class TestContinuousEntropyActiveLearner:
         
         # Create a small dataset with only 2 examples (same as seeds)
         fvs_data = [
-            {'_id': 1, 'id1': 101, 'id2': 201, 'features': [0.1, 0.2]},
-            {'_id': 2, 'id1': 102, 'id2': 202, 'features': [0.3, 0.4]}
+            {'_id': 1, 'id1': 101, 'id2': 201, 'feature_vectors': [0.1, 0.2]},
+            {'_id': 2, 'id1': 102, 'id2': 202, 'feature_vectors': [0.3, 0.4]}
         ]
         fvs = spark_session.createDataFrame(fvs_data)
         
         # Create seeds with the same examples
         seeds_data = [
-            {'_id': 1, 'id1': 101, 'id2': 201, 'features': [0.1, 0.2], 'label': 1.0},
-            {'_id': 2, 'id1': 102, 'id2': 202, 'features': [0.3, 0.4], 'label': 0.0}
+            {'_id': 1, 'id1': 101, 'id2': 201, 'feature_vectors': [0.1, 0.2], 'label': 1.0},
+            {'_id': 2, 'id1': 102, 'id2': 202, 'feature_vectors': [0.3, 0.4], 'label': 0.0}
         ]
         seeds = pd.DataFrame(seeds_data)
         
@@ -969,16 +969,16 @@ class TestContinuousEntropyActiveLearner:
         
         # Create a dataset with more examples than seeds
         fvs_data = [
-            {'_id': 1, 'id1': 101, 'id2': 201, 'features': [0.1, 0.2]},
-            {'_id': 2, 'id1': 102, 'id2': 202, 'features': [0.3, 0.4]},
-            {'_id': 3, 'id1': 103, 'id2': 203, 'features': [0.5, 0.6]}
+            {'_id': 1, 'id1': 101, 'id2': 201, 'feature_vectors': [0.1, 0.2]},
+            {'_id': 2, 'id1': 102, 'id2': 202, 'feature_vectors': [0.3, 0.4]},
+            {'_id': 3, 'id1': 103, 'id2': 203, 'feature_vectors': [0.5, 0.6]}
         ]
         fvs = spark_session.createDataFrame(fvs_data)
         
         # Create seeds with some examples
         seeds_data = [
-            {'_id': 1, 'id1': 101, 'id2': 201, 'features': [0.1, 0.2], 'label': 1.0},
-            {'_id': 2, 'id1': 102, 'id2': 202, 'features': [0.3, 0.4], 'label': 0.0}
+            {'_id': 1, 'id1': 101, 'id2': 201, 'feature_vectors': [0.1, 0.2], 'label': 1.0},
+            {'_id': 2, 'id1': 102, 'id2': 202, 'feature_vectors': [0.3, 0.4], 'label': 0.0}
         ]
         seeds = pd.DataFrame(seeds_data)
         
@@ -1053,7 +1053,7 @@ class TestActiveLearningIntegration:
             '_id': [1, 2],
             'id1': [101, 102],
             'id2': [201, 202],
-            'features': [[0.1, 0.2], [0.3, 0.4]],
+            'feature_vectors': [[0.1, 0.2], [0.3, 0.4]],
             'label': [1.0, 1.0]  # All positive
         })
         

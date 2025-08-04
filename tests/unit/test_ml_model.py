@@ -37,7 +37,7 @@ class DummySparkTransformer(MockTransformer):
 @pytest.fixture
 def sample_df():
     return pd.DataFrame({
-        'features': [[1.0, 2.0], [3.0, 4.0]],
+        'feature_vectors': [[1.0, 2.0], [3.0, 4.0]],
         'label': [0, 1]
     })
 
@@ -77,14 +77,14 @@ def test_no_threads():
 
 def test_predict_and_train(sample_df):
     model = SKLearnModel(DummyEstimator)
-    model.train(sample_df, 'features', 'label')
-    out = model.predict(sample_df, 'features', 'pred')
+    model.train(sample_df, 'feature_vectors', 'label')
+    out = model.predict(sample_df, 'feature_vectors', 'pred')
     assert 'pred' in out.columns
     # Only test the local (pandas) code path for coverage
 
 def test_prediction_conf_and_entropy(sample_df):
     model = SKLearnModel(DummyEstimator)
-    model.train(sample_df, 'features', 'label')
+    model.train(sample_df, 'feature_vectors', 'label')
     # Only test the local (pandas) code path for coverage
     # This avoids the Spark code path that expects a Spark DataFrame
     # and .withColumn method
@@ -92,9 +92,9 @@ def test_prediction_conf_and_entropy(sample_df):
     # Test error if not trained
     model2 = SKLearnModel(DummyEstimator)
     with pytest.raises(RuntimeError):
-        model2.prediction_conf(sample_df, 'features', 'conf')
+        model2.prediction_conf(sample_df, 'feature_vectors', 'conf')
     with pytest.raises(RuntimeError):
-        model2.entropy(sample_df, 'features', 'ent')
+        model2.entropy(sample_df, 'feature_vectors', 'ent')
 
 # SparkMLModel tests
 def test_spark_ml_model_init_with_unfitted_model():
@@ -143,28 +143,28 @@ def test_spark_ml_model_predict_with_pandas_df():
                 mock_F.col.return_value.alias.return_value = MagicMock()
                 
                 # Test with pandas DataFrame
-                df = pd.DataFrame({'features': [[1, 2], [3, 4]]})
+                df = pd.DataFrame({'feature_vectors': [[1, 2], [3, 4]]})
                 model._trained_model = DummySparkTransformer()
-                result = model.predict(df, 'features', 'pred')
+                result = model.predict(df, 'feature_vectors', 'pred')
                 assert result is not None
 
 def test_spark_ml_model_predict_without_trained_model():
     model = SparkMLModel(DummySparkTransformer)
-    df = pd.DataFrame({'features': [[1, 2], [3, 4]]})
+    df = pd.DataFrame({'feature_vectors': [[1, 2], [3, 4]]})
     with pytest.raises(RuntimeError):
-        model.predict(df, 'features', 'pred')
+        model.predict(df, 'feature_vectors', 'pred')
 
 def test_spark_ml_model_prediction_conf_without_trained_model():
     model = SparkMLModel(DummySparkTransformer)
-    df = pd.DataFrame({'features': [[1, 2], [3, 4]]})
+    df = pd.DataFrame({'feature_vectors': [[1, 2], [3, 4]]})
     with pytest.raises(RuntimeError):
-        model.prediction_conf(df, 'features', 'conf')
+        model.prediction_conf(df, 'feature_vectors', 'conf')
 
 def test_spark_ml_model_entropy_without_trained_model():
     model = SparkMLModel(DummySparkTransformer)
-    df = pd.DataFrame({'features': [[1, 2], [3, 4]]})
+    df = pd.DataFrame({'feature_vectors': [[1, 2], [3, 4]]})
     with pytest.raises(RuntimeError):
-        model.entropy(df, 'features', 'ent')
+        model.entropy(df, 'feature_vectors', 'ent')
 
 def test_spark_ml_model_entropy_component():
     model = SparkMLModel(DummySparkTransformer)
@@ -206,5 +206,5 @@ def test_sklearn_model_train_with_spark_df(sample_df):
     
     with patch('MadLib._internal.ml_model.convert_to_array') as mock_convert:
         mock_convert.return_value = mock_spark_df
-        model.train(mock_spark_df, 'features', 'label')
+        model.train(mock_spark_df, 'feature_vectors', 'label')
         assert model._trained_model is not None 

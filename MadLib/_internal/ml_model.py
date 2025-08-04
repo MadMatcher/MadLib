@@ -177,7 +177,7 @@ class MLModel(ABC):
         """
         pass
 
-    def prep_fvs(self, fvs: Union[pd.DataFrame, SparkDataFrame], feature_col: str = 'features') -> Union[pd.DataFrame, SparkDataFrame]:
+    def prep_fvs(self, fvs: Union[pd.DataFrame, SparkDataFrame], feature_col: str = 'feature_vectors') -> Union[pd.DataFrame, SparkDataFrame]:
         """Prepare feature vectors for model input.
         
         This method handles NaN filling and conversion between vector and array formats

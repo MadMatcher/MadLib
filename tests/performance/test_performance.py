@@ -20,7 +20,7 @@ class TestBasicPerformance:
         feature_vectors = pd.DataFrame({
             'id1': list(range(n_candidates)),
             'id2': list(range(1000, 1000 + n_candidates)),
-            'features': [np.random.random(10).tolist() for _ in range(n_candidates)],
+            'feature_vectors': [np.random.random(10).tolist() for _ in range(n_candidates)],
             'score': np.random.random(n_candidates)
         })
         
@@ -44,7 +44,7 @@ class TestBasicPerformance:
         # Create training data with varying feature dimensions
         n_samples = 100
         training_data = pd.DataFrame({
-            'features': [np.random.random(n_features).tolist() for _ in range(n_samples)],
+            'feature_vectors': [np.random.random(n_features).tolist() for _ in range(n_samples)],
             'label': np.random.choice([0.0, 1.0], n_samples)
         })
         
@@ -78,12 +78,12 @@ class TestBasicPerformance:
         feature_vectors = pd.DataFrame({
             'id1': range(n_vectors),
             'id2': range(1000, 1000 + n_vectors),
-            'features': [np.random.random(feature_dim).tolist() for _ in range(n_vectors)]
+            'feature_vectors': [np.random.random(feature_dim).tolist() for _ in range(n_vectors)]
         })
         
         # Test various operations
         # 1. Access features
-        first_features = feature_vectors['features'].iloc[0]
+        first_features = feature_vectors['feature_vectors'].iloc[0]
         assert len(first_features) == feature_dim
         
         # 2. Filter vectors
@@ -91,7 +91,7 @@ class TestBasicPerformance:
         assert len(filtered) == 100
         
         # 3. Apply transformations
-        feature_sums = feature_vectors['features'].apply(lambda x: sum(x))
+        feature_sums = feature_vectors['feature_vectors'].apply(lambda x: sum(x))
         assert len(feature_sums) == n_vectors
         
         elapsed = time.time() - start_time

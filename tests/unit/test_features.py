@@ -82,7 +82,7 @@ class TestFeaturize:
         )
         
         assert isinstance(result, pd.DataFrame)
-        assert 'features' in result.columns
+        assert 'feature_vectors' in result.columns
         assert len(result) == len(sample_candidates)
         assert 'id1' in result.columns
         assert 'id2' in result.columns
@@ -104,7 +104,7 @@ class TestFeaturize:
         )
         
         assert isinstance(result, pd.DataFrame)
-        assert 'features' in result.columns
+        assert 'feature_vectors' in result.columns
         assert len(result) == len(sample_candidates)
 
     def test_featurize_with_custom_output_col(self, sample_dataframe_a, sample_dataframe_b, sample_candidates):
@@ -125,7 +125,7 @@ class TestFeaturize:
         )
         
         assert 'custom_features' in result.columns
-        assert 'features' not in result.columns
+        assert 'feature_vectors' not in result.columns
 
     def test_featurize_empty_candidates(self, sample_dataframe_a, sample_dataframe_b):
         """Test featurization with empty candidates."""
@@ -152,7 +152,7 @@ class TestFeaturize:
         assert isinstance(result, pd.DataFrame)
         # Should return results since IDs exist in the dataframes
         assert len(result) == 2
-        assert 'features' in result.columns
+        assert 'feature_vectors' in result.columns
 
     def test_featurize_mismatched_candidates(self, sample_dataframe_a, sample_dataframe_b):
         """Test featurize with candidates that reference non-existent IDs."""
@@ -210,7 +210,7 @@ class TestFeaturize:
         result = featurize(features, sample_dataframe_a, sample_dataframe_b, sample_candidates)
         
         assert isinstance(result, pd.DataFrame)
-        assert 'features' in result.columns
+        assert 'feature_vectors' in result.columns
 
     def test_featurize_with_explicit_none_fill_na(self, sample_dataframe_a, sample_dataframe_b, sample_candidates):
         """Test featurize with explicit fill_na=None for backward compatibility."""
@@ -218,7 +218,7 @@ class TestFeaturize:
         result = featurize(features, sample_dataframe_a, sample_dataframe_b, sample_candidates, fill_na=None)
         
         assert isinstance(result, pd.DataFrame)
-        assert 'features' in result.columns
+        assert 'feature_vectors' in result.columns
 
     def test_featurize_with_custom_fill_na(self, sample_dataframe_a, sample_dataframe_b, sample_candidates):
         """Test featurize with custom fill_na value."""
@@ -226,7 +226,7 @@ class TestFeaturize:
         result = featurize(features, sample_dataframe_a, sample_dataframe_b, sample_candidates, fill_na=-1.0)
         
         assert isinstance(result, pd.DataFrame)
-        assert 'features' in result.columns
+        assert 'feature_vectors' in result.columns
 
     @patch('MadLib._internal.utils.repartition_df', side_effect=lambda df, part_size, by=None: df)
     def test_featurize_with_spark_candidates(self, mock_repartition, sample_dataframe_a, sample_dataframe_b, sample_candidates):
@@ -457,7 +457,7 @@ class TestEdgeCases:
         )
         
         assert isinstance(result, pd.DataFrame)
-        assert 'features' in result.columns 
+        assert 'feature_vectors' in result.columns 
 
 # Minimal valid tokenizer for testing
 class MinimalTokenizer(Tokenizer):

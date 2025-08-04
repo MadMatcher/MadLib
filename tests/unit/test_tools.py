@@ -275,7 +275,7 @@ class TestCreateSeeds:
             'id1': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
             'id2': [101, 102, 103, 104, 105, 106, 107, 108, 109, 110],
             'score': [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0],
-            'features': [[0.1, 0.2, 0.3]] * 10
+            'feature_vectors': [[0.1, 0.2, 0.3]] * 10
         })
         
         # Mock labeler that returns unsure (2.0) for first few calls, then valid labels
@@ -381,7 +381,7 @@ class TestTrainMatcher:
     def test_train_matcher_custom_feature_column(self, mock_labeled_data):
         """Test training with custom feature column name."""
         labeled_data = mock_labeled_data.copy()
-        labeled_data['custom_features'] = labeled_data['features']
+        labeled_data['custom_features'] = labeled_data['feature_vectors']
         
         model_spec = {
             'model_type': 'sklearn',
@@ -413,7 +413,7 @@ class TestTrainMatcher:
     def test_train_matcher_invalid_input(self):
         """Test train_matcher with invalid input (should raise Exception)."""
         with pytest.raises((TypeError, ValueError, AttributeError)):
-            train_matcher('not_a_model_spec', pd.DataFrame({'id1': [1], 'id2': [2], 'features': [[1.0]], 'label': [1.0]}))
+            train_matcher('not_a_model_spec', pd.DataFrame({'id1': [1], 'id2': [2], 'feature_vectors': [[1.0]], 'label': [1.0]}))
 
     @patch('MadLib._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
     def test_train_matcher_spark_dataframe(self, mock_convert, mock_labeled_data):
@@ -448,7 +448,7 @@ class TestApplyMatcher:
         model = train_matcher(model_spec, mock_labeled_data)
         
         result = apply_matcher(model, sample_feature_vectors, 
-                             feature_col='features', output_col='prediction')
+                             feature_col='feature_vectors', output_col='prediction')
         
         assert 'prediction' in result.columns
         assert len(result) == len(sample_feature_vectors)
@@ -458,7 +458,7 @@ class TestApplyMatcher:
         """Test model application with custom column names."""
         # Prepare data with custom column names
         fvs = sample_feature_vectors.copy()
-        fvs['custom_features'] = fvs['features']
+        fvs['custom_features'] = fvs['feature_vectors']
         
         # Train a model
         model_spec = {
@@ -489,7 +489,7 @@ class TestApplyMatcher:
         }
         model = train_matcher(model_spec, mock_labeled_data)
         result = apply_matcher(model, sample_feature_vectors,
-                             feature_col='features', output_col='prediction')
+                             feature_col='feature_vectors', output_col='prediction')
         
         # Check all original columns are preserved
         for col in original_columns:
@@ -498,7 +498,7 @@ class TestApplyMatcher:
     def test_apply_matcher_invalid_input(self):
         """Test apply_matcher with invalid model (should raise Exception)."""
         with pytest.raises((TypeError, ValueError, AttributeError)):
-            apply_matcher('not_a_model', pd.DataFrame({'id1': [1], 'id2': [2], 'features': [[1.0]]}), 'features', 'output')
+            apply_matcher('not_a_model', pd.DataFrame({'id1': [1], 'id2': [2], 'feature_vectors': [[1.0]]}), 'feature_vectors', 'output')
 
     @patch('MadLib._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
     def test_apply_matcher_spark_dataframe(self, mock_convert, sample_feature_vectors, mock_labeled_data):
@@ -517,7 +517,7 @@ class TestApplyMatcher:
             training_model = train_matcher(model_spec, mock_labeled_data)
             with patch.object(training_model, 'predict') as mock_predict:
                 mock_predict.return_value = sample_feature_vectors.assign(prediction=[0.5, 0.3, 0.7, 0.2, 0.8])
-                result = apply_matcher(training_model, mock_spark_df, 'features', 'prediction')
+                result = apply_matcher(training_model, mock_spark_df, 'feature_vectors', 'prediction')
                 assert isinstance(result, pd.DataFrame)
                 assert 'prediction' in result.columns
 
@@ -742,7 +742,7 @@ class TestEdgeCases:
             'id1': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
             'id2': [101, 102, 103, 104, 105, 106, 107, 108, 109, 110],
             'score': [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0],
-            'features': [[0.1, 0.2, 0.3]] * 10
+            'feature_vectors': [[0.1, 0.2, 0.3]] * 10
         })
         
         # Mock labeler that returns unsure (2.0) for first few calls, then valid labels
@@ -832,7 +832,7 @@ class TestEdgeCases:
             training_model = train_matcher(model_spec, mock_labeled_data)
             with patch.object(training_model, 'predict') as mock_predict:
                 mock_predict.return_value = sample_feature_vectors.assign(prediction=[0.5, 0.3, 0.7, 0.2, 0.8])
-                result = apply_matcher(training_model, mock_spark_df, 'features', 'prediction')
+                result = apply_matcher(training_model, mock_spark_df, 'feature_vectors', 'prediction')
                 assert isinstance(result, pd.DataFrame)
                 assert 'prediction' in result.columns
 

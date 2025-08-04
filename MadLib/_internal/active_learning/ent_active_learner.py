@@ -87,7 +87,7 @@ class EntropyActiveLearner:
         self.local_training_fvs_ = batch
         training_fvs = spark.createDataFrame(self.local_training_fvs_)
 
-        self._model.train(training_fvs, 'features', 'label')
+        self._model.train(training_fvs, 'feature_vectors', 'label')
         return self.local_training_fvs_
     
     def _prep_fvs(self, fvs):
@@ -149,7 +149,7 @@ class EntropyActiveLearner:
                 initial_training_fvs = spark.createDataFrame(self.local_training_fvs_)\
                                            .repartition(len(self.local_training_fvs_) // 100 + 1, '_id')\
                                            .persist()
-                self._model.train(initial_training_fvs, 'features', 'label')
+                self._model.train(initial_training_fvs, 'feature_vectors', 'label')
                 initial_training_fvs.unpersist()
                 log.info('Initial model training complete')
             else:
@@ -178,13 +178,13 @@ class EntropyActiveLearner:
                                     .repartition(len(self.local_training_fvs_) // 100 + 1, '_id')\
                                     .persist()
 
-                self._model.train(training_fvs, 'features', 'label')
+                self._model.train(training_fvs, 'feature_vectors', 'label')
 
                 cand_fvs = fvs.join(training_fvs, on='_id', how='left_anti')
                 log.info('selecting and labeling new examples')
                 # get next labeled batch
                 # sort by ids to make training consistent 
-                new_labeled_batch = self._model.entropy(cand_fvs, 'features', 'entropy')\
+                new_labeled_batch = self._model.entropy(cand_fvs, 'feature_vectors', 'entropy')\
                                         .sort(['entropy', '_id'], ascending=False)\
                                         .limit(self._batch_size)\
                                         .drop('entropy')\

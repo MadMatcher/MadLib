@@ -168,7 +168,7 @@ class TestCreateTrainingModel:
                 'model_args': {'random_state': 42}
             }
             model = _create_training_model(model_spec)
-            result = model.train(mock_spark_df, 'features', 'label')
+            result = model.train(mock_spark_df, 'feature_vectors', 'label')
             assert hasattr(result, 'trained_model')
 
     def test_create_training_model_with_sparkml_nan_fill(self, mock_labeled_data):
@@ -360,11 +360,11 @@ class TestCreateMatchingModel:
                 'model_args': {'random_state': 42}
             }
             training_model = _create_training_model(model_spec)
-            training_model.train(mock_labeled_data, 'features', 'label')
+            training_model.train(mock_labeled_data, 'feature_vectors', 'label')
             matching_model = _create_matching_model(training_model)
             with patch.object(matching_model, 'predict') as mock_predict:
                 mock_predict.return_value = sample_feature_vectors.assign(prediction=[0.5, 0.3, 0.7, 0.2, 0.8])
-                result = matching_model.predict(mock_spark_df, 'features', 'prediction')
+                result = matching_model.predict(mock_spark_df, 'feature_vectors', 'prediction')
                 assert isinstance(result, pd.DataFrame)
                 assert 'prediction' in result.columns
 
@@ -378,14 +378,14 @@ class TestCreateMatchingModel:
             'execution': 'spark'
         }
         training_model = _create_training_model(model_spec)
-        training_model.train(mock_labeled_data, 'features', 'label')
+        training_model.train(mock_labeled_data, 'feature_vectors', 'label')
         
         matching_model = _create_matching_model(training_model)
         
         # Mock the predict method to return a DataFrame with prediction column
         with patch.object(matching_model, 'predict') as mock_predict:
             mock_predict.return_value = sample_feature_vectors.assign(prediction=[0.5, 0.3, 0.7, 0.2, 0.8])
-            result = matching_model.predict(sample_feature_vectors, 'features', 'prediction')
+            result = matching_model.predict(sample_feature_vectors, 'feature_vectors', 'prediction')
             
             assert isinstance(result, pd.DataFrame)
             assert 'prediction' in result.columns
@@ -399,10 +399,10 @@ class TestCreateMatchingModel:
             'execution': 'local'
         }
         training_model = _create_training_model(model_spec)
-        training_model.train(mock_labeled_data, 'features', 'label')
+        training_model.train(mock_labeled_data, 'feature_vectors', 'label')
         
         matching_model = _create_matching_model(training_model)
-        result = matching_model.predict(sample_feature_vectors, 'features', 'prediction')
+        result = matching_model.predict(sample_feature_vectors, 'feature_vectors', 'prediction')
         
         assert isinstance(result, pd.DataFrame)
         assert 'prediction' in result.columns

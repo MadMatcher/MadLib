@@ -101,7 +101,7 @@ class ContinuousEntropyActiveLearner:
         self.local_training_fvs_ = batch
         training_fvs = spark.createDataFrame(self.local_training_fvs_)
 
-        self._model.train(training_fvs, 'features', 'label')
+        self._model.train(training_fvs, 'feature_vectors', 'label')
         return copy(self._model)
     
     def _prep_fvs(self, fvs):
@@ -248,7 +248,7 @@ class ContinuousEntropyActiveLearner:
 
                     self._model.train(
                             training_fvs.dropna(subset=['label']),
-                            'features',
+                            'feature_vectors',
                             'label'
                     )
 
@@ -258,7 +258,7 @@ class ContinuousEntropyActiveLearner:
                     batch_size = self._queue_size - to_be_label_queue.qsize()
                     # get next labeled batch
                     # sort by ids to make training consistent 
-                    new_labeled_batch = self._model.entropy(cand_fvs, 'features', 'entropy')\
+                    new_labeled_batch = self._model.entropy(cand_fvs, 'feature_vectors', 'entropy')\
                                             .sort(['entropy', '_id'], ascending=False)\
                                             .limit(batch_size)\
                                             .toPandas()\
@@ -285,7 +285,7 @@ class ContinuousEntropyActiveLearner:
                 self.local_training_fvs_ = self.local_training_fvs_.dropna(subset=['label'])
                 training_fvs = spark.createDataFrame(self.local_training_fvs_)
                 # final train model
-                self._model.train(training_fvs, 'features', 'label')
+                self._model.train(training_fvs, 'feature_vectors', 'label')
         except Exception as e:
             log.error(traceback.format_exc())
 

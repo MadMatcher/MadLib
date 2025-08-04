@@ -245,7 +245,7 @@ def featurize(
     A,
     B,
     candidates,
-    output_col: str = 'features',
+    output_col: str = 'feature_vectors',
     fill_na: float = 0.0,
 ) -> pd.DataFrame:
     """
@@ -262,7 +262,7 @@ def featurize(
     candidates : Union[pd.DataFrame, SparkDataFrame]
         id pairs of A and B that are potential matches
     output_col : str
-        the name of the column for the resulting feature vectors, default `fvs`
+        the name of the column for the resulting feature vectors, default `feature_vectors`
     fill_na : float
         value to fill in for missing data, default 0.0
     Returns

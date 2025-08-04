@@ -356,7 +356,7 @@ def save_training_data_streaming(new_batch, parquet_file_path, logger=None):
         logger = get_logger(__name__)
         
     # Ensure we only save the essential columns in consistent order
-    required_columns = ['_id', 'id1', 'id2', 'features', 'label']
+    required_columns = ['_id', 'id1', 'id2', 'feature_vectors', 'label']
     new_batch_clean = new_batch[required_columns].copy()
         
     try:
@@ -412,7 +412,7 @@ def load_training_data_streaming(parquet_file_path, logger=None):
             training_data = table.to_pandas()
 
             # Type check and convert columns
-            required_columns = ['_id', 'id1', 'id2', 'features', 'label']
+            required_columns = ['_id', 'id1', 'id2', 'feature_vectors', 'label']
             for col in required_columns:
                 if col not in training_data.columns:
                     raise ValueError(f"Missing required column: {col}")
@@ -434,7 +434,7 @@ def load_training_data_streaming(parquet_file_path, logger=None):
                     return [float(i) for i in x]
                 else:
                     return list(x)  # fallback, may error if not iterable
-            training_data['features'] = training_data['features'].apply(to_float_list)
+            training_data['feature_vectors'] = training_data['feature_vectors'].apply(to_float_list)
 
             logger.info(f'Loaded {len(training_data)} labeled pairs from '
                        f'{parquet_file_path}')

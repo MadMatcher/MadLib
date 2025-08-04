@@ -88,7 +88,7 @@ def sample_feature_vectors():
     return pd.DataFrame({
         'id1': [1, 2, 3, 4, 5],
         'id2': [101, 102, 103, 104, 105],
-        'features': [np.random.random(10).tolist() for _ in range(5)],
+        'feature_vectors': [np.random.random(10).tolist() for _ in range(5)],
         'score': np.random.beta(2, 5, 5),
         '_id': range(5)
     })

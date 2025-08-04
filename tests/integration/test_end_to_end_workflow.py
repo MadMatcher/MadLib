@@ -33,15 +33,15 @@ class TestCompleteWorkflow:
         )
         
         assert isinstance(feature_vectors, pd.DataFrame)
-        assert 'features' in feature_vectors.columns
+        assert 'feature_vectors' in feature_vectors.columns
         assert len(feature_vectors) > 0
         
         # Fill NaN values in feature vectors and add score column
-        feature_vectors['features'] = feature_vectors['features'].apply(
+        feature_vectors['feature_vectors'] = feature_vectors['feature_vectors'].apply(
             lambda x: [0.0 if pd.isna(val) else val for val in x] 
             if x is not None else [0.0]
         )
-        feature_vectors['score'] = feature_vectors['features'].apply(
+        feature_vectors['score'] = feature_vectors['feature_vectors'].apply(
             lambda x: np.sum(x) if x is not None else 0.0
         )
         
@@ -68,7 +68,7 @@ class TestCompleteWorkflow:
         # Step 5: Apply matcher
         predictions = apply_matcher(
             matcher, feature_vectors, 
-            feature_col='features', output_col='prediction'
+            feature_col='feature_vectors', output_col='prediction'
         )
         
         assert isinstance(predictions, pd.DataFrame)
@@ -151,7 +151,7 @@ class TestCompleteWorkflow:
         feature_vectors = pd.DataFrame({
             'id1': [1, 2, 3, 4, 5],
             'id2': [101, 102, 103, 104, 105], 
-            'features': [[0.1, 0.2, 0.3] for _ in range(5)],
+            'feature_vectors': [[0.1, 0.2, 0.3] for _ in range(5)],
             'score': [0.6, 0.4, 0.8, 0.2, 0.9],
             '_id': range(5)
         })
@@ -163,7 +163,7 @@ class TestCompleteWorkflow:
         matcher = train_matcher(custom_model, seeds)
         
         predictions = apply_matcher(
-            matcher, feature_vectors, feature_col='features', output_col='prediction'
+            matcher, feature_vectors, feature_col='feature_vectors', output_col='prediction'
         )
         
         assert len(predictions) == len(feature_vectors)
@@ -203,14 +203,14 @@ class TestWorkflowRobustness:
         
         # Should handle missing values gracefully
         assert len(feature_vectors) == len(sample_candidates)
-        assert 'features' in feature_vectors.columns
+        assert 'feature_vectors' in feature_vectors.columns
         
         # Fill NaN values in feature vectors and add score column
-        feature_vectors['features'] = feature_vectors['features'].apply(
+        feature_vectors['feature_vectors'] = feature_vectors['feature_vectors'].apply(
             lambda x: [0.0 if pd.isna(val) else val for val in x] 
             if x is not None else [0.0]
         )
-        feature_vectors['score'] = feature_vectors['features'].apply(
+        feature_vectors['score'] = feature_vectors['feature_vectors'].apply(
             lambda x: np.sum(x) if x is not None else 0.0
         )
         
@@ -228,7 +228,7 @@ class TestWorkflowRobustness:
         matcher = train_matcher(model_spec, seeds)
         
         predictions = apply_matcher(
-            matcher, feature_vectors, feature_col='features', output_col='prediction'
+            matcher, feature_vectors, feature_col='feature_vectors', output_col='prediction'
         )
         
         assert len(predictions) == len(feature_vectors)
@@ -248,11 +248,11 @@ class TestWorkflowRobustness:
             )
             
             # Fill NaN values in feature vectors and add score column
-            feature_vectors['features'] = feature_vectors['features'].apply(
+            feature_vectors['feature_vectors'] = feature_vectors['feature_vectors'].apply(
                 lambda x: [0.0 if pd.isna(val) else val for val in x] 
                 if x is not None else [0.0]
             )
-            feature_vectors['score'] = feature_vectors['features'].apply(
+            feature_vectors['score'] = feature_vectors['feature_vectors'].apply(
                 lambda x: np.sum(x) if x is not None else 0.0
             )
             
@@ -269,7 +269,7 @@ class TestWorkflowRobustness:
             matcher = train_matcher(model_spec, seeds)
             
             predictions = apply_matcher(
-                matcher, feature_vectors, feature_col='features', output_col='prediction'
+                matcher, feature_vectors, feature_col='feature_vectors', output_col='prediction'
             )
             return predictions
         

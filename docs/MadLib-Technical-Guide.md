@@ -1,8 +1,8 @@
 # MadLib Technical Guide
 
-This document provides an in-depth technical overview of MadLib's functionality, internal workings, and advanced use cases. 
+This document provides an in-depth technical overview of MadLib's functionality, internal workings, and advanced use cases.
 
-For quick start guide and basic usage, refer to the [README file](https://github.com/MadMatcher/MadLib/blob/main/README.md). 
+For quick start guide and basic usage, refer to the [README file](https://github.com/MadMatcher/MadLib/blob/main/README.md).
 
 For an interactive walkthrough, refer to the [Python Notebook](https://github.com/MadMatcher/MadLib/blob/main/examples/madlib_examples.ipynb).
 
@@ -133,8 +133,8 @@ This function analyzes your data and creates combinations of tokenizers and simi
 
 ```python
 def create_features(
-    A: pd.DataFrame,                               # Your first dataset
-    B: pd.DataFrame,                               # Your second dataset
+    A: Union[pd.DataFrame, SparkDataFrame],                               # Your first dataset
+    B: Union[pd.DataFrame, SparkDataFrame],                               # Your second dataset
     a_cols: List[str],                             # Columns from A to compare
     b_cols: List[str],                             # Columns from B to compare
     sim_functions: Optional[List[Callable]] = None, # Custom similarity functions
@@ -310,7 +310,7 @@ def featurize(
     A: Union[pd.DataFrame, SparkDataFrame],  # Your first dataset
     B: Union[pd.DataFrame, SparkDataFrame],  # Your second dataset
     candidates: Union[pd.DataFrame, SparkDataFrame],  # Which pairs to compare
-    output_col: str = 'features',       # Name for feature vector column
+    output_col: str = 'feature_vectors',       # Name for feature vector column
     fill_na: float = 0.0                # Value for missing data
 ) -> pd.DataFrame
 ```
@@ -350,7 +350,7 @@ def featurize(
 `output_col`: Name for the resulting feature vector column
 
 - What it is: String that will become the column name containing computed feature vectors
-- Default value: 'features'
+- Default value: 'feature_vectors'
 - Purpose: Allows you to customize the output column name to match your naming conventions
 - What gets stored: Each row represents one record pair comparison and contains an array of similarity scores (one score per feature function)
 
@@ -556,7 +556,7 @@ _See [Built-in Labeler Classes](#built-in-labeler-classes) for available options
 - What it is: String name of the column in your fvs DataFrame containing similarity scores
 - Data requirements: Column must contain numeric values representing similarity between record pairs
 - Purpose: Used to select high-scoring and low-scoring pairs for labeling
-- Strategy: THe function uses these scores to pick high-confidence matches and high-confidence non-matches
+- Strategy: The function uses these scores to pick high-confidence matches and high-confidence non-matches
 
 **Why you need seeds:** Machine learning models need examples of both matches and non-matches to learn patterns.
 
@@ -624,7 +624,6 @@ def train_matcher(
 - Expected content: Each row must contain an array/list of numeric similarity scores
 - Data source: These are the feature vectors computed by the `featurize()` function or by an outside system
 - Why it is needed: Tells the training algorithm which column contains the input features for learning
-- Typical names: 'features', 'feature_vectors', 'fvs'
 
 `label_col`: Ground truth labels column identifier
 
@@ -727,7 +726,7 @@ You can specify different types of models:
 labeled_data = pd.DataFrame({
     'id1': [10, 11, 12, 13, 14, 15],
     'id2': [1, 1, 2, 2, 3, 3],
-    'features': [
+    'feature_vectors': [
         [0.9, 0.95, 0.98],    # Feature Vector between id2 = 1 and id1 = 10
         [0.3, 0.2, 0.1],      # Feature Vector between id2 = 1 and id1 = 11
         [0.8, 0.7, 0.9],      # Feature Vector between id2 = 2 and id1 = 12
@@ -753,7 +752,7 @@ model = train_matcher(
         'nan_fill': 0.0                 # Fill NaN values with 0.0
     },
     labeled_data=labeled_examples,
-    feature_col='features',
+    feature_col='feature_vectors',
     label_col='label'
 )
 
@@ -799,7 +798,6 @@ def apply_matcher(
 - Expected content: Each row must contain an array/list of numeric similarity scores
 - Consistency requirement: Feature vectors must have same structure as those used during training
 - Purpose: Tells the model which column contains the input data for making predictions
-- Common names: 'features', 'feature_vectors', 'fvs'
 
 `output_col`: Prediction results column name
 
@@ -814,7 +812,7 @@ def apply_matcher(
 result = pd.DataFrame({
     'id1': [20, 21, 22, 23],
     'id2': [3, 3, 4, 4],
-    'features': [
+    'feature_vectors': [
         [0.85, 0.9, 0.92],    # High scores for some similarity functions
         [0.2, 0.15, 0.1],     # Low scores for some similarity functions
         [0.75, 0.8, 0.85],    # Medium-high scores for some similarity functions
@@ -831,7 +829,7 @@ result = pd.DataFrame({
 predictions = apply_matcher(
     model,                              # Your trained model
     new_feature_vectors,                # New data to predict on
-    feature_col='features',             # Column with features
+    feature_col='feature_vectors',             # Column with features
     output_col='match_prediction'       # Where to put results
 )
 
@@ -1279,5 +1277,5 @@ class PhoneNumberFeature(Featurizer):
 
    # Check your feature vectors
    feature_vectors = featurize(...)
-   print(f"Feature vector shape: {feature_vectors['features'].iloc[0].shape}")
+   print(f"Feature vector shape: {feature_vectors['feature_vectors'].iloc[0].shape}")
    ```
