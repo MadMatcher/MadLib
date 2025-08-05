@@ -367,8 +367,8 @@ def featurize(
    ```python
    # Example candidates DataFrame (typically from external blocking system)
    candidates = pd.DataFrame({
-       'id1_list': [[10, 11], [12, 13]],  # Record IDs from dataset A (as lists)
        'id2': [1, 2],                     # Record IDs from dataset B
+       'id1_list': [[10, 11], [12, 13]],  # Record IDs from dataset A (as lists)
        'source': ['blocking_system', 'manual_review'] # Possible Metadata, will not impact the featurization
    })
 
@@ -423,7 +423,8 @@ def featurize(
            [0.8, 0.7, 0.9, 0.75, 0.88],    # Feature vector for A record 12 vs B record 2
            [0.1, 0.05, 0.02, 0.08, 0.12]   # Feature vector for A record 13 vs B record 2
        ],
-       'source': ['blocking_system', 'blocking_system', 'manual_review', 'manual_review']  # Preserved from candidates
+       'source': ['blocking_system', 'blocking_system', 'manual_review', 'manual_review'],  # Preserved from candidates
+       '_id': [0, 1, 2, 3]   # unique row identifiers generated when the DataFrame is created
    })
    ```
 
