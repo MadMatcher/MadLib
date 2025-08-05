@@ -121,6 +121,9 @@ class ContinuousEntropyActiveLearner:
 
         start_ids : List of _id
             the ids of the seed feature vectors for starting active learning, these must be present in `fvs`
+        
+        seeds : pandas.DataFrame
+            the seed feature vectors for starting active learning
         """
         type_check(fvs, 'fvs', pyspark.sql.DataFrame)
         self.max_labeled_ = max(self._max_labeled, fvs.count())

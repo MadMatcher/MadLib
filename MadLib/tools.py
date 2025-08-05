@@ -131,7 +131,7 @@ def create_seeds(
     nseeds: int,
     labeler: Union[Labeler, Dict],
     score_column: str = 'score'
-) -> pd.DataFrame:
+) -> Union[pd.DataFrame, SparkDataFrame]:
     """
     create seeds seeds to train a model
 
@@ -148,7 +148,7 @@ def create_seeds(
 
     Returns
     -------
-    pandas DataFrame
+    Union[pd.DataFrame, SparkDataFrame]
         A DataFrame with labeled seeds, schema is (previous schema of fvs, `label`) where the values in 
         label are either 0.0 or 1.0
     """
@@ -156,6 +156,9 @@ def create_seeds(
         labeler = _create_labeler(labeler)
     if nseeds == 0:
         raise ValueError("no seeds would be created")
+    return_pandas = isinstance(fvs, pd.DataFrame)
+    # Initialize spark session if needed for SparkDataFrame operations
+    spark = None if return_pandas else SparkSession.builder.getOrCreate()
     # gold labeler overrides the score column with 1.0 for gold pairs and 0.0 for non-gold pairs
     if isinstance(labeler, GoldLabeler):
         gold_pairs = labeler._gold
@@ -218,7 +221,7 @@ def create_seeds(
         raise RuntimeError("No seeds were labeled before stopping")
     
     print(f"seeds: pos_count = {pos_count} neg_count = {neg_count}")
-    return pd.DataFrame(seeds)
+    return pd.DataFrame(seeds) if return_pandas else spark.createDataFrame(seeds)
 
 
 def train_matcher(
@@ -261,7 +264,7 @@ def apply_matcher(
     df: Union[pd.DataFrame, SparkDataFrame],
     feature_col: str,
     output_col: str,
-) -> pd.DataFrame:
+) -> Union[pd.DataFrame, SparkDataFrame]:
     """Apply a trained model to make predictions.
     
     Parameters
@@ -279,7 +282,7 @@ def apply_matcher(
         
     Returns
     -------
-    pandas DataFrame
+    Union[pd.DataFrame, SparkDataFrame]
         The input DataFrame with predictions added
     """
     if isinstance(df, SparkDataFrame):
@@ -295,7 +298,7 @@ def label_data(
     fvs: Union[pd.DataFrame, SparkDataFrame],
     seeds: Optional[pd.DataFrame] = None,
     **learner_kwargs
-) -> pd.DataFrame:
+) -> Union[pd.DataFrame, SparkDataFrame]:
     """Generate labeled data using active learning.
     
     Parameters
@@ -312,14 +315,14 @@ def label_data(
         - A Labeler instance
     fvs : pandas DataFrame
         The data that needs to be labeled
-    seeds : pandas DataFrame, optional
+    seeds : Union[pandas DataFrame, SparkDataFrame], optional
         Initial labeled examples to start with
     **learner_kwargs :
         Additional keyword arguments to pass to the active learner constructor. For batch mode, see EntropyActiveLearner (e.g. batch_size, max_iter). For continuous mode, see ContinuousEntropyActiveLearner (e.g. queue_size, max_labeled, on_demand_stop).
         
     Returns
     -------
-    pandas DataFrame
+    Union[pd.DataFrame, SparkDataFrame]
         DataFrame with ids of potential matches and the corresponding label
     """
     spark = SparkSession.builder.getOrCreate()
@@ -327,12 +330,14 @@ def label_data(
     # Create model and labeler
     model = _create_training_model(model_spec)
     labeler = _create_labeler(labeler_spec)
+    return_pandas = isinstance(fvs, pd.DataFrame)
     if isinstance(fvs, pd.DataFrame):
         fvs = spark.createDataFrame(fvs)
 
     if seeds is None:
         seeds = create_seeds(fvs=fvs, nseeds=min(10, fvs.count()), labeler=labeler, score_column='score')
-    
+    if isinstance(seeds, SparkDataFrame):
+        seeds = seeds.toPandas()
     if mode == "batch":
         learner = EntropyActiveLearner(model, labeler, **learner_kwargs)
     elif mode == "continuous":
@@ -340,7 +345,7 @@ def label_data(
     else:
         raise ValueError(f"mode must be either 'batch' or 'continuous', not {mode}")
     labeled_data = learner.train(fvs, seeds)
-    return labeled_data
+    return labeled_data if return_pandas else spark.createDataFrame(labeled_data)
 
 
 def save_features(features, path):
