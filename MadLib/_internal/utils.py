@@ -11,8 +11,9 @@ import mmh3
 import sys
 import logging
 import pickle
+import pyarrow.parquet as pq
 from pathlib import Path
-
+import os
 # compression for storage
 compress = zlib.compress
 decompress = zlib.decompress
@@ -234,8 +235,6 @@ def load_training_data_streaming(parquet_file_path, logger=None):
         logger = get_logger(__name__)
         
     try:
-        import pyarrow.parquet as pq
-        import numpy as np
         if os.path.exists(parquet_file_path):
             # Read all data efficiently
             table = pq.read_table(parquet_file_path)

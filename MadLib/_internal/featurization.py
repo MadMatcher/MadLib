@@ -8,7 +8,8 @@ from pyspark.sql import DataFrame as SparkDataFrame
 import pickle
 from .storage import MemmapDataFrame
 from threading import Lock
-from .utils import repartition_df
+from .utils import get_logger, repartition_df
+from time import time
 from .tokenizer import (
     AlphaNumericTokenizer,
     NumericTokenizer,
@@ -55,6 +56,7 @@ SIM_FUNCTIONS = [
     CosineFeature,
 ]
 
+log = get_logger(__name__)
 
 class BuildCache:
     def __init__(self):
@@ -284,7 +286,41 @@ def featurize(
         candidates = spark.createDataFrame(candidates)
     table_a_preproc, table_b_preproc = _build(A, B, features)
     fvs = _gen_fvs(candidates, table_a_preproc, table_b_preproc, output_col, fill_na, features)
+    log.info('scoring feature vectors')
+    positively_correlated = _get_pos_cor_features(features)
+
+    fvs = _score_fvs(fvs, positively_correlated)    
+    log.info(f'scored feature vectors')
+    
     return fvs.toPandas() if return_pandas else fvs
+
+
+def _get_pos_cor_features(features):
+    positively_correlated_features = {
+        'exact_match',
+        'needleman_wunch',
+        'smith_waterman',
+        'jaccard',
+        'overlap_coeff',
+        'cosine',
+        'monge_elkan_jw',
+        'tf_idf',
+        'sif'
+    }
+    return [1 if any(str(f).startswith(prefix) for prefix in positively_correlated_features) else 0
+            for f in features]
+
+
+def _score_fvs(fvs, positively_correlated):
+    pos_cor_array = F.array(*[F.lit(x) for x in positively_correlated])
+
+    return (fvs.withColumn("score", F.aggregate(
+        F.zip_with("features", pos_cor_array, 
+                    lambda x, y: F.nanvl(x, F.lit(0.0)) * y),
+                    F.lit(0.0), 
+                    lambda acc, x: acc + x)
+                    )
+            )
 
 
 def _build(A, B, features):
