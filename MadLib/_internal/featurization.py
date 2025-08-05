@@ -277,6 +277,7 @@ def featurize(
     """
     return_pandas = False
     spark = SparkSession.builder.getOrCreate()
+    spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "true")
     return_pandas = isinstance(A, pd.DataFrame) and isinstance(B, pd.DataFrame)
     if isinstance(A, pd.DataFrame):
         A = spark.createDataFrame(A)
@@ -289,7 +290,7 @@ def featurize(
     log.info('scoring feature vectors')
     positively_correlated = _get_pos_cor_features(features)
 
-    fvs = _score_fvs(fvs, positively_correlated)    
+    fvs = _score_fvs(fvs, output_col, positively_correlated)    
     log.info(f'scored feature vectors')
     
     return fvs.toPandas() if return_pandas else fvs
@@ -311,11 +312,11 @@ def _get_pos_cor_features(features):
             for f in features]
 
 
-def _score_fvs(fvs, positively_correlated):
+def _score_fvs(fvs, output_col, positively_correlated):
     pos_cor_array = F.array(*[F.lit(x) for x in positively_correlated])
 
     return (fvs.withColumn("score", F.aggregate(
-        F.zip_with("features", pos_cor_array, 
+        F.zip_with(output_col, pos_cor_array, 
                     lambda x, y: F.nanvl(x, F.lit(0.0)) * y),
                     F.lit(0.0), 
                     lambda acc, x: acc + x)

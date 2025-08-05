@@ -11,9 +11,11 @@ import mmh3
 import sys
 import logging
 import pickle
+import pyarrow as pa
 import pyarrow.parquet as pq
 from pathlib import Path
 import os
+from math import floor
 # compression for storage
 compress = zlib.compress
 decompress = zlib.decompress
@@ -188,7 +190,16 @@ def save_training_data_streaming(new_batch, parquet_file_path, logger=None):
         
     # Ensure we only save the essential columns in consistent order
     required_columns = ['_id', 'id1', 'id2', 'feature_vectors', 'label']
-    new_batch_clean = new_batch[required_columns].copy()
+    new_batch_clean = new_batch[required_columns].copy().reset_index(drop=True)
+    def to_float64_list(x):
+        if isinstance(x, np.ndarray):
+            return x.astype(np.float64).tolist()
+        elif isinstance(x, list):
+            return [np.float64(i) for i in x]
+        else:
+            return [np.float64(i) for i in list(x)]
+    
+    new_batch_clean['feature_vectors'] = new_batch_clean['feature_vectors'].apply(to_float64_list)
         
     try:
         table = pa.Table.from_pandas(new_batch_clean)
@@ -198,7 +209,7 @@ def save_training_data_streaming(new_batch, parquet_file_path, logger=None):
             existing_table = pq.read_table(parquet_file_path)
             # Ensure existing data has same columns
             existing_df = existing_table.to_pandas()
-            existing_df_clean = existing_df[required_columns].copy()
+            existing_df_clean = existing_df[required_columns].copy().reset_index(drop=True)
             existing_table_clean = pa.Table.from_pandas(existing_df_clean)
             
             combined_table = pa.concat_tables([existing_table_clean, table])
@@ -354,3 +365,46 @@ def adjust_labeled_examples_for_existing_data(existing_data_size, max_labeled):
     if existing_data_size >= max_labeled:
         return 0
     return max_labeled - existing_data_size
+
+
+def convert_arrays_for_spark(df):
+    """
+    Convert numpy arrays and lists in a pandas DataFrame to PySpark-compatible format.
+    
+    This function detects columns containing numpy arrays or lists and converts them
+    to Python lists, which PySpark can properly infer and handle.
+    
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        DataFrame that may contain numpy arrays or lists
+        
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with arrays converted to lists for PySpark compatibility
+    """
+    if not isinstance(df, pd.DataFrame) or len(df) == 0:
+        return df
+    
+    df = df.copy()
+    
+    # Check each column for arrays/lists
+    for col in df.columns:
+        sample_value = df[col].iloc[0]
+        
+        # Check if it's a numpy array or list that needs conversion
+        if hasattr(sample_value, 'tolist') and hasattr(sample_value, 'dtype'):
+            # This is a numpy array, convert to list
+            df[col] = df[col].apply(
+                lambda x: x.tolist() if hasattr(x, 'tolist') else x
+            )
+        elif isinstance(sample_value, list):
+            # This is already a list, but check if it contains numpy arrays
+            if len(sample_value) > 0 and hasattr(sample_value[0], 'tolist'):
+                # List contains numpy arrays, convert them
+                df[col] = df[col].apply(
+                    lambda x: [item.tolist() if hasattr(item, 'tolist') else item for item in x] if isinstance(x, list) else x
+                )
+
+    return df

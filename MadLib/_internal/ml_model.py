@@ -492,18 +492,23 @@ class SparkMLModel(MLModel):
         model = self._trained_model
         if model is None:
             raise RuntimeError('Model must be trained to predict')
+        return_pandas = isinstance(df, pd.DataFrame)
         if isinstance(df, pd.DataFrame):
             spark = SparkSession.builder.getOrCreate()
+            spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "true")
             df = spark.createDataFrame(df) 
         if not hasattr(self, '_model_args'):
             return SparkMLModel(model).predict(df, vector_col, output_col)
         df = convert_to_vector(df, vector_col)
         cols = df.columns
         out = F.col(self._trained_model.getPredictionCol()).alias(output_col)
-
-        return self._trained_model.setFeaturesCol(vector_col)\
+        predictions = self._trained_model.setFeaturesCol(vector_col)\
                                     .transform(df)\
                                     .select(*cols, out)
+        if return_pandas:
+            return predictions.toPandas()
+        else:
+            return predictions
     
     def _entropy_component(self, p_col, idx):
         return F.when(p_col.getItem(idx) != 0.0, -p_col.getItem(idx) * F.log2(p_col.getItem(idx))).otherwise(0.0)
@@ -534,6 +539,7 @@ class SparkMLModel(MLModel):
     def train(self, df, vector_col : str, label_column : str):
         if isinstance(df, pd.DataFrame):
             spark = SparkSession.builder.getOrCreate()
+            spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "true")
             df = spark.createDataFrame(df)
         df = convert_to_vector(df, vector_col)
         self._trained_model = self.get_model().setFeaturesCol(vector_col)\

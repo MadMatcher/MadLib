@@ -20,7 +20,7 @@ import logging
 import sys
 
 from ._internal.ml_model import MLModel, SKLearnModel, SparkMLModel
-from ._internal.utils import get_logger
+from ._internal.utils import get_logger, convert_arrays_for_spark
 from ._internal.labeler import Labeler, CLILabeler, GoldLabeler
 from ._internal.active_learning.ent_active_learner import EntropyActiveLearner
 from ._internal.active_learning.cont_entropy_active_learner import ContinuousEntropyActiveLearner
@@ -221,7 +221,14 @@ def create_seeds(
         raise RuntimeError("No seeds were labeled before stopping")
     
     print(f"seeds: pos_count = {pos_count} neg_count = {neg_count}")
-    return pd.DataFrame(seeds) if return_pandas else spark.createDataFrame(seeds)
+    if return_pandas:
+        return pd.DataFrame(seeds)
+    else:
+        seeds_clean = []
+        for seed in seeds:
+            seed_clean = {k: v.tolist() if isinstance(v, np.ndarray) else float(v) if isinstance(v, np.number) else v for k, v in seed.items()}
+            seeds_clean.append(seed_clean)
+        return spark.createDataFrame(seeds_clean)
 
 
 def train_matcher(
@@ -285,8 +292,6 @@ def apply_matcher(
     Union[pd.DataFrame, SparkDataFrame]
         The input DataFrame with predictions added
     """
-    if isinstance(df, SparkDataFrame):
-        df = df.toPandas()
     model = _create_matching_model(model)
     return model.predict(df, feature_col, output_col)
 
@@ -332,6 +337,7 @@ def label_data(
     labeler = _create_labeler(labeler_spec)
     return_pandas = isinstance(fvs, pd.DataFrame)
     if isinstance(fvs, pd.DataFrame):
+        spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "true")
         fvs = spark.createDataFrame(fvs)
 
     if seeds is None:
@@ -345,7 +351,12 @@ def label_data(
     else:
         raise ValueError(f"mode must be either 'batch' or 'continuous', not {mode}")
     labeled_data = learner.train(fvs, seeds)
-    return labeled_data if return_pandas else spark.createDataFrame(labeled_data)
+    if return_pandas:
+        return labeled_data
+    else:
+        # Convert arrays to PySpark-compatible format
+        labeled_data = convert_arrays_for_spark(labeled_data)
+        return spark.createDataFrame(labeled_data)
 
 
 def save_features(features, path):
@@ -446,6 +457,7 @@ def load_dataframe(path, df_type):
         return dataframe
     elif df_type.lower() == 'sparkdf':
         spark = SparkSession.builder.getOrCreate()
+        spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "true")
         dataframe = spark.read.parquet(str(path))
         logger.info(f"Successfully loaded Spark DataFrame from {path}")
         return dataframe
