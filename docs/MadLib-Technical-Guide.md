@@ -501,7 +501,7 @@ def down_sample(
    low_scores = [0.3, 0.2, 0.1, 0.05, 0.02]          # Likely non-matches (depending on your scoring)
    ```
 
-2. **Stratified Sampling**: Takes samples from each score range proportionally
+2. **Stratified Sampling**: Takes the top 'percent' scoring records from each bucket as the sample
 
    ```python
    sampled_data = down_sample(
