@@ -299,7 +299,7 @@ def label_data(
     mode: Literal["batch", "continuous"],
     labeler: Labeler,
     fvs: Union[pd.DataFrame, SparkDataFrame],
-    seeds: Optional[pd.DataFrame] = None,
+    seeds: Optional[Union[pd.DataFrame, SparkDataFrame]] = None,
     **learner_kwargs
 ) -> Union[pd.DataFrame, SparkDataFrame]:
     """Generate labeled data using active learning.
