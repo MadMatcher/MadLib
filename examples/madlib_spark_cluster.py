@@ -17,6 +17,7 @@ from MadLib import (
    create_features, featurize, down_sample, create_seeds,
    train_matcher, apply_matcher, label_data
 )
+from MadLib import GoldLabeler, SKLearnModel
 
 
 # Initialize Spark session
@@ -66,17 +67,14 @@ downsampled_fvs = down_sample(
    bucket_size=1000
 )
 # create a gold labeler object
-gold_labeler_spec = {
-   'name': 'gold',
-   'gold': gold_labels
-}
+gold_labeler = GoldLabeler(gold=gold_labels)
 
 
 # create seeds
 seeds = create_seeds(
    fvs=downsampled_fvs,
    nseeds=50,
-   labeler=gold_labeler_spec,
+   labeler=gold_labeler,
    score_column='score'
 )
 print(f"   Created {seeds.count()} initial seeds")
@@ -85,22 +83,16 @@ print(f"   Negative seeds: {seeds.filter(seeds['label'] == 0.0).count()}")
 
 
 # specify an ML model
-model_spec = {
-   'model_type': 'sklearn',
-   'model': XGBClassifier,
-   'nan_fill': 0.0,
-   'model_args': {
-       'eval_metric': 'logloss',
-       'objective': 'binary:logistic',
-       'max_depth': 6,
-       'seed': 42
-   }
-}
+model = SKLearnModel(
+   model=XGBClassifier,
+   eval_metric='logloss', objective='binary:logistic', max_depth=6, seed=42,
+   nan_fill=0.0
+)
 # label data
 labeled_data = label_data(
-   model_spec=model_spec,
+   model=model,
    mode='batch',
-   labeler_spec=gold_labeler_spec,
+   labeler=gold_labeler,
    fvs=downsampled_fvs,
    seeds=seeds,
    batch_size=10,
@@ -110,7 +102,7 @@ labeled_data = label_data(
 
 # train a matcher
 trained_model = train_matcher(
-   model_spec=model_spec,
+   model=model,
    labeled_data=labeled_data,
    feature_col='feature_vectors',
    label_col='label'

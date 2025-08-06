@@ -31,7 +31,7 @@ from ._internal.featurization import (
     get_extra_tokenizers,
     featurize
 )
-from ._internal.api_utils import _create_matching_model, _create_labeler, _create_training_model
+
 logger = get_logger(__name__)
 
 # Re-export the public functions
@@ -129,31 +129,28 @@ def down_sample(
 def create_seeds(
     fvs: Union[pd.DataFrame, SparkDataFrame],
     nseeds: int,
-    labeler: Union[Labeler, Dict],
+    labeler: Labeler,
     score_column: str = 'score'
 ) -> Union[pd.DataFrame, SparkDataFrame]:
-    """
-    create seeds seeds to train a model
-
+    """Create labeled seed examples for active learning.
+    
     Parameters
     ----------
-    fvs : pandas DataFrame
-        the DataFrame with feature vectors that is your training data
+    fvs : Union[pd.DataFrame, SparkDataFrame]
+        DataFrame containing feature vectors with scores
     nseeds : int
         the number of seeds you want to use to train an initial model
-    labeler : Union[Labeler, Dict]
-        the labeler object (or a labeler_spec dict) you want to use to assign labels to rows
-    score_column : str
+    labeler : Labeler
+        the labeler object you want to use to assign labels to rows
+    score_column : str, default='score'
         the name of the score column in your fvs DataFrame
-
+        
     Returns
     -------
     Union[pd.DataFrame, SparkDataFrame]
         A DataFrame with labeled seeds, schema is (previous schema of fvs, `label`) where the values in 
         label are either 0.0 or 1.0
     """
-    if isinstance(labeler, dict):
-        labeler = _create_labeler(labeler)
     if nseeds == 0:
         raise ValueError("no seeds would be created")
     return_pandas = isinstance(fvs, pd.DataFrame)
@@ -232,26 +229,24 @@ def create_seeds(
 
 
 def train_matcher(
-    model_spec: Union[Dict, MLModel],
+    model: MLModel,
     labeled_data: Union[pd.DataFrame, SparkDataFrame],
-    feature_col: str = "features",
+    feature_col: str = "feature_vectors",
     label_col: str = "label",
 ) -> MLModel:
     """Train a matcher model on labeled data.
     
     Parameters
     ----------
-    model_spec : Union[Dict, MLModel]
-        Either:
-        - A dict with model configuration (e.g. {'model_type': 'sklearn', 'model': XGBClassifier, 'model_args':{'max_depth': 6}})
-        - An MLModel instance
+    model : MLModel
+        An MLModel instance to train
     labeled_data : pandas DataFrame
         DataFrame containing the labeled data
-    feature_col : str, optional
+    feature_col : str, default="feature_vectors"
         Name of the column containing feature vectors
-    label_col : str, optional
+    label_col : str, default="label"
         Name of the column containing labels
-
+        
     Returns
     -------
     MLModel
@@ -262,12 +257,11 @@ def train_matcher(
     # on apply, we should expect to get a trained model. 
     if isinstance(labeled_data, SparkDataFrame):
         labeled_data = labeled_data.toPandas()
-    model = _create_training_model(model_spec)
     return model.train(labeled_data, feature_col, label_col)
 
 
 def apply_matcher(
-    model: Union[MLModel, SKLearnModel, SparkMLModel],
+    model: MLModel,
     df: Union[pd.DataFrame, SparkDataFrame],
     feature_col: str,
     output_col: str,
@@ -276,10 +270,8 @@ def apply_matcher(
     
     Parameters
     ----------
-    model_spec : Union[MLModel, SKLearn Model, SparkMLModel]
-        Either:
-        - A trained MLModel instance
-        - A trained scikit-learn or Spark model instance
+    model : MLModel
+        A trained MLModel instance
     df : pandas DataFrame
         The DataFrame to make predictions on
     feature_col : str
@@ -292,14 +284,13 @@ def apply_matcher(
     Union[pd.DataFrame, SparkDataFrame]
         The input DataFrame with predictions added
     """
-    model = _create_matching_model(model)
     return model.predict(df, feature_col, output_col)
 
 
 def label_data(
-    model_spec: Union[Dict, MLModel],
+    model: MLModel,
     mode: Literal["batch", "continuous"],
-    labeler_spec: Union[Dict, Labeler],
+    labeler: Labeler,
     fvs: Union[pd.DataFrame, SparkDataFrame],
     seeds: Optional[pd.DataFrame] = None,
     **learner_kwargs
@@ -308,16 +299,12 @@ def label_data(
     
     Parameters
     ----------
-    model_spec : Union[Dict, MLModel]
-        Either:
-        - A dict with model configuration (e.g. {'model_type': 'sklearn', 'model_class': XGBClassifier})
-        - An MLModel instance
+    model : MLModel
+        An MLModel instance
     mode : Literal["batch", "continuous"]
         Whether to use batch or continuous active learning
-    labeler_spec : Union[str, Dict, Labeler]
-        Either:
-        - A dict with labeler configuration (e.g. {'name': 'cli', 'a_df': df_a, 'b_df': df_b})
-        - A Labeler instance
+    labeler : Labeler
+        A Labeler instance
     fvs : pandas DataFrame
         The data that needs to be labeled
     seeds : Union[pandas DataFrame, SparkDataFrame], optional
@@ -333,8 +320,6 @@ def label_data(
     spark = SparkSession.builder.getOrCreate()
         
     # Create model and labeler
-    model = _create_training_model(model_spec)
-    labeler = _create_labeler(labeler_spec)
     return_pandas = isinstance(fvs, pd.DataFrame)
     if isinstance(fvs, pd.DataFrame):
         spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "true")

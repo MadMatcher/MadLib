@@ -9,8 +9,8 @@ using various tokenization, featurization, and machine learning techniques.
 from ._internal.tokenizer.tokenizer import Tokenizer
 from ._internal.tokenizer.vectorizer import Vectorizer
 from ._internal.feature.feature import Feature
-from ._internal.ml_model import MLModel
-from ._internal.labeler import Labeler, CustomLabeler
+from ._internal.ml_model import MLModel, SKLearnModel, SparkMLModel
+from ._internal.labeler import Labeler, CustomLabeler, CLILabeler, GoldLabeler, WebUILabeler
 
 # Public API functions
 from .tools import (
@@ -36,8 +36,13 @@ __all__ = [
     'Vectorizer',
     'Feature',
     'MLModel',
+    'SKLearnModel',
+    'SparkMLModel',
     'Labeler',
     'CustomLabeler',
+    'CLILabeler',
+    'GoldLabeler',
+    'WebUILabeler',
     
     # Public API functions
     'create_features',

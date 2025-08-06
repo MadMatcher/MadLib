@@ -15,6 +15,7 @@ from MadLib import (
     create_features, featurize, down_sample, create_seeds, 
     train_matcher, apply_matcher, label_data
 )
+from MadLib import GoldLabeler, SKLearnModel
 
 # Load data
 table_a = pd.read_parquet('./data/dblp_acm/table_a.parquet')
@@ -52,32 +53,28 @@ downsampled_fvs = down_sample(
 )
 
 # Create gold labeler
-gold_labeler_spec = {
-    'name': 'gold',
-    'gold': gold_labels
-}
+gold_labeler = GoldLabeler(gold=gold_labels)
 
 # Create seeds
 seeds = create_seeds(
     fvs=downsampled_fvs,
     nseeds=50,
-    labeler=gold_labeler_spec,
+    labeler=gold_labeler,
     score_column='score'
 )
 
-# Create ML model spec
-model_spec = {
-    'model_type': 'sklearn',
-    'model': XGBClassifier,
-    'nan_fill': 0.0,
-    'model_args': {'eval_metric': 'logloss', 'objective': 'binary:logistic', 'max_depth': 6, 'seed': 42}
-}
+# Create ML model
+model = SKLearnModel(
+    model=XGBClassifier,
+    eval_metric='logloss', objective='binary:logistic', max_depth=6, seed=42,
+    nan_fill=0.0
+)
 
 # Label data
 labeled_data = label_data(
-    model_spec=model_spec,
+    model=model,
     mode='batch',
-    labeler_spec=gold_labeler_spec,
+    labeler=gold_labeler,
     fvs=downsampled_fvs,
     seeds=seeds,
     batch_size=10,
@@ -86,7 +83,7 @@ labeled_data = label_data(
 
 # Train matcher
 trained_model = train_matcher(
-    model_spec=model_spec,
+    model=model,
     labeled_data=labeled_data,
     feature_col='feature_vectors',
     label_col='label'

@@ -379,7 +379,9 @@ class SKLearnModel(MLModel):
             X = self._make_feature_matrix(vecs.values)
             yield pd.Series(self._trained_model.predict(X))
 
-    def predict(self, df: pd.DataFrame, vector_col: str, output_col: str) -> pd.DataFrame: 
+    def predict(self, df: Union[pd.DataFrame, SparkDataFrame], vector_col: str, output_col: str) -> Union[pd.DataFrame, SparkDataFrame]:
+        if self._trained_model is None:
+            raise RuntimeError('Model must be trained to predict')
         if isinstance(df, pd.DataFrame) and self.execution == "local":
             X = self._make_feature_matrix(df[vector_col].tolist())
             df[output_col] = self._trained_model.predict(X)
@@ -488,9 +490,8 @@ class SparkMLModel(MLModel):
                                     .transform(df)\
                                     .select(*cols, out)
 
-    def predict(self, df: SparkDataFrame, vector_col: str, output_col: str) -> SparkDataFrame:
-        model = self._trained_model
-        if model is None:
+    def predict(self, df: Union[pd.DataFrame, SparkDataFrame], vector_col: str, output_col: str) -> Union[pd.DataFrame, SparkDataFrame]:
+        if self._trained_model is None:
             raise RuntimeError('Model must be trained to predict')
         return_pandas = isinstance(df, pd.DataFrame)
         if isinstance(df, pd.DataFrame):
@@ -498,7 +499,7 @@ class SparkMLModel(MLModel):
             spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "true")
             df = spark.createDataFrame(df) 
         if not hasattr(self, '_model_args'):
-            return SparkMLModel(model).predict(df, vector_col, output_col)
+            return SparkMLModel(self._trained_model).predict(df, vector_col, output_col)
         df = convert_to_vector(df, vector_col)
         cols = df.columns
         out = F.col(self._trained_model.getPredictionCol()).alias(output_col)

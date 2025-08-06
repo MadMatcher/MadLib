@@ -16,7 +16,7 @@ from ..ml_model import MLModel, SKLearnModel, convert_to_array, convert_to_vecto
 from pyspark.ml.functions import vector_to_array, array_to_vector
 import pyspark
 from math import ceil
-from ..api_utils import _create_labeler
+
 
 log = get_logger(__name__)
     
@@ -45,8 +45,7 @@ class EntropyActiveLearner:
 
         """
 
-        if isinstance(labeler, dict):
-            labeler = _create_labeler(labeler)
+
         self._check_init_args(model, labeler, batch_size, max_iter, parquet_file_path)
 
         self._batch_size = batch_size

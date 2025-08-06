@@ -24,7 +24,7 @@ from math import ceil
 import time
 from dataclasses import dataclass, field
 from typing import Any
-from ..api_utils import _create_labeler
+
 
 log = get_logger(__name__)
     
@@ -55,8 +55,7 @@ class ContinuousEntropyActiveLearner:
             path to save/load training data parquet file
         """
 
-        if isinstance(labeler, dict):
-            labeler = _create_labeler(labeler)
+
         self._check_init_args(model, labeler, queue_size, max_labeled, on_demand_stop, parquet_file_path)
 
         self._queue_size = queue_size

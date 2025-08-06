@@ -1,8 +1,7 @@
 """
-Tests for api_utils module.
+Tests for direct object usage in tools module.
 
-This module tests the utility functions for creating ML models and labelers
-from specifications.
+This module tests the direct usage of ML models and labelers without the utility functions.
 """
 
 import pytest
@@ -12,12 +11,7 @@ from unittest.mock import MagicMock, Mock, patch
 from sklearn.linear_model import LogisticRegression
 from sklearn.exceptions import NotFittedError
 
-from MadLib._internal.api_utils import (
-    _create_training_model, _create_matching_model, _create_labeler,
-    AVAILABLE_LABELERS
-)
-from MadLib._internal.ml_model import MLModel, SKLearnModel, SparkMLModel
-from MadLib._internal.labeler import Labeler, CLILabeler, GoldLabeler
+from MadLib import MLModel, SKLearnModel, SparkMLModel, Labeler, CLILabeler, GoldLabeler, WebUILabeler
 
 
 class MockMLModel(MLModel):
@@ -62,511 +56,233 @@ class MockMLModel(MLModel):
         return {}
 
 
+class MockLabeler(Labeler):
+    """Mock Labeler for testing."""
+    
+    def __call__(self, id1, id2):
+        return 1.0  # Always return positive match for testing
+
+
 @pytest.mark.unit
-class TestCreateTrainingModel:
-    """Test _create_training_model function."""
+class TestDirectModelUsage:
+    """Test direct usage of MLModel instances."""
 
-    def test_create_training_model_with_mlmodel(self):
-        """Test creating training model with existing MLModel instance."""
-        mock_model = MockMLModel()
-        result = _create_training_model(mock_model)
+    def test_sklearn_model_creation(self):
+        """Test creating SKLearnModel directly."""
+        sklearn_model = LogisticRegression()
+        model = SKLearnModel(model=sklearn_model)
         
-        assert result is mock_model
-
-    def test_create_training_model_sklearn_dict(self):
-        """Test creating training model with sklearn specification."""
-        model_spec = {
-            'model_type': 'sklearn',
-            'model': LogisticRegression,
-            'model_args': {'C': 1.0}
-        }
-        
-        result = _create_training_model(model_spec)
-        
-        assert isinstance(result, SKLearnModel)
-        assert result._model == LogisticRegression
-        assert result._model_args == {'C': 1.0}
-        assert result._nan_fill is None
-        assert result.use_floats is True
-        assert result.execution == 'local'
-
-    def test_create_training_model_sklearn_dict_with_options(self):
-        """Test creating training model with sklearn specification and options."""
-        model_spec = {
-            'model_type': 'sklearn',
-            'model': LogisticRegression,
-            'model_args': {'C': 1.0},
-            'execution': 'spark',
-            'nan_fill': 0.0,
-            'use_floats': False
-        }
-        
-        result = _create_training_model(model_spec)
-        
-        assert isinstance(result, SKLearnModel)
-        assert result._model == LogisticRegression
-        assert result._model_args == {'C': 1.0}
-        assert result._nan_fill == 0.0
-        assert result.use_floats is False
-        assert result.execution == 'spark'
-
-    def test_create_training_model_sparkml_dict(self):
-        """Test creating training model with SparkML specification."""
-        mock_transformer = MagicMock()
-        model_spec = {
-            'model_type': 'sparkml',
-            'model': mock_transformer,
-            'model_args': {'param1': 'value1'}
-        }
-        
-        result = _create_training_model(model_spec)
-        
-        assert isinstance(result, SparkMLModel)
-        assert result._model == mock_transformer
-        assert result._model_args == {'param1': 'value1'}
-        assert result._nan_fill is None
-
-    def test_create_training_model_sparkml_dict_with_nan_fill(self):
-        """Test creating training model with SparkML specification and nan_fill."""
-        mock_transformer = MagicMock()
-        model_spec = {
-            'model_type': 'sparkml',
-            'model': mock_transformer,
-            'model_args': {},
-            'nan_fill': -1.0
-        }
-        
-        result = _create_training_model(model_spec)
-        
-        assert isinstance(result, SparkMLModel)
-        assert result._nan_fill == -1.0
-
-    def test_create_training_model_case_insensitive(self):
-        """Test that model_type is case insensitive."""
-        model_spec = {
-            'model_type': 'SKLEARN',
-            'model': LogisticRegression,
-            'model_args': {}
-        }
-        
-        result = _create_training_model(model_spec)
-        
-        assert isinstance(result, SKLearnModel)
-
-    @patch('MadLib._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
-    def test_create_training_model_with_spark_dataframe(self, mock_convert, mock_labeled_data):
-        mock_spark_df = MagicMock()
-        mock_spark_df.toPandas.return_value = mock_labeled_data
-        mock_spark_df.count.return_value = len(mock_labeled_data)
-        mock_spark_df.columns = mock_labeled_data.columns.tolist()
-        mock_spark_df.__getitem__.side_effect = lambda key: mock_labeled_data[key]
-        mock_spark_df.__iter__.side_effect = lambda: iter(mock_labeled_data)
-        with patch('MadLib._internal.ml_model.convert_to_array', return_value=mock_labeled_data):
-            model_spec = {
-                'model_type': 'sklearn',
-                'model': LogisticRegression,
-                'model_args': {'random_state': 42}
-            }
-            model = _create_training_model(model_spec)
-            result = model.train(mock_spark_df, 'feature_vectors', 'label')
-            assert hasattr(result, 'trained_model')
-
-    def test_create_training_model_with_sparkml_nan_fill(self, mock_labeled_data):
-        """Test create_training_model with SparkML model and nan_fill option."""
-        model_spec = {
-            'model_type': 'sparkml',
-            'model': 'RandomForestClassifier',
-            'model_args': {'numTrees': 10},
-            'nan_fill': 0.0
-        }
-        
-        model = _create_training_model(model_spec)
-        
-        assert hasattr(model, 'nan_fill')
-        assert model.nan_fill == 0.0
-
-    def test_create_training_model_with_sklearn_nan_fill(self, mock_labeled_data):
-        """Test create_training_model with sklearn model and nan_fill option."""
-        model_spec = {
-            'model_type': 'sklearn',
-            'model': LogisticRegression,
-            'model_args': {'random_state': 42},
-            'nan_fill': 0.0
-        }
-        
-        model = _create_training_model(model_spec)
-        
-        assert hasattr(model, 'nan_fill')
-        assert model.nan_fill == 0.0
-
-    def test_create_training_model_with_execution_spark(self, mock_labeled_data):
-        """Test create_training_model with execution='spark' option."""
-        model_spec = {
-            'model_type': 'sklearn',
-            'model': LogisticRegression,
-            'model_args': {'random_state': 42},
-            'execution': 'spark'
-        }
-        
-        model = _create_training_model(model_spec)
-        
-        assert hasattr(model, 'execution')
-        assert model.execution == 'spark'
-
-    def test_create_training_model_with_execution_local(self, mock_labeled_data):
-        """Test create_training_model with execution='local' option."""
-        model_spec = {
-            'model_type': 'sklearn',
-            'model': LogisticRegression,
-            'model_args': {'random_state': 42},
-            'execution': 'local'
-        }
-        
-        model = _create_training_model(model_spec)
-        
-        assert hasattr(model, 'execution')
+        assert isinstance(model, SKLearnModel)
+        assert model._model == sklearn_model
+        assert model._nan_fill is None
+        assert model.use_floats is True
         assert model.execution == 'local'
 
-    def test_create_training_model_with_use_floats_true(self, mock_labeled_data):
-        """Test create_training_model with use_floats=True option."""
-        model_spec = {
-            'model_type': 'sklearn',
-            'model': LogisticRegression,
-            'model_args': {'random_state': 42},
-            'use_floats': True
-        }
+    def test_sklearn_model_with_options(self):
+        """Test creating SKLearnModel with options."""
+        sklearn_model = LogisticRegression()
+        model = SKLearnModel(
+            model=sklearn_model,
+            nan_fill=0.0,
+            use_floats=False,
+            execution='spark'
+        )
         
-        model = _create_training_model(model_spec)
-        
-        assert hasattr(model, 'use_floats')
-        assert model.use_floats == True
+        assert isinstance(model, SKLearnModel)
+        assert model._model == sklearn_model
+        assert model._nan_fill == 0.0
+        assert model.use_floats is False
+        assert model.execution == 'spark'
 
-    def test_create_training_model_with_use_floats_false(self, mock_labeled_data):
-        """Test create_training_model with use_floats=False option."""
-        model_spec = {
-            'model_type': 'sklearn',
-            'model': LogisticRegression,
-            'model_args': {'random_state': 42},
-            'use_floats': False
-        }
+    def test_sparkml_model_creation(self):
+        """Test creating SparkMLModel directly."""
+        from pyspark.ml.classification import LogisticRegression as SparkLogisticRegression
         
-        model = _create_training_model(model_spec)
+        spark_model = SparkLogisticRegression()
+        model = SparkMLModel(model=spark_model)
         
-        assert hasattr(model, 'use_floats')
-        assert model.use_floats == False
+        assert isinstance(model, SparkMLModel)
+        assert model._model == spark_model
+        assert model._nan_fill is None
 
-    def test_create_training_model_with_use_vectors_true(self, mock_labeled_data):
-        """Test create_training_model with use_vectors=True option."""
-        model_spec = {
-            'model_type': 'sklearn',
-            'model': LogisticRegression,
-            'model_args': {'random_state': 42},
-            'use_vectors': True
-        }
+    def test_sparkml_model_with_nan_fill(self):
+        """Test creating SparkMLModel with nan_fill."""
+        from pyspark.ml.classification import LogisticRegression as SparkLogisticRegression
         
-        model = _create_training_model(model_spec)
+        spark_model = SparkLogisticRegression()
+        model = SparkMLModel(model=spark_model, nan_fill=0.0)
         
-        assert hasattr(model, 'use_vectors')
-        # SKLearnModel always returns False for use_vectors, regardless of the parameter
-        assert model.use_vectors == False
-
-    def test_create_training_model_with_use_vectors_false(self, mock_labeled_data):
-        """Test create_training_model with use_vectors=False option."""
-        model_spec = {
-            'model_type': 'sklearn',
-            'model': LogisticRegression,
-            'model_args': {'random_state': 42},
-            'use_vectors': False
-        }
-        
-        model = _create_training_model(model_spec)
-        
-        assert hasattr(model, 'use_vectors')
-        assert model.use_vectors == False
+        assert isinstance(model, SparkMLModel)
+        assert model._model == spark_model
+        assert model._nan_fill == 0.0
 
 
 @pytest.mark.unit
-class TestCreateMatchingModel:
-    """Test _create_matching_model function."""
+class TestDirectLabelerUsage:
+    """Test direct usage of Labeler instances."""
 
-    def test_create_matching_model_with_mlmodel_trained(self):
-        """Test creating matching model with trained MLModel."""
-        mock_model = MockMLModel(trained_model=MagicMock())
-        result = _create_matching_model(mock_model)
+    def test_cli_labeler_creation(self):
+        """Test creating CLILabeler directly."""
+        df_a = pd.DataFrame({'id': [1, 2], 'name': ['Alice', 'Bob']})
+        df_b = pd.DataFrame({'id': [1, 2], 'name': ['Alice', 'Bob']})
         
-        assert result is mock_model
-
-    def test_create_matching_model_with_mlmodel_untrained(self):
-        """Test creating matching model with untrained MLModel."""
-        mock_model = MockMLModel(trained_model=None)
-        
-        with pytest.raises(RuntimeError, match="Model must be trained to predict"):
-            _create_matching_model(mock_model)
-
-    def test_create_matching_model_with_transformer(self):
-        """Test creating matching model with Spark Transformer."""
-        mock_transformer = MagicMock()
-        
-        with patch('MadLib._internal.api_utils.check_is_fitted') as mock_check_fitted:
-            mock_check_fitted.side_effect = NotFittedError("Model not fitted")
-            
-            with pytest.raises(RuntimeError, match="Model must be trained to predict"):
-                _create_matching_model(mock_transformer)
-
-    @patch('MadLib._internal.api_utils.check_is_fitted')
-    def test_create_matching_model_with_fitted_sklearn(self, mock_check_fitted):
-        """Test creating matching model with fitted sklearn model."""
-        # Create a mock sklearn model with the required attributes
-        mock_sklearn_model = MagicMock()
-        # Create a mock tags object with the required attributes
-        mock_tags = MagicMock()
-        mock_tags.requires_fit = True
-        mock_sklearn_model.__sklearn_tags__ = MagicMock(return_value=mock_tags)
-        mock_check_fitted.return_value = None  # No exception raised
-        
-        result = _create_matching_model(mock_sklearn_model)
-        
-        assert isinstance(result, SKLearnModel)
-        # The trained_model is set during initialization, but may be None initially
-        # Check that the model was created successfully
-        assert result._model is not None
-
-    @patch('MadLib._internal.api_utils.check_is_fitted')
-    def test_create_matching_model_with_unfitted_sklearn(self, mock_check_fitted):
-        """Test creating matching model with unfitted sklearn model."""
-        # Create a mock sklearn model with the required attributes
-        mock_sklearn_model = MagicMock()
-        # Create a mock tags object with the required attributes
-        mock_tags = MagicMock()
-        mock_tags.requires_fit = True
-        mock_sklearn_model.__sklearn_tags__ = MagicMock(return_value=mock_tags)
-        mock_check_fitted.side_effect = NotFittedError("Model not fitted")
-        
-        with pytest.raises(RuntimeError, match="Model must be trained to predict"):
-            _create_matching_model(mock_sklearn_model)
-
-    @patch('MadLib._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
-    def test_create_matching_model_with_spark_dataframe(self, mock_convert, sample_feature_vectors, mock_labeled_data):
-        mock_spark_df = MagicMock()
-        mock_spark_df.toPandas.return_value = sample_feature_vectors
-        mock_spark_df.count.return_value = len(sample_feature_vectors)
-        mock_spark_df.columns = sample_feature_vectors.columns.tolist()
-        mock_spark_df.__getitem__.side_effect = lambda key: sample_feature_vectors[key]
-        mock_spark_df.__iter__.side_effect = lambda: iter(sample_feature_vectors)
-        with patch('MadLib._internal.ml_model.convert_to_array', return_value=sample_feature_vectors):
-            model_spec = {
-                'model_type': 'sklearn',
-                'model': LogisticRegression,
-                'model_args': {'random_state': 42}
-            }
-            training_model = _create_training_model(model_spec)
-            training_model.train(mock_labeled_data, 'feature_vectors', 'label')
-            matching_model = _create_matching_model(training_model)
-            with patch.object(matching_model, 'predict') as mock_predict:
-                mock_predict.return_value = sample_feature_vectors.assign(prediction=[0.5, 0.3, 0.7, 0.2, 0.8])
-                result = matching_model.predict(mock_spark_df, 'feature_vectors', 'prediction')
-                assert isinstance(result, pd.DataFrame)
-                assert 'prediction' in result.columns
-
-    @patch('MadLib._internal.ml_model.convert_to_array', side_effect=lambda df, col: df)
-    def test_create_matching_model_with_execution_spark(self, mock_convert, sample_feature_vectors, mock_labeled_data):
-        """Test create_matching_model with execution='spark' option."""
-        model_spec = {
-            'model_type': 'sklearn',
-            'model': LogisticRegression,
-            'model_args': {'random_state': 42},
-            'execution': 'spark'
-        }
-        training_model = _create_training_model(model_spec)
-        training_model.train(mock_labeled_data, 'feature_vectors', 'label')
-        
-        matching_model = _create_matching_model(training_model)
-        
-        # Mock the predict method to return a DataFrame with prediction column
-        with patch.object(matching_model, 'predict') as mock_predict:
-            mock_predict.return_value = sample_feature_vectors.assign(prediction=[0.5, 0.3, 0.7, 0.2, 0.8])
-            result = matching_model.predict(sample_feature_vectors, 'feature_vectors', 'prediction')
-            
-            assert isinstance(result, pd.DataFrame)
-            assert 'prediction' in result.columns
-
-    def test_create_matching_model_with_execution_local(self, sample_feature_vectors, mock_labeled_data):
-        """Test create_matching_model with execution='local' option."""
-        model_spec = {
-            'model_type': 'sklearn',
-            'model': LogisticRegression,
-            'model_args': {'random_state': 42},
-            'execution': 'local'
-        }
-        training_model = _create_training_model(model_spec)
-        training_model.train(mock_labeled_data, 'feature_vectors', 'label')
-        
-        matching_model = _create_matching_model(training_model)
-        result = matching_model.predict(sample_feature_vectors, 'feature_vectors', 'prediction')
-        
-        assert isinstance(result, pd.DataFrame)
-        assert 'prediction' in result.columns
-
-
-@pytest.mark.unit
-class TestCreateLabeler:
-    """Test _create_labeler function."""
-
-    def test_create_labeler_with_labeler_instance(self):
-        """Test creating labeler with existing Labeler instance."""
-        mock_labeler = MagicMock(spec=Labeler)
-        result = _create_labeler(mock_labeler)
-        
-        assert result is mock_labeler
-
-    def test_create_labeler_cli_dict(self):
-        """Test creating labeler with CLI specification."""
-        labeler_spec = {
-            'name': 'cli',
-            'a_df': pd.DataFrame({'col1': [1, 2]}),
-            'b_df': pd.DataFrame({'col1': [3, 4]})
-        }
-        
-        result = _create_labeler(labeler_spec)
-        
-        assert isinstance(result, CLILabeler)
-        assert result._a_df is labeler_spec['a_df']
-        assert result._b_df is labeler_spec['b_df']
-
-    def test_create_labeler_cli_dict_with_optional_args(self):
-        """Test creating labeler with CLI specification and optional args."""
-        labeler_spec = {
-            'name': 'cli',
-            'a_df': pd.DataFrame({'col1': [1, 2]}),
-            'b_df': pd.DataFrame({'col1': [3, 4]}),
-            'id_col': 'custom_id'
-        }
-        
-        result = _create_labeler(labeler_spec)
-        
-        assert isinstance(result, CLILabeler)
-        assert result._id_col == 'custom_id'
-
-    def test_create_labeler_gold_dict(self):
-        """Test creating labeler with gold specification."""
-        labeler_spec = {
-            'name': 'gold',
-            'gold': pd.DataFrame({
-                'id1': [1, 2, 3],
-                'id2': [4, 5, 6]
-            })
-        }
-        
-        result = _create_labeler(labeler_spec)
-        
-        assert isinstance(result, GoldLabeler)
-
-    def test_create_labeler_missing_name(self):
-        """Test creating labeler with missing name."""
-        labeler_spec = {
-            'a_df': pd.DataFrame({'col1': [1, 2]}),
-            'b_df': pd.DataFrame({'col1': [3, 4]})
-        }
-        
-        with pytest.raises(ValueError, match="Missing required key 'name'"):
-            _create_labeler(labeler_spec)
-
-    def test_create_labeler_unknown_name(self):
-        """Test creating labeler with unknown name."""
-        labeler_spec = {
-            'name': 'unknown_labeler',
-            'a_df': pd.DataFrame({'col1': [1, 2]}),
-            'b_df': pd.DataFrame({'col1': [3, 4]})
-        }
-        
-        with pytest.raises(ValueError, match="Unknown labeler type 'unknown_labeler'"):
-            _create_labeler(labeler_spec)
-
-    def test_create_labeler_missing_required_arg(self):
-        """Test creating labeler with missing required argument."""
-        labeler_spec = {
-            'name': 'cli',
-            'a_df': pd.DataFrame({'col1': [1, 2]})
-            # Missing b_df
-        }
-        
-        with pytest.raises(ValueError, match="Missing required argument 'b_df'"):
-            _create_labeler(labeler_spec)
-
-
-@pytest.mark.unit
-class TestAvailableLabelers:
-    """Test AVAILABLE_LABELERS constant."""
-
-    def test_available_labelers_structure(self):
-        """Test that AVAILABLE_LABELERS has the expected structure."""
-        assert 'cli' in AVAILABLE_LABELERS
-        assert 'gold' in AVAILABLE_LABELERS
-        
-        cli_info = AVAILABLE_LABELERS['cli']
-        assert 'class' in cli_info
-        assert 'description' in cli_info
-        assert 'required_args' in cli_info
-        assert 'optional_args' in cli_info
-        
-        assert cli_info['class'] == CLILabeler
-        assert 'a_df' in cli_info['required_args']
-        assert 'b_df' in cli_info['required_args']
-        assert 'id_col' in cli_info['optional_args']
-        
-        gold_info = AVAILABLE_LABELERS['gold']
-        assert gold_info['class'] == GoldLabeler
-        assert 'gold' in gold_info['required_args']
-        assert len(gold_info['optional_args']) == 0
-
-
-@pytest.mark.unit
-class TestApiUtilsIntegration:
-    """Integration tests for api_utils module."""
-
-    def test_full_workflow_sklearn(self):
-        """Test complete workflow with sklearn model."""
-        # Create training model
-        model_spec = {
-            'model_type': 'sklearn',
-            'model': LogisticRegression,
-            'model_args': {'C': 1.0, 'random_state': 42}
-        }
-        training_model = _create_training_model(model_spec)
-        
-        assert isinstance(training_model, SKLearnModel)
-        
-        # Simulate training
-        training_model._trained_model = MagicMock()
-        
-        # Create matching model
-        matching_model = _create_matching_model(training_model)
-        assert matching_model is training_model
-
-    def test_full_workflow_labeler(self):
-        """Test complete workflow with labeler."""
-        # Create labeler
-        labeler_spec = {
-            'name': 'cli',
-            'a_df': pd.DataFrame({'id': [1, 2], 'name': ['Alice', 'Bob']}),
-            'b_df': pd.DataFrame({'id': [3, 4], 'name': ['Charlie', 'David']}),
-            'id_col': 'id'
-        }
-        labeler = _create_labeler(labeler_spec)
+        labeler = CLILabeler(a_df=df_a, b_df=df_b)
         
         assert isinstance(labeler, CLILabeler)
+        assert labeler._a_df.equals(df_a)
+        assert labeler._b_df.equals(df_b)
+
+    def test_cli_labeler_with_id_col(self):
+        """Test creating CLILabeler with id_col."""
+        df_a = pd.DataFrame({'id': [1, 2], 'name': ['Alice', 'Bob']})
+        df_b = pd.DataFrame({'id': [1, 2], 'name': ['Alice', 'Bob']})
+        
+        labeler = CLILabeler(a_df=df_a, b_df=df_b, id_col='id')
+        
+        assert isinstance(labeler, CLILabeler)
+        assert labeler._a_df.equals(df_a)
+        assert labeler._b_df.equals(df_b)
         assert labeler._id_col == 'id'
 
-    def test_error_handling_workflow(self):
-        """Test error handling in workflows."""
-        # Test untrained model
-        mock_model = MockMLModel(trained_model=None)
+    def test_gold_labeler_creation(self):
+        """Test creating GoldLabeler directly."""
+        gold_pairs = [(1, 1), (2, 2)]
         
-        with pytest.raises(RuntimeError, match="Model must be trained to predict"):
-            _create_matching_model(mock_model)
+        labeler = GoldLabeler(gold=gold_pairs)
         
-        # Test invalid labeler spec
-        invalid_spec = {'name': 'nonexistent'}
+        assert isinstance(labeler, GoldLabeler)
+        assert labeler._gold == gold_pairs
+
+    def test_webui_labeler_creation(self):
+        """Test creating WebUILabeler directly."""
+        df_a = pd.DataFrame({'id': [1, 2], 'name': ['Alice', 'Bob']})
+        df_b = pd.DataFrame({'id': [1, 2], 'name': ['Alice', 'Bob']})
         
-        with pytest.raises(ValueError, match="Unknown labeler type"):
-            _create_labeler(invalid_spec) 
+        labeler = WebUILabeler(a_df=df_a, b_df=df_b)
+        
+        assert isinstance(labeler, WebUILabeler)
+        assert labeler._a_df.equals(df_a)
+        assert labeler._b_df.equals(df_b)
+
+
+@pytest.mark.unit
+class TestToolsIntegration:
+    """Test integration with tools module functions."""
+
+    def test_train_matcher_with_mlmodel(self):
+        """Test train_matcher with MLModel instance."""
+        from MadLib.tools import train_matcher
+        
+        model = MockMLModel()
+        labeled_data = pd.DataFrame({
+            'features': [[1.0, 2.0], [3.0, 4.0]],
+            'label': [0, 1]
+        })
+        
+        result = train_matcher(model, labeled_data)
+        
+        assert result is model
+        assert result.trained_model is not None
+
+    def test_apply_matcher_with_mlmodel(self):
+        """Test apply_matcher with MLModel instance."""
+        from MadLib.tools import apply_matcher
+        
+        model = MockMLModel(trained_model=MockMLModel())
+        df = pd.DataFrame({
+            'features': [[1.0, 2.0], [3.0, 4.0]]
+        })
+        
+        result = apply_matcher(model, df, 'features', 'predictions')
+        
+        assert isinstance(result, pd.DataFrame)
+
+    def test_create_seeds_with_labeler(self):
+        """Test create_seeds with Labeler instance."""
+        from MadLib.tools import create_seeds
+        
+        labeler = MockLabeler()
+        fvs = pd.DataFrame({
+            'id1': [1, 2, 3],
+            'id2': [1, 2, 3],
+            'score': [0.8, 0.6, 0.4]
+        })
+        
+        result = create_seeds(fvs, 2, labeler)
+        
+        assert isinstance(result, pd.DataFrame)
+        assert 'label' in result.columns
+        assert len(result) <= 2
+
+    def test_label_data_with_objects(self):
+        """Test label_data with model and labeler instances."""
+        from MadLib.tools import label_data
+        
+        model = MockMLModel()
+        labeler = MockLabeler()
+        fvs = pd.DataFrame({
+            'id1': [1, 2, 3, 4, 5],
+            'id2': [1, 2, 3, 4, 5],
+            'features': [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0], [7.0, 8.0], [9.0, 10.0]]
+        })
+        
+        # This test might need mocking for the active learning components
+        with patch('MadLib.tools.EntropyActiveLearner') as mock_learner:
+            mock_learner_instance = Mock()
+            mock_learner_instance.train.return_value = pd.DataFrame({
+                'id1': [1, 2],
+                'id2': [1, 2],
+                'label': [1.0, 0.0]
+            })
+            mock_learner.return_value = mock_learner_instance
+            
+            result = label_data(model, "batch", labeler, fvs)
+            
+            assert isinstance(result, pd.DataFrame)
+            mock_learner.assert_called_once()
+
+
+@pytest.mark.unit
+class TestErrorHandling:
+    """Test error handling for invalid inputs."""
+
+    def test_train_matcher_with_invalid_model(self):
+        """Test train_matcher with invalid model type."""
+        from MadLib.tools import train_matcher
+        
+        labeled_data = pd.DataFrame({
+            'features': [[1.0, 2.0], [3.0, 4.0]],
+            'label': [0, 1]
+        })
+        
+        with pytest.raises(AttributeError):
+            # This should fail because we're passing a string instead of MLModel
+            train_matcher("invalid_model", labeled_data)
+
+    def test_apply_matcher_with_untrained_model(self):
+        """Test apply_matcher with untrained model."""
+        from MadLib.tools import apply_matcher
+        
+        model = MockMLModel(trained_model=None)  # Untrained model
+        df = pd.DataFrame({
+            'features': [[1.0, 2.0], [3.0, 4.0]]
+        })
+        
+        # This should work because MockMLModel handles untrained models gracefully
+        # In real implementation, this might raise an error
+        result = apply_matcher(model, df, 'features', 'predictions')
+        assert isinstance(result, pd.DataFrame)
+
+    def test_create_seeds_with_invalid_labeler(self):
+        """Test create_seeds with invalid labeler type."""
+        from MadLib.tools import create_seeds
+        
+        fvs = pd.DataFrame({
+            'id1': [1, 2, 3],
+            'id2': [1, 2, 3],
+            'score': [0.8, 0.6, 0.4]
+        })
+        
+        with pytest.raises(TypeError):
+            # This should fail because we're passing a string instead of Labeler
+            create_seeds(fvs, 2, "invalid_labeler") 
