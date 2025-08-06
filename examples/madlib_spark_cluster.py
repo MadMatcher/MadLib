@@ -8,6 +8,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, when, lit, sum as spark_sum
 from xgboost import XGBClassifier
 import warnings
+from pathlib import Path
 warnings.filterwarnings('ignore')
 
 
@@ -27,16 +28,16 @@ spark = SparkSession.builder \
 
 
 # Load data using Spark
-table_a = spark.read.parquet('./data/dblp_acm/table_a.parquet')
-table_b = spark.read.parquet('./data/dblp_acm/table_b.parquet')
-candidates = spark.read.parquet('./data/dblp_acm/cand.parquet')
+data_dir = Path(__file__).resolve().parent
+table_a = spark.read.parquet(str(data_dir / 'table_a.parquet'))
+table_b = spark.read.parquet(str(data_dir / 'table_b.parquet'))
+candidates = spark.read.parquet(str(data_dir / 'cand.parquet'))
 candidates = candidates.withColumnRenamed('_id', 'id2') \
    .withColumnRenamed('ids', 'id1_list') \
    .select('id2', 'id1_list')
-gold_labels = spark.read.parquet('./data/dblp_acm/gold.parquet')
+gold_labels = spark.read.parquet(str(data_dir / 'gold.parquet'))
 
-
-# create feature objects 
+# create features
 features = create_features(
    A=table_a,
    B=table_b,
@@ -163,6 +164,3 @@ print(f"   F1-Score: {f1:.4f}")
 
 # Stop Spark session
 spark.stop()
-
-
-
