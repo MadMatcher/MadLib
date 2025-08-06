@@ -523,7 +523,7 @@ What it does: Creates initial training examples when you don't have any labeled 
 def create_seeds(
     fvs: Union[pd.DataFrame, SparkDataFrame],  # Your feature vectors
     nseeds: int,                               # How many examples to create
-    labeler: Union[Labeler, Dict],             # How to label the examples
+    labeler: Labeler,                          # A labeler object
     score_column: str = 'score'                # Column with similarity scores
 ) -> pd.DataFrame
 ```
@@ -546,7 +546,7 @@ def create_seeds(
 
 `labeler`: Method for determining if record pairs match
 
-- What it is: Either a Labeler object or configuration dictionary that defines how to label record pairs
+- What it is: A Labeler object that defines how to label record pairs
 - Purpose: Provides the "ground truth" labels needed to train your machine learning model
 - How it works: Takes two record IDs and returns a label indicating whether they represent the same entity
 
@@ -596,16 +596,16 @@ What it does: Takes your labeled examples and teaches a machine learning model t
 
 ```python
 def train_matcher(
-    model_spec: Union[Dict, MLModel],     # What type of model to train
+    model: MLModel,                       # What type of model to train
     labeled_data: Union[pd.DataFrame, SparkDataFrame],  # Your labeled examples
-    feature_col: str = "features",        # Column name for your feature vectors
+    feature_col: str = "feature_vectors", # Column name for your feature vectors
     label_col: str = "label"              # Column name for your labels
 ) -> MLModel
 ```
 
 **Parameter Explanations:**
 
-`model_spec`: Machine learning model configuration
+`model`: Machine learning model configuration
 
 - What it is: Either a dictionary specifying model type and parameters, or a pre-configured MLModel object
 - Purpose: Defines what type of machine learning algorithm to use and how to configure it
@@ -641,83 +641,73 @@ You can specify different types of models:
 1. **Random Forest** (good default choice):
 
    ```python
+   from MadLib import SKLearnModel
    from sklearn.ensemble import RandomForestClassifier
 
-   model_spec = {
-       'model_type': 'sklearn',
-       'model': RandomForestClassifier,
-       'model_args': {
-           'n_estimators': 100,        # Number of trees (more = better but slower)
-           'max_depth': 10,            # How deep each tree can go (prevents overfitting)
-           'random_state': 42          # For reproducible results
-       },
-       'nan_fill': 0.0                 # Important: Fill NaN values with 0.0
-   }
+   model = SKLearnModel(
+         model=RandomForestClassifier,
+         n_estimators=100,        # Number of trees (RandomForestClassifier model argument)
+         max_depth=10,            # How deep each tree can go (RandomForestClassifier model argument)
+         random_state=42,         # For reproducible results (RandomForestClassifier model argument)
+         nan_fill=0.0             # Important: Fill NaN values with 0.0
+   )
    ```
 
 2. **Logistic Regression** (simple and interpretable):
 
    ```python
+   from MadLib import SKLearnModel
    from sklearn.linear_model import LogisticRegression
 
-   model_spec = {
-       'model_type': 'sklearn',
-       'model': LogisticRegression,
-       'model_args': {
-           'C': 1.0,                   # Regularization strength (higher = less regularization)
-           'max_iter': 1000            # Maximum training iterations
-       },
-       'nan_fill': 0.0                 # Important: Fill NaN values with 0.0
-   }
+   model = SKLearnModel(
+         model=LogisticRegression,
+         C=1.0,                   # Regularization strength (LogisticRegression model argument)
+         max_iter=1000            # Maximum training iterations (LogisticRegression model argument)
+         nan_fill=0.0             # Important: Fill NaN values with 0.0
+   )
    ```
 
 3. **Gradient Boosting** (often highest accuracy):
 
    ```python
+   from MadLib import SKLearnModel
    from sklearn.ensemble import GradientBoostingClassifier
 
-   model_spec = {
-       'model_type': 'sklearn',
-       'model': GradientBoostingClassifier,
-       'model_args': {
-           'n_estimators': 100,        # Number of boosting stages
-           'learning_rate': 0.1,       # How much each tree contributes
-           'max_depth': 6              # Depth of individual trees
-       },
-       'nan_fill': 0.0                 # Important: Fill NaN values with 0.0
-   }
+   model = SKLearnModel(
+         model=GradientBoostingClassifier,
+         n_estimators=100,        # Number of boosting stages (GradientBoostingClassifier model argument)
+         learning_rate=0.1,       # How much each tree contributes (GradientBoostingClassifier model argument)
+         max_depth=6              # How deep each tree can go (GradientBoostingClassifier model argument)
+         nan_fill=0.0             # Important: Fill NaN values with 0.0
+   )
    ```
 
 4. **Spark ML Models** (for distributed training):
 
    ```python
+   from MadLib import SparkMLModel
    from pyspark.ml.classification import RandomForestClassifier
-   model_spec = {
-       'model_type': 'sparkml',
-       'model': RandomForestClassifier,  # Spark ML RandomForestClassifier
-       'model_args': {
-           'numTrees': 100,
-           'maxDepth': 10
-       }
-   }
+   model = SparkMLModel(
+         model=RandomForestClassifier,  # Spark ML RandomForestClassifier
+         numTrees=100,                  # Number of Decision Trees (RandomForestClassifier model argument)
+         maxDepth=10                    # How deep each tree can go (RandomForestClassifier model argument)
+   )
    ```
 
 5. **Additional Options** (for sklearn models):
 
    ```python
+   from MadLib import SKLearnModel
    from sklearn.ensemble import RandomForestClassifier
 
-   model_spec = {
-       'model_type': 'sklearn',
-       'model': RandomForestClassifier,
-       'model_args': {
-           'n_estimators': 100,
-           'random_state': 42
-       },
-       'nan_fill': 0.0,               # **REQUIRED**: Fill NaN values with 0.0 for sklearn models
-       'execution': 'local',           # 'local' or 'spark' (default: 'local')
-       'use_floats': True             # Use float32 for memory efficiency (default: True)
-   }
+   model = SKLearnModel(
+         model=RandomForestClassifier,
+         n_estimators=100,        # Number of trees (RandomForestClassifier model argument)
+         max_depth=10,            # How deep each tree can go (RandomForestClassifier model argument)
+         random_state=42,         # For reproducible results (RandomForestClassifier model argument)
+         nan_fill=0.0             # **REQUIRED**: Fill NaN values with 0.0 for sklearn models
+         use_floats=True             # Use float32 for memory efficiency (default: True)
+   )
    ```
 
 **What your labeled_data should look like:**
@@ -725,8 +715,8 @@ You can specify different types of models:
 ```python
 # Example labeled_data DataFrame
 labeled_data = pd.DataFrame({
-    'id1': [10, 11, 12, 13, 14, 15],
     'id2': [1, 1, 2, 2, 3, 3],
+    'id1': [10, 11, 12, 13, 14, 15],
     'feature_vectors': [
         [0.9, 0.95, 0.98],    # Feature Vector between id2 = 1 and id1 = 10
         [0.3, 0.2, 0.1],      # Feature Vector between id2 = 1 and id1 = 11
@@ -744,14 +734,16 @@ labeled_data = pd.DataFrame({
 ```python
 # Train a model
 from sklearn.ensemble import RandomForestClassifier
+model = SKLearnModel(
+         model=RandomForestClassifier,
+         n_estimators=100,        # Number of trees (RandomForestClassifier model argument)
+         max_depth=10,            # How deep each tree can go (RandomForestClassifier model argument)
+         random_state=42,         # For reproducible results (RandomForestClassifier model argument)
+         nan_fill=0.0             # Important: Fill NaN values with 0.0
+)
 
-model = train_matcher(
-    model_spec={
-        'model_type': 'sklearn',
-        'model': RandomForestClassifier,
-        'model_args': {'n_estimators': 100},
-        'nan_fill': 0.0                 # Fill NaN values with 0.0
-    },
+trained_matcher = train_matcher(
+    model=model,
     labeled_data=labeled_examples,
     feature_col='feature_vectors',
     label_col='label'
@@ -769,11 +761,12 @@ What it does: Uses your trained model to predict matches on new data that hasn't
 
 ```python
 def apply_matcher(
-    model: Union[MLModel, SKLearnModel, SparkMLModel],  # Your trained model
-    df: Union[pd.DataFrame, SparkDataFrame],            # Data to make predictions on
-    feature_col: str,                                   # Column with feature vectors (the input to the model)
-    output_col: str                                     # The column that will have the predictions
-) -> pd.DataFrame
+    model: MLModel,                          # Your trained model object
+    df: Union[pd.DataFrame, SparkDataFrame], # Data to make predictions on
+    feature_col: str,                        # Column with feature vectors (the input to the model)   
+    prediction_col: str,                     # The column that will have the predictions
+    confidence_col: Optional[str] = None,    # The column that will have the confidence scores; if omitted, confidence scores will not be included in the result dataframe
+) -> Union[pd.DataFrame, SparkDataFrame]
 ```
 
 **Parameter Explanations:**
@@ -800,11 +793,17 @@ def apply_matcher(
 - Consistency requirement: Feature vectors must have same structure as those used during training
 - Purpose: Tells the model which column contains the input data for making predictions
 
-`output_col`: Prediction results column name
+`prediction_col`: Prediction results column name
 
 - What it is: String that will become the name of the new column containing predictions
 - Output format: Column will contain numeric values (1.0 = match, 0.0 = non-match)
 - Purpose: Allows you to customize the output column name to fit your workflow
+
+`confidence_col`: Confidence score results column name
+
+- What it is: String that will become the name of the new column containing confidence scores
+- Output format: Column will contain numeric values (in the range [.50, 1))
+- Purpose: Allows you to customize the output column name to fit your workflow and if omitted, the confidence scores will not be in the resulting dataframe
 
 **What it returns:**
 
@@ -830,8 +829,9 @@ result = pd.DataFrame({
 predictions = apply_matcher(
     model,                              # Your trained model
     new_feature_vectors,                # New data to predict on
-    feature_col='feature_vectors',             # Column with features
-    output_col='match_prediction'       # Where to put results
+    feature_col='feature_vectors',      # Column with features
+    prediction_col='match_prediction'   # Where to put results predictions
+    confidence_col='match_conf'         # Where to put results confidence scores
 )
 
 # Now you can see which pairs the model thinks are matches
@@ -845,9 +845,9 @@ What it does: Implements active learning by selecting which examples would be mo
 
 ```python
 def label_data(
-    model_spec: Union[Dict, MLModel],     # Untrained model or model config
+    model: MLModel,        # Untrained model object
     mode: Literal["batch", "continuous"], # How to do the labeling
-    labeler_spec: Union[Dict, Labeler],   # How to label examples
+    labeler: Labeler,                # Labeler object
     fvs: Union[pd.DataFrame, SparkDataFrame],  # Unlabeled data
     seeds: Optional[pd.DataFrame] = None  # Existing labeled data
 ) -> pd.DataFrame
@@ -855,9 +855,9 @@ def label_data(
 
 **Parameter Explanations:**
 
-`model_spec`: Model for active learning
+`model`: Model for active learning
 
-- What it is: Either a dictionary specifying model type and parameters, or a pre-configured MLModel object
+- What it is: A pre-configured MLModel object
 - Purpose: Defines what type of machine learning algorithm to use and how to configure it
 - Common types: Random Forest, Logistic Regression, Gradient Boosting
 - Why it is configurable: Different datasets may work better with different algorithms
@@ -868,9 +868,9 @@ def label_data(
 - "batch" mode: Label a group of examples, then retrain the model, then repeat
 - "continuous" mode: Examples are labeled in one thread, the model gets trained in another thread and provides new examples continuously
 
-`labeler_spec`: Method for generating labels
+`labeler`: Method for generating labels
 
-- What it is: Either a Labeler object or configuration dictionary that defines how to label examples
+- What it is: A Labeler object that defines how to label examples
 - Purpose: Provides the mechanism to convert unlabeled examples into labeled training data
 
 _See [Built-in Labeler Classes](#built-in-labeler-classes) for available options and usage._
@@ -949,9 +949,9 @@ gold_labeler = GoldLabeler(gold_matches)
 
 # Use in active learning
 labeled_data = label_data(
-    model_spec=model_config,
+    model=model,
     mode='batch',
-    labeler_spec=gold_labeler,
+    labeler=gold_labeler,
     fvs=feature_vectors
 )
 ```
@@ -1048,9 +1048,9 @@ web_labeler = WebUILabeler(
 
 # Use in active learning
 labeled_data = label_data(
-    model_spec=model_config,
+    model=model,
     mode='continuous',
-    labeler_spec=web_labeler,
+    labeler=web_labeler,
     fvs=feature_vectors,
     parquet_file_path='web-labeling-data.parquet'
 )
@@ -1123,32 +1123,6 @@ seeds = create_seeds(
 )
 ```
 
-### Labeler Configuration in Functions
-
-When using labelers with `create_seeds()` or `label_data()`, you can pass them in these two ways:
-
-**Direct instantiation**:
-
-```python
-labeler = CLILabeler(a_df, b_df, id_col='customer_id')
-seeds = create_seeds(fvs, nseeds=50, labeler=labeler)
-```
-
-**Dictionary configuration**:
-
-```python
-labeler_config = {
-    'name': 'cli',           # Labeler type: 'cli', 'gold', 'webui'
-    'a_df': customers_df,    # Required for CLI and WebUI
-    'b_df': prospects_df,    # Required for CLI and WebUI
-    'id_col': 'customer_id'  # Optional, defaults to '_id'
-}
-
-seeds = create_seeds(fvs, nseeds=50, labeler=labeler_config)
-```
-
-Refer to this section when choosing or instantiating a labeler for functions like `create_seeds`, `label_data`, or any workflow that requires labeling record pairs.
-
 ### Training Data Persistence
 
 MadLib automatically saves and loads training data during active learning and seed creation processes to ensure you don't lose your labeling progress. This is especially important for long labeling sessions or when working with large datasets.
@@ -1170,9 +1144,9 @@ You can customize where the training data is saved:
 ````python
 # Custom file path for training data
 label_data(
-    model_spec=model_config,
+    model=model_object,
     mode='batch',
-    labeler_spec=labeler_config,
+    labeler=labeler_object,
     fvs=feature_vectors,
     parquet_file_path='my-custom-training-data.parquet'  # Custom path
 )
@@ -1189,7 +1163,7 @@ Training data is saved in Parquet format with the following schema:
 
 ## Custom Feature Development
 
-When the built-in features aren't enough, you can create your own:
+If the built-in features aren't enough for your use case, you can create your own:
 
 ```python
 class PhoneNumberFeature(Featurizer):
