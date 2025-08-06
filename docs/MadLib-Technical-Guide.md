@@ -856,9 +856,36 @@ def label_data(
     queue_size: Optional[int] = 50 # only for use with "continuous mode", specifies how many labeled examples must be in queue to wait for the user to label more
     max_labeled: Optional[int] = 100000 # only for use with "continuous mode", specifies how many examples to label before terminating active learning
     on_demand_stop: Optional[bool] = True # only for use with "continuous mode", if set to True, ignores max_labeled and waits for a stop label from the user. If using gold data, this must be set to False
-) -> pd.DataFrame
+) -> Union[pd.DataFrame, SparkDataFrame]
 ```
 
+Example with batch mode:
+```python
+def label_data(
+    model = model, 
+    mode = "batch",
+    labeler = Labeler,
+    fvs = fvs,
+    seeds = seeds,
+    parquet_file_path = 'active-matcher-training-data.parquet'
+    batch_size = 15    # label 15 examples per iteration 
+    max_iter = 100    # complete 100 iterations of active learning; results in 100*15 = 1500 labeled examples
+) -> Union[pd.DataFrame, SparkDataFrame]
+```
+
+Example with continuous mode:
+```python
+def label_data(
+    model = model, 
+    mode = "batch",
+    labeler = Labeler,
+    fvs = fvs,
+    seeds = seeds,
+    parquet_file_path = 'active-matcher-training-data.parquet'
+    queue_size = 100    # allow the queue to have 100 unlabeled examples 
+    max_labeled = 1500    # continue the active learning process until 1500 examples are labeled
+) -> Union[pd.DataFrame, SparkDataFrame]
+```
 **Parameter Explanations:**
 
 `model`: Model for active learning
