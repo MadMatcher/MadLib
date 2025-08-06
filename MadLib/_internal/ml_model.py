@@ -329,13 +329,12 @@ class SKLearnModel(MLModel):
         Value to use for filling NaN values
     use_floats : bool, optional
         Whether to use float32 (True) or float64 (False) precision
-    execution : str, optional
-        Execution mode: "local" for pandas or "spark" for PySpark
+
     **model_args : dict
         Additional arguments to pass to the model constructor
     """
     
-    def __init__(self, model, nan_fill=None, use_floats=True, execution="local", **model_args):
+    def __init__(self, model, nan_fill=None, use_floats=True, **model_args):
         try:
             check_is_fitted(model)
             self._trained_model = model
@@ -348,7 +347,6 @@ class SKLearnModel(MLModel):
         self._nan_fill = nan_fill
         self._use_floats = use_floats
         self._vector_buffer = None
-        self.execution = execution
 
     def params_dict(self):
         return {
@@ -408,11 +406,11 @@ class SKLearnModel(MLModel):
     def predict(self, df: Union[pd.DataFrame, SparkDataFrame], vector_col: str, output_col: str) -> Union[pd.DataFrame, SparkDataFrame]:
         if self._trained_model is None:
             raise RuntimeError('Model must be trained to predict')
-        if isinstance(df, pd.DataFrame) and self.execution == "local":
+        if isinstance(df, pd.DataFrame):
             X = self._make_feature_matrix(df[vector_col].tolist())
             df[output_col] = self._trained_model.predict(X)
             return df
-        if isinstance(df, SparkDataFrame) or self.execution == "spark":
+        if isinstance(df, SparkDataFrame):
             df = convert_to_array(df, vector_col)
             f = F.pandas_udf(self._predict, T.DoubleType())
             return df.withColumn(output_col, f(vector_col))
@@ -432,14 +430,14 @@ class SKLearnModel(MLModel):
     def predict_with_confidence(self, df: Union[pd.DataFrame, SparkDataFrame], vector_col: str, prediction_col: str, confidence_col: str) -> Union[pd.DataFrame, SparkDataFrame]:
         if self._trained_model is None:
             raise RuntimeError('Model must be trained to predict')
-        if isinstance(df, pd.DataFrame) and self.execution == "local":
+        if isinstance(df, pd.DataFrame):
             X = self._make_feature_matrix(df[vector_col].tolist())
             predictions = self._trained_model.predict(X)
             probs = self._trained_model.predict_proba(X).max(axis=1)
             df[prediction_col] = predictions
             df[confidence_col] = probs
             return df
-        if isinstance(df, SparkDataFrame) or self.execution == "spark":
+        if isinstance(df, SparkDataFrame):
             df = convert_to_array(df, vector_col)
             schema = StructType([
                 StructField("prediction", DoubleType(), True),
