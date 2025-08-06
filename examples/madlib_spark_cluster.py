@@ -114,9 +114,11 @@ predictions = apply_matcher(
    model=trained_model,
    df=downsampled_fvs,
    feature_col='feature_vectors',
-   output_col='prediction'
+   prediction_col='prediction',
+   confidence_col='confidence'
 )
 
+predictions.show()
 
 # Calculate metrics
 gold_labels = gold_labels.select('id1', 'id2').withColumn('gold_label', lit(1.0))

@@ -264,7 +264,8 @@ def apply_matcher(
     model: MLModel,
     df: Union[pd.DataFrame, SparkDataFrame],
     feature_col: str,
-    output_col: str,
+    prediction_col: str,
+    confidence_col: Optional[str] = None,
 ) -> Union[pd.DataFrame, SparkDataFrame]:
     """Apply a trained model to make predictions.
     
@@ -276,15 +277,21 @@ def apply_matcher(
         The DataFrame to make predictions on
     feature_col : str
         Name of the column containing feature vectors
-    output_col : str
+    prediction_col : str
         Name of the column to store predictions in
+    confidence_col : str, optional
+        Name of the column to store confidence scores in. If provided, both predictions
+        and confidence scores will be computed efficiently in a single pass.
         
     Returns
     -------
     Union[pd.DataFrame, SparkDataFrame]
-        The input DataFrame with predictions added
+        The input DataFrame with predictions added (and confidence scores if requested)
     """
-    return model.predict(df, feature_col, output_col)
+    if confidence_col is not None:
+        return model.predict_with_confidence(df, feature_col, prediction_col, confidence_col)
+    else:
+        return model.predict(df, feature_col, prediction_col)
 
 
 def label_data(

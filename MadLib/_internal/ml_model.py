@@ -7,6 +7,7 @@ training, prediction, confidence estimation, and entropy calculation.
 
 from abc import abstractmethod, ABC, abstractproperty
 import pyspark.sql.functions as F
+from pyspark.sql.types import StructType, StructField, DoubleType
 import pyspark.sql.types as T
 from pyspark.ml.functions import vector_to_array, array_to_vector
 from pyspark.ml.linalg import VectorUDT
@@ -103,6 +104,31 @@ class MLModel(ABC):
         -------
         pandas.DataFrame or pyspark.sql.DataFrame
             The input DataFrame with predictions added in the output_col
+        """
+        pass
+
+    @abstractmethod
+    def predict_with_confidence(self, df: Union[pd.DataFrame, SparkDataFrame], vector_col: str, prediction_col: str, confidence_col: str) -> Union[pd.DataFrame, SparkDataFrame]:
+        """Make predictions and confidence scores using the trained model.
+        
+        This method is more efficient than calling predict() and prediction_conf() separately
+        as it computes both in a single pass when possible.
+        
+        Parameters
+        ----------
+        df : pandas.DataFrame or pyspark.sql.DataFrame
+            The DataFrame containing the feature vectors to predict on
+        vector_col : str
+            Name of the column containing feature vectors
+        prediction_col : str
+            Name of the column to store predictions in
+        confidence_col : str
+            Name of the column to store confidence scores in
+            
+        Returns
+        -------
+        pandas.DataFrame or pyspark.sql.DataFrame
+            The input DataFrame with predictions and confidence scores added
         """
         pass
 
@@ -391,6 +417,41 @@ class SKLearnModel(MLModel):
             f = F.pandas_udf(self._predict, T.DoubleType())
             return df.withColumn(output_col, f(vector_col))
     
+    def _predict_with_confidence(self, vec_itr : Iterator[pd.Series]) -> Iterator[pd.DataFrame]:
+        warnings.filterwarnings('ignore', category=RuntimeWarning)
+        self._no_threads()
+        for vecs in vec_itr:
+            X = self._make_feature_matrix(vecs.values)
+            predictions = self._trained_model.predict(X)
+            confidences = self._trained_model.predict_proba(X).max(axis=1)
+            yield pd.DataFrame({
+                'prediction': predictions,
+                'confidence': confidences
+            })
+
+    def predict_with_confidence(self, df: Union[pd.DataFrame, SparkDataFrame], vector_col: str, prediction_col: str, confidence_col: str) -> Union[pd.DataFrame, SparkDataFrame]:
+        if self._trained_model is None:
+            raise RuntimeError('Model must be trained to predict')
+        if isinstance(df, pd.DataFrame) and self.execution == "local":
+            X = self._make_feature_matrix(df[vector_col].tolist())
+            predictions = self._trained_model.predict(X)
+            probs = self._trained_model.predict_proba(X).max(axis=1)
+            df[prediction_col] = predictions
+            df[confidence_col] = probs
+            return df
+        if isinstance(df, SparkDataFrame) or self.execution == "spark":
+            df = convert_to_array(df, vector_col)
+            schema = StructType([
+                StructField("prediction", DoubleType(), True),
+                StructField("confidence", DoubleType(), True)
+            ])
+            f = F.pandas_udf(self._predict_with_confidence, schema)
+            result = df.withColumn("temp_result", f(vector_col))
+            result = result.withColumn(prediction_col, F.col("temp_result.prediction"))\
+                          .withColumn(confidence_col, F.col("temp_result.confidence"))\
+                          .drop("temp_result")
+            return result
+    
     def _prediction_conf(self, vec_itr : Iterator[pd.Series]) -> Iterator[pd.Series]:
         warnings.filterwarnings('ignore', category=RuntimeWarning)
         self._no_threads()
@@ -510,6 +571,28 @@ class SparkMLModel(MLModel):
             return predictions.toPandas()
         else:
             return predictions
+    
+    def predict_with_confidence(self, df: Union[pd.DataFrame, SparkDataFrame], vector_col: str, prediction_col: str, confidence_col: str) -> Union[pd.DataFrame, SparkDataFrame]:
+        if self._trained_model is None:
+            raise RuntimeError('Model must be trained to predict')
+        return_pandas = isinstance(df, pd.DataFrame)
+        if isinstance(df, pd.DataFrame):
+            spark = SparkSession.builder.getOrCreate()
+            spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "true")
+            df = spark.createDataFrame(df) 
+        if not hasattr(self, '_model_args'):
+            return SparkMLModel(self._trained_model).predict_with_confidence(df, vector_col, prediction_col, confidence_col)
+        df = convert_to_vector(df, vector_col)
+        cols = df.columns
+        pred_out = F.col(self._trained_model.getPredictionCol()).alias(prediction_col)
+        conf_out = F.array_max(vector_to_array(F.col(self._trained_model.getProbabilityCol()))).alias(confidence_col)
+        result = self._trained_model.setFeaturesCol(vector_col)\
+                                    .transform(df)\
+                                    .select(*cols, pred_out, conf_out)
+        if return_pandas:
+            return result.toPandas()
+        else:
+            return result
     
     def _entropy_component(self, p_col, idx):
         return F.when(p_col.getItem(idx) != 0.0, -p_col.getItem(idx) * F.log2(p_col.getItem(idx))).otherwise(0.0)
