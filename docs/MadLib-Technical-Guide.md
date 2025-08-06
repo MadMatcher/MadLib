@@ -849,7 +849,13 @@ def label_data(
     mode: Literal["batch", "continuous"], # How to do the labeling
     labeler: Labeler,                # Labeler object
     fvs: Union[pd.DataFrame, SparkDataFrame],  # Unlabeled data
-    seeds: Optional[pd.DataFrame] = None  # Existing labeled data
+    seeds: Optional[Union[pd.DataFrame, SparkDataFrame]] = None  # Existing labeled data
+    parquet_file_path: str = 'active-matcher-training-data.parquet' # Path to file of where to save labeled data
+    batch_size: Optional[int] = 10 # only for use with "batch mode", specifies how many examples to label in each batch
+    max_iter: Optional[int] = 50 # only for use with "batch mode", specifies how many iterations of active learning to complete
+    queue_size: Optional[int] = 50 # only for use with "continuous mode", specifies how many labeled examples must be in queue to wait for the user to label more
+    max_labeled: Optional[int] = 100000 # only for use with "continuous mode", specifies how many examples to label before terminating active learning
+    on_demand_stop: Optional[bool] = True # only for use with "continuous mode", if set to True, ignores max_labeled and waits for a stop label from the user. If using gold data, this must be set to False
 ) -> pd.DataFrame
 ```
 
