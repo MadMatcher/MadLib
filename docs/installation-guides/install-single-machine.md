@@ -4,4 +4,4 @@ You can install and run MadLib on a single machine. If you have relatively small
 
 We currently offer the following ways to install MadLib on a single machine: 
 * [Installing on Linux](./install-linux-single-machine.md)
-* [Installing on MacOS](./install-macos-single-machine.md)
+* [Installing on MacOS](./install-macOS-single-machine.md)
