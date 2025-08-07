@@ -1,3 +1,7 @@
+**This guide can be used if you are using Pandas on a single MacOS M1 machine.**
+
+**This guide can be used if you are using Spark on a single MacOS M1 machine.**
+
 ## How to Install MadLib on a MacOS M1 Machine
 
 This is a step-by-step guide to install MadLib on a single macOS machine with an M1 chip. If you are unsure whether your Mac has an M1 chip, click on the Apple in the top left corner of your screen > About This Mac. If it says Chip Apple M1, then you have an M1 chip. If it does not say Chip Apple M1, you do not have an M1 chip.
