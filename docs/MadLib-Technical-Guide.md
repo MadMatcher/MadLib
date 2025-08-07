@@ -429,12 +429,12 @@ def featurize(
    ```
 
 result DataFrame OPTION 2:
-| id2 | id1 | feature_vectors                       | source           | _id |
+| id2 | id1 | feature_vectors | source | \_id |
 |-----|-----|---------------------------------------|------------------|-----|
-| 1   | 10  | [0.9, 0.95, 0.98, 0.85, 0.92]         | blocking_system  | 0   |
-| 1   | 11  | [0.3, 0.2, 0.1, 0.15, 0.25]           | blocking_system  | 1   |
-| 2   | 12  | [0.8, 0.7, 0.9, 0.75, 0.88]           | manual_review    | 2   |
-| 2   | 13  | [0.1, 0.05, 0.02, 0.08, 0.12]         | manual_review    | 3   |
+| 1 | 10 | [0.9, 0.95, 0.98, 0.85, 0.92] | blocking_system | 0 |
+| 1 | 11 | [0.3, 0.2, 0.1, 0.15, 0.25] | blocking_system | 1 |
+| 2 | 12 | [0.8, 0.7, 0.9, 0.75, 0.88] | manual_review | 2 |
+| 2 | 13 | [0.1, 0.05, 0.02, 0.08, 0.12] | manual_review | 3 |
 
 ### down_sample()
 
@@ -456,7 +456,7 @@ def down_sample(
 
 - What it is: A DataFrame containing feature vectors - can be pandas or Spark DataFrame
 - Required content: Must contain feature vectors and similarity scores for record pairs
-- Schema expectation: Must have an id column that uniquely identifies each row ('_id' if this is the output from the featurize() function) and a column with similarity scores ('score' if this is the output from the featurize() function)
+- Schema expectation: Must have an id column that uniquely identifies each row ('\_id' if this is the output from the featurize() function) and a column with similarity scores ('score' if this is the output from the featurize() function)
 - Purpose: This is the data you want to reduce in size while maintaining representativeness
 
 `percent`: Fraction of data to keep
@@ -471,7 +471,7 @@ def down_sample(
 - What it is: String name of the column that uniquely identifies each record pair comparison
 - Purpose: Ensures each comparison can be uniquely tracked during the sampling process
 - Requirements: Values in this column must be unique across all rows
-- Default value (if you used featurize()): '_id'
+- Default value (if you used featurize()): '\_id'
 
 `score_column`: Similarity score column name
 
@@ -646,7 +646,23 @@ def train_matcher(
 **Understanding Model Specifications:**  
 You can specify different types of models:
 
-1. **Random Forest** (good default choice):
+1. **XGBoost** (recommended, often highest accuracy):
+
+   ```python
+   from MadLib import SKLearnModel
+   from xgboost import XGBClassifier
+
+    model = SKLearnModel(
+        model=XGBClassifier,
+        eval_metric='logloss', # How to evaluate the performance of the model (XGBoost model argument)
+        objective='binary:logistic', # The use cases, used for optimization (XGBoost model argument)
+        max_depth=6, # How deep each tree can go (XGBoost model argument)
+        seed=42,    #  For reproducible results (XGBoost model argument)
+        nan_fill=0.0
+    )
+   ```
+
+2. **Random Forest** (good performance, fewer parameters to tune than XGBoost):
 
    ```python
    from MadLib import SKLearnModel
@@ -661,7 +677,7 @@ You can specify different types of models:
    )
    ```
 
-2. **Logistic Regression** (simple and interpretable):
+3. **Logistic Regression** (simple and interpretable):
 
    ```python
    from MadLib import SKLearnModel
@@ -671,21 +687,6 @@ You can specify different types of models:
          model=LogisticRegression,
          C=1.0,                   # Regularization strength (LogisticRegression model argument)
          max_iter=1000            # Maximum training iterations (LogisticRegression model argument)
-         nan_fill=0.0             # Important: Fill NaN values with 0.0
-   )
-   ```
-
-3. **Gradient Boosting** (often highest accuracy):
-
-   ```python
-   from MadLib import SKLearnModel
-   from sklearn.ensemble import GradientBoostingClassifier
-
-   model = SKLearnModel(
-         model=GradientBoostingClassifier,
-         n_estimators=100,        # Number of boosting stages (GradientBoostingClassifier model argument)
-         learning_rate=0.1,       # How much each tree contributes (GradientBoostingClassifier model argument)
-         max_depth=6              # How deep each tree can go (GradientBoostingClassifier model argument)
          nan_fill=0.0             # Important: Fill NaN values with 0.0
    )
    ```
@@ -771,7 +772,7 @@ What it does: Uses your trained model to predict matches on new data that hasn't
 def apply_matcher(
     model: MLModel,                          # Your trained model object
     df: Union[pd.DataFrame, SparkDataFrame], # Data to make predictions on
-    feature_col: str,                        # Column with feature vectors (the input to the model)   
+    feature_col: str,                        # Column with feature vectors (the input to the model)
     prediction_col: str,                     # The column that will have the predictions
     confidence_col: Optional[str] = None,    # The column that will have the confidence scores; if omitted, confidence scores will not be included in the result dataframe
 ) -> Union[pd.DataFrame, SparkDataFrame]
@@ -868,32 +869,35 @@ def label_data(
 ```
 
 Example with batch mode:
+
 ```python
 def label_data(
-    model = model, 
+    model = model,
     mode = "batch",
     labeler = Labeler,
     fvs = fvs,
     seeds = seeds,
     parquet_file_path = 'active-matcher-training-data.parquet'
-    batch_size = 15    # label 15 examples per iteration 
+    batch_size = 15    # label 15 examples per iteration
     max_iter = 100    # complete 100 iterations of active learning; results in 100*15 = 1500 labeled examples
 ) -> Union[pd.DataFrame, SparkDataFrame]
 ```
 
 Example with continuous mode:
+
 ```python
 def label_data(
-    model = model, 
+    model = model,
     mode = "batch",
     labeler = Labeler,
     fvs = fvs,
     seeds = seeds,
     parquet_file_path = 'active-matcher-training-data.parquet'
-    queue_size = 100    # allow the queue to have 100 unlabeled examples 
+    queue_size = 100    # allow the queue to have 100 unlabeled examples
     max_labeled = 1500    # continue the active learning process until 1500 examples are labeled
 ) -> Union[pd.DataFrame, SparkDataFrame]
 ```
+
 **Parameter Explanations:**
 
 `model`: Model for active learning
@@ -953,8 +957,11 @@ uncertain_examples = [
 MadLib provides functions to help you save/load your generated features (from a call to create_features()) and DataFrames, whether they are Pandas or Spark DataFrames.
 
 ### Features
+
 #### save_features(features, path)
-Save a list of feature objects to disk using pickle serialization. 
+
+Save a list of feature objects to disk using pickle serialization.
+
 ```
 from MadLib import save_features
 
@@ -963,8 +970,11 @@ path: str                  # Path where to save the features file
 
 Returns: None
 ```
+
 #### load_features(path)
-Load a list of feature objects from disk using pickle deserialization. 
+
+Load a list of feature objects from disk using pickle deserialization.
+
 ```
 from MadLib import load_features
 
@@ -974,9 +984,12 @@ Returns: List[Callable]    # List of feature objects
 ```
 
 ### DataFrames
+
 #### save_dataframe(dataframe, path)
-Save a DataFrame to disk with automatic detection between Pandas and Spark DataFrames. 
+
+Save a DataFrame to disk with automatic detection between Pandas and Spark DataFrames.
 Saves the DataFrame as a parquet file.
+
 ```
 from MadLib import save_dataframe
 
@@ -985,8 +998,11 @@ path: str                                              # Path where to save the 
 
 Returns: None
 ```
+
 #### load_dataframe(path, df_type)
+
 Load a DataFrame from disk based on the specified type.
+
 ```
 from MadLib import load_dataframe
 
