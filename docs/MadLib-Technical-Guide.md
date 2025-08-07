@@ -986,7 +986,7 @@ features = create_features(
 save_features(features=features, path='./features.pkl')
 ```
 
-This will create a file called 'features.pkl' in the directory where you execute this program on your local machine.
+This will create a file called 'features.pkl' in the directory where your Python script lives on your local machine.
 
 **Case 2: Using Spark on a Local Machine to save features**
 
@@ -1002,7 +1002,7 @@ features = create_features(
 save_features(features=features, path='./features.pkl')
 ```
 
-This will create a file called 'features.pkl' in the directory where you execute this program on your local machine.
+This will create a file called 'features.pkl' in the directory where your Python script lives on your local machine.
 
 **Case 3: Using Spark on a Cluster to save features**
 
@@ -1041,7 +1041,7 @@ from MadLib import load_features
 features = load(path='./features.pkl')
 ```
 
-This will load in the features list from the 'features.pkl' file in the directory where you execute this program on your local machine.
+This will load in the features list from the 'features.pkl' file in the directory where your Python script lives on your local machine.
 
 **Case 2: Using Spark on a Local Machine to load features**
 
@@ -1051,7 +1051,7 @@ from MadLib import load_features
 features = load(path='./features.pkl')
 ```
 
-This will load in the features list from the 'features.pkl' file in the directory where you execute this program on your local machine.
+This will load in the features list from the 'features.pkl' file in the directory where your Python script lives on your local machine.
 
 **Case 3: Using Spark on a Cluster to save features**
 
@@ -1096,7 +1096,7 @@ feature_vectors_df = featurize(
 save_dataframe(dataframe=feature_vectors_df, path='./feature_vectors_df.parquet')
 ```
 
-This will create a file called 'feature_vectors_df.parquet' in the directory where you execute this program on your local machine.
+This will create a file called 'feature_vectors_df.parquet' in the directory where your Python script lives on your local machine.
 
 **Case 2: Using Spark on a Local Machine to save a DataFrame**
 
@@ -1114,7 +1114,7 @@ feature_vectors_df = featurize(
 save_dataframe(dataframe=feature_vectors_df, path='./feature_vectors_df.parquet')
 ```
 
-This will create a file called 'feature_vectors_df.parquet' in the directory where you execute this program on your local machine.
+This will create a file called 'feature_vectors_df.parquet' in the directory where your Python script lives on your local machine.
 
 **Case 3: Using Spark on a Cluster to save features**
 
@@ -1156,7 +1156,7 @@ from MadLib import load_dataframe
 feature_vectors_df = load_dataframe(path='./feature_vectors_df.parquet', df_type='pandas')
 ```
 
-This will load in the feature vectors dataframe from the 'feature_vectors_df.parquet' file in the directory where you execute this program on your local machine.
+This will load in the feature vectors dataframe from the 'feature_vectors_df.parquet' file in the directory where your Python script lives on your local machine.
 
 **Case 2: Using Spark on a Local Machine to load a DataFrame**
 
@@ -1166,7 +1166,7 @@ from MadLib import load_dataframe
 feature_vectors_df = load_dataframe(path='./feature_vectors_df.parquet', df_type='sparkdf')
 ```
 
-This will load in the feature vectors dataframe from the 'feature_vectors_df.parquet' file in the directory where you execute this program on your local machine.
+This will load in the feature vectors dataframe from the 'feature_vectors_df.parquet' file in the directory where your Python script lives on your local machine.
 
 **Case 3: Using Spark on a Cluster to load a DataFrame**
 
@@ -1341,12 +1341,13 @@ labeled_data = label_data(
     mode='continuous',
     labeler=web_labeler,
     fvs=feature_vectors,
-    parquet_file_path='web-labeling-data.parquet'
+    parquet_file_path='./web-labeling-data.parquet'
 )
 ```
 
 To access the WebUI labeler, you will visit: 127.0.0.1:8502 on your local machine.
 
+We are also saving the labeled data to 'web-labeling-data.parquet'. This file will be saved in the directory where your Python script lives on your local machine.
 **Case 2: Using with Spark on a single machine**:
 
 ```python
@@ -1372,6 +1373,8 @@ labeled_data = label_data(
 
 To access the WebUI labeler, you will visit: 127.0.0.1:8502 on your local machine.
 
+We are also saving the labeled data to 'web-labeling-data.parquet'. This file will be saved in the directory where your Python script lives on your local machine.
+
 **Case 3: Using with Spark on a cluster**:
 
 ```python
@@ -1396,6 +1399,8 @@ labeled_data = label_data(
 ```
 
 To access the WebUI labeler, you will visit: {public ip address of your master node}:8502 from your local machine.
+
+We are also saving the labeled data to 'web-labeling-data.parquet'. This file will be saved in the directory where your Python script lives (using spark-submit) on your master node.
 
 ### CustomLabeler
 
