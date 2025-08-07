@@ -4,7 +4,7 @@ You can install and run MadLib on a single machine. If you have relatively small
 
 If you are using MadLib with Pandas on the single machine setting in Linux, see this guide [Installing on Linux](./install-linux-single-machine.md).
 
-If you are using MadLib with Spark on the single machine setting in Linux, see this guide[Installing on Linux](./install-linux-single-machine.md).
+If you are using MadLib with Spark on the single machine setting in Linux, see this guide [Installing on Linux](./install-linux-single-machine.md).
 
 If you are using MadLib with Pandas on the single machine setting on MacOS, see this guide [Installing on MacOS](./install-macOS-single-machine.md).
 
