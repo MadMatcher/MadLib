@@ -942,7 +942,7 @@ uncertain_examples = [
 
 ## Saving + Loading Functions
 
-MadLib provides functions to help you save/load your generated features (from a call to features()) and DataFrames, whether they are Pandas or Spark DataFrames.
+MadLib provides functions to help you save/load your generated features (from a call to create_features()) and DataFrames, whether they are Pandas or Spark DataFrames.
 
 ### Features
 #### save_features(features, path)
