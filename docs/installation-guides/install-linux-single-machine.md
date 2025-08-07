@@ -128,12 +128,12 @@ Now we will create a Python environment with Python 3.12. This step is necessary
 
 Next, in your terminal, run:
 ```
-    python3 -m venv ~/madlib
+    python3 -m venv ~/madlib-venv
 ```
 
-This will create a virtual environment named madlib. To activate this environment, run the following:
+This will create a virtual environment named madlib-venv. To activate this environment, run the following:
 ```
-    source ~/madlib/bin/activate
+    source ~/madlib-venv/bin/activate
 ```
 
 To make sure everything is correct, run:
@@ -152,7 +152,7 @@ where x ≥ 0, then the Python environment setup was successful.
 Before installing these two packages, make sure you are in the virtual environment. If you have just finished Step 3B, you are in the virtual environment. Otherwise, to make sure your virtual environment is active, you can run:
 
 ```
-    source ~/madlib/bin/activate
+    source ~/madlib-venv/bin/activate
 ```
 
 To install setuptools, run:
@@ -170,7 +170,7 @@ To install build, run:
 If at any point during the installation you close your terminal, you will need to reactivate your virtual environment by running:
 
 ```
-    source ~/madlib/bin/activate
+    source ~/madlib-venv/bin/activate
 ```
 
 ### Step 4: Installing MadLib
@@ -181,7 +181,7 @@ Before installing MadLib, we should return to the root directory by running the 
     cd
 ```
 
-We can install ActiveMather using one of the following two options: 
+We can install MadLib using one of the following two options: 
 
 #### Option 1: Pip Installing from PyPI
 
