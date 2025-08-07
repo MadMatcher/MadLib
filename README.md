@@ -12,42 +12,7 @@ A comprehensive Python library for entity matching and record linkage, providing
 
 ## Installation
 
-Install from PyPI: [todo]
-
-```bash
-pip install MadLib
-```
-
-Install from GitHub:
-
-```bash
-pip install git+https://github.com/MadMatcher/madlib.git
-```
-
-### Requirements
-
-**Core Dependencies:**
-
-- Python 3.8+
-- flask>=2.0.0
-- joblib==1.2.0
-- mmh3==3.0.0
-- numba==0.60.0
-- numpy==1.26.0
-- numpydoc==1.5.0
-- pandas==1.5.2
-- pyarrow==14.0.0
-- py_stringmatching==0.4.6
-- pyspark==3.5.3
-- requests>=2.25.0
-- scikit_learn==1.3.1
-- scipy==1.15.2
-- streamlit>=1.0.0
-- tabulate>=0.8.9
-- threadpoolctl==3.1.0
-- tqdm==4.64.1
-- xgboost==1.7.3
-- xxhash>=3.0.0
+Please reference the installation guides. For single machine installation, see the [single-machine installation guide](https://github.com/MadMatcher/MadLib/blob/main/docs/installation-guides/install-single-machine.md). For cloud-based cluster installation, see the [cloud-based-cluster installation guide](https://github.com/MadMatcher/MadLib/blob/main/docs/installation-guides/install-cloud-based-cluster.md).
 
 ## Quick Start
 
