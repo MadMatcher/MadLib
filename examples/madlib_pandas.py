@@ -98,20 +98,7 @@ predictions = apply_matcher(
     confidence_col='confidence'
 )
 
-print(predictions.head())
 
-if 'prediction' in predictions.columns:
-    print(f"Prediction column info:")
-    print(f"  - Min: {predictions['prediction'].min()}")
-    print(f"  - Max: {predictions['prediction'].max()}")
-    print(f"  - Unique values: {predictions['prediction'].nunique()}")
-    print(f"  - Sample values: {predictions['prediction'].head().tolist()}")
-
-if 'confidence' in predictions.columns:
-    print(f"Confidence column info:")
-    print(f"  - Min: {predictions['confidence'].min()}")
-    print(f"  - Max: {predictions['confidence'].max()}")
-    print(f"  - Unique values: {predictions['confidence'].nunique()}")
 # Calculate evaluation metrics
 gold_dict = {}
 for _, row in gold_labels.iterrows():
