@@ -1,3 +1,7 @@
+**This guide can be used if you are using Pandas on a single Linux machine.**
+
+**This guide can be used if you are using Spark on a single Linux machine.**
+
 ## How to Install MadLib on a Linux Machine
 
 This is a step-by-step guide to install MadLib on a single Linux machine with Ubunutu 22.0.4 and Python 3.12. You can try to adapt this guide to other configurations.
