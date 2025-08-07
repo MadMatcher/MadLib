@@ -28,7 +28,7 @@ You will need to create at least two EC2 instances to serve as nodes in your clu
 
 ### Installing MadLib
 
-Next you need to install MadLib. You can find instructions for installing MadLib and its prerequisites (Python, Java, Joblib, mmh3, Numba, Numpy, Numpydoc, Pandas, Py_Stringmatching, PySpark, Scikit-Learn, Scipy, Threadpoolctl, TQDM, and Xgboost) here: [MadLib Linux Installation](https://github.com/anhaidgroup/madlib/blob/main/doc/installation-guides/install-linux-single-machine.md)
+Next you need to install MadLib. You can find instructions for installing MadLib and its prerequisites (Python, Java, Joblib, mmh3, Numba, Numpy, Numpydoc, Pandas, Py_Stringmatching, PySpark, Scikit-Learn, Scipy, Threadpoolctl, TQDM, and Xgboost) here: [MadLib Linux Installation](https://github.com/MadMatcher/MadLib/blob/main/docs/installation-guides/install-linux-single-machine.md)
 
 You will have to install MadLib on every node in your cluster.
 
