@@ -102,12 +102,10 @@ If this runs successfully, it will appear as a finished job in the master and wo
 ### Running a MadLib program on a Spark Cluster
 
 Assuming you have followed our instructions for downloading MadLib in a virtual environment, there is one more step before you can run programs using MadLib on a cluster. By default, Spark will use the Python interpreter installed on each node (and all of its associated packages) that is found on the system PATH, which is often the system Python. If you don’t explicitly tell Spark to use your virtual environment’s interpreter, it won’t see the MadLib package or any of the other dependencies you installed in that environment. To ensure both the driver (the process that submits your job) and the executors (the worker processes) use the same Python with MadLib installed, you need to point Spark at your virtual environment’s Python binary:
+
 On the master node:
 ```
 export PYSPARK_DRIVER_PYTHON=/home/ubuntu/madlib-venv/bin/python3
-```
-On each worker node:
-```
 export PYSPARK_PYTHON=/home/ubuntu/madlib-venv/bin/python3
 ```
 
@@ -115,12 +113,10 @@ export PYSPARK_PYTHON=/home/ubuntu/madlib-venv/bin/python3
 - PYSPARK_PYTHON tells each executor which Python interpreter to run tasks under.
 
 Or, if you want to add make sure these instructions are applied each time you submit a Spark job, run the following commands:
+
 On the master node:
 ```  
 echo "export PYSPARK_DRIVER_PYTHON=/home/ubuntu/madlib-venv/bin/python3" >> /home/ubuntu/spark/conf/spark-env.sh
-```
-On each worker node:
-```
 echo "export PYSPARK_PYTHON=/home/ubuntu/madlib-venv/bin/python3" >> /home/ubuntu/spark/conf/spark-env.sh
 ```
 
