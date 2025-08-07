@@ -1,4 +1,5 @@
 **This guide can be used if you are using Pandas on a single Linux machine.**
+
 **This guide can be used if you are using Spark on a single Linux machine.**
 
 ## How to Install MadLib on a Linux Machine
