@@ -954,7 +954,7 @@ uncertain_examples = [
 
 ## Saving + Loading Functions
 
-MadLib provides functions to help you save/load your generated features (from a call to create_features()) and DataFrames, whether they are Pandas or Spark DataFrames.
+MadLib provides functions to help you save/load your generated features (from a call to create_features()). MadLib also provides functions to help you save/load DataFrames, no matter if they are Pandas or Spark DataFrames.
 
 ### Features
 
@@ -962,8 +962,9 @@ MadLib provides functions to help you save/load your generated features (from a 
 
 Save a list of feature objects to disk using pickle serialization.
 
-```
+```python
 from MadLib import save_features
+
 
 features: List[Callable]   # List of feature objects to save
 path: str                  # Path where to save the features file
@@ -971,17 +972,97 @@ path: str                  # Path where to save the features file
 Returns: None
 ```
 
+**Case 1: Using Pandas on a Local Machine to save features**
+
+```python
+from MadLib import save_features
+
+features = create_features(
+    customers_df, prospects_df,
+    ['name', 'address', 'revenue'],
+    ['name', 'address', 'revenue']
+)
+
+save_features(features=features, path='./features.pkl')
+```
+
+This will create a file called 'features.pkl' in the directory where you execute this program on your local machine.
+
+**Case 2: Using Spark on a Local Machine to save features**
+
+```python
+from MadLib import save_features
+
+features = create_features(
+    customers_df, prospects_df,
+    ['name', 'address', 'revenue'],
+    ['name', 'address', 'revenue']
+)
+
+save_features(features=features, path='./features.pkl')
+```
+
+This will create a file called 'features.pkl' in the directory where you execute this program on your local machine.
+
+**Case 3: Using Spark on a Cluster to save features**
+
+```python
+from MadLib import save_features
+from pathlib import Path
+
+features = create_features(
+    customers_df, prospects_df,
+    ['name', 'address', 'revenue'],
+    ['name', 'address', 'revenue']
+)
+
+save_features(features=features, path=str(Path(__file__).parent / 'features.pkl'))
+```
+
+This will create a file called 'features.pkl' in the directory where your Python script lives (using spark-submit) on your master node.
+
 #### load_features(path)
 
 Load a list of feature objects from disk using pickle deserialization.
 
-```
+```python
 from MadLib import load_features
 
 path: str                  # Path to the saved features file
 
 Returns: List[Callable]    # List of feature objects
 ```
+
+**Case 1: Using Pandas on a Local Machine to load features**
+
+```python
+from MadLib import load_features
+
+features = load(path='./features.pkl')
+```
+
+This will load in the features list from the 'features.pkl' file in the directory where you execute this program on your local machine.
+
+**Case 2: Using Spark on a Local Machine to load features**
+
+```python
+from MadLib import load_features
+
+features = load(path='./features.pkl')
+```
+
+This will load in the features list from the 'features.pkl' file in the directory where you execute this program on your local machine.
+
+**Case 3: Using Spark on a Cluster to save features**
+
+```python
+from MadLib import load_features
+from pathlib import Path
+
+features = load(path=str(Path(__file__).parent / 'features.pkl'))
+```
+
+This will load in the features list from the 'features.pkl' file in the directory where your Python script lives (using spark-submit) on your master node.
 
 ### DataFrames
 
@@ -990,20 +1071,75 @@ Returns: List[Callable]    # List of feature objects
 Save a DataFrame to disk with automatic detection between Pandas and Spark DataFrames.
 Saves the DataFrame as a parquet file.
 
-```
+```python
 from MadLib import save_dataframe
 
-features: Union[pd.DataFrame, pyspark.sql.DataFrame]   # DataFrame to save
+dataframe: Union[pd.DataFrame, pyspark.sql.DataFrame]   # DataFrame to save
 path: str                                              # Path where to save the DataFrame
 
 Returns: None
 ```
 
+**Case 1: Using Pandas on a Local Machine to save a DataFrame**
+
+```python
+from MadLib import save_dataframe
+
+feature_vectors_df = featurize(
+    features,
+    customers_df,
+    prospects_df,
+    candidates_df,
+    output_col='feature_vectors'
+)
+
+save_dataframe(dataframe=feature_vectors_df, path='./feature_vectors_df.parquet')
+```
+
+This will create a file called 'feature_vectors_df.parquet' in the directory where you execute this program on your local machine.
+
+**Case 2: Using Spark on a Local Machine to save a DataFrame**
+
+```python
+from MadLib import save_dataframe
+
+feature_vectors_df = featurize(
+    features,
+    customers_df,
+    prospects_df,
+    candidates_df,
+    output_col='feature_vectors'
+)
+
+save_dataframe(dataframe=feature_vectors_df, path='./feature_vectors_df.parquet')
+```
+
+This will create a file called 'feature_vectors_df.parquet' in the directory where you execute this program on your local machine.
+
+**Case 3: Using Spark on a Cluster to save features**
+
+```python
+from MadLib import save_dataframe
+from pathlib import Path
+
+feature_vectors_df = featurize(
+    features,
+    customers_df,
+    prospects_df,
+    candidates_df,
+    output_col='feature_vectors'
+)
+
+save_dataframe(dataframe=feature_vectors_df,  path=str(Path(__file__).parent / 'feature_vectors_df.parquet'))
+```
+
+This will create a file called 'feature_vectors_df.parquet' in the directory where your Python script lives (using spark-submit) on your master node.
+
 #### load_dataframe(path, df_type)
 
 Load a DataFrame from disk based on the specified type.
 
-```
+```python
 from MadLib import load_dataframe
 
 path: str                  # Path to the saved DataFrame parquet file
@@ -1012,11 +1148,47 @@ df_type: str               # Type of DataFrame to load ('pandas' or 'sparkdf')
 Returns:    Union[pd.DataFrame, pyspark.sql.DataFrame]  # Loaded Dataframe
 ```
 
+**Case 1: Using Pandas on a Local Machine to load a DataFrame**
+
+```python
+from MadLib import load_dataframe
+
+feature_vectors_df = load_dataframe(path='./feature_vectors_df.parquet', df_type='pandas')
+```
+
+This will load in the feature vectors dataframe from the 'feature_vectors_df.parquet' file in the directory where you execute this program on your local machine.
+
+**Case 2: Using Spark on a Local Machine to load a DataFrame**
+
+```python
+from MadLib import load_dataframe
+
+feature_vectors_df = load_dataframe(path='./feature_vectors_df.parquet', df_type='sparkdf')
+```
+
+This will load in the feature vectors dataframe from the 'feature_vectors_df.parquet' file in the directory where you execute this program on your local machine.
+
+**Case 3: Using Spark on a Cluster to load a DataFrame**
+
+```python
+from MadLib import load_dataframe
+
+feature_vectors_df = load_dataframe(path=str(Path(__file__).parent / 'feature_vectors_df.parquet'), df_type='sparkdf')
+```
+
+This will load in the feature vectors dataframe from the 'feature_vectors_df.parquet' file in the directory where your Python script lives (using spark-submit) on your master node.
+
 ## Built-in Labeler Classes
 
 MadLib provides several built-in labeler classes for different labeling workflows. You can use these directly or extend them for custom logic. All labelers inherit from the public `Labeler` abstract class:
 
 ### GoldLabeler
+
+**This labeler can be used in the single machine mode with Pandas.**
+
+**This labeler can be used in the single machine mode with Spark.**
+
+**This labeler can be used in the cluster mode with Spark.**
 
 **Purpose**: Automated labeling using a gold set of known matches.
 
@@ -1063,6 +1235,12 @@ labeled_data = label_data(
 
 ### CLILabeler
 
+**This labeler can be used in the single machine mode with Pandas. For interactive labeleing, you may also refer to the WebUILabeler, if you choose.**
+
+**This labeler can be used in the single machine mode with Spark. For interactive labeleing, you may also refer to the WebUILabeler, if you choose.**
+
+**This labeler can NOT be used in the cluster mode with Spark. For interactive labeling, you must use the WebUILabeler.**
+
 **Purpose**: Interactive command-line labeling for human review.
 
 **Usage**: `CLILabeler(a_df, b_df, id_col='_id')`
@@ -1108,6 +1286,12 @@ seeds = create_seeds(
 
 ### WebUILabeler
 
+**This labeler can be used in the single machine mode with Pandas.**
+
+**This labeler can be used in the single machine mode with Spark.**
+
+**This labeler can be used in the cluster mode with Spark.**
+
 **Purpose**: Interactive web-based labeling with a modern Streamlit interface.
 
 **Usage**: `WebUILabeler(a_df, b_df, id_col='_id', flask_port=5005, streamlit_port=8501, flask_host='127.0.0.1')`
@@ -1138,7 +1322,7 @@ seeds = create_seeds(
 - Automatically starts a Flask backend server and Streamlit frontend
 - Provides side-by-side record comparison with field selection
 
-**Example**:
+**Case 1: Using with Pandas on a single machine**:
 
 ```python
 # Create web labeler with custom configuration
@@ -1148,7 +1332,7 @@ web_labeler = WebUILabeler(
     id_col='customer_id',
     flask_port=5006,      # Custom port if 5005 is busy
     streamlit_port=8502,  # Custom port if 8501 is busy
-    flask_host='0.0.0.0'  # Allow external access
+    flask_host='0.0.0.0'  # Allow other processes to hit the endpoints (desired behavior)
 )
 
 # Use in active learning
@@ -1160,6 +1344,58 @@ labeled_data = label_data(
     parquet_file_path='web-labeling-data.parquet'
 )
 ```
+
+To access the WebUI labeler, you will visit: 127.0.0.1:8502 on your local machine.
+
+**Case 2: Using with Spark on a single machine**:
+
+```python
+# Create web labeler with custom configuration
+web_labeler = WebUILabeler(
+    a_df=customers_df,
+    b_df=prospects_df,
+    id_col='customer_id',
+    flask_port=5006,      # Custom port if 5005 is busy
+    streamlit_port=8502,  # Custom port if 8501 is busy
+    flask_host='0.0.0.0'  # Allow other processes to hit the endpoints (desired behavior)
+)
+
+# Use in active learning
+labeled_data = label_data(
+    model=model,
+    mode='continuous',
+    labeler=web_labeler,
+    fvs=feature_vectors,
+    parquet_file_path='web-labeling-data.parquet'
+)
+```
+
+To access the WebUI labeler, you will visit: 127.0.0.1:8502 on your local machine.
+
+**Case 3: Using with Spark on a cluster**:
+
+```python
+# Create web labeler with custom configuration
+web_labeler = WebUILabeler(
+    a_df=customers_df,
+    b_df=prospects_df,
+    id_col='customer_id',
+    flask_port=5006,      # Custom port if 5005 is busy
+    streamlit_port=8502,  # Custom port if 8501 is busy
+    flask_host='0.0.0.0'  # Allow other processes to hit the endpoints (desired behavior)
+)
+
+# Use in active learning
+labeled_data = label_data(
+    model=model,
+    mode='continuous',
+    labeler=web_labeler,
+    fvs=feature_vectors,
+    parquet_file_path='web-labeling-data.parquet'
+)
+```
+
+To access the WebUI labeler, you will visit: {public ip address of your master node}:8502 from your local machine.
 
 ### CustomLabeler
 
