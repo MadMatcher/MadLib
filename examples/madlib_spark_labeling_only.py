@@ -1,11 +1,11 @@
 """
-This example shows how to use MadLib with pandas DataFrames.
+This example shows how to use MadLib with Spark DataFrames.
 Labeling only with the dblp_acm dataset.
 """
 
 import warnings
-# Import MadLib functions
 from pyspark.sql import SparkSession
+# Import MadLib functions
 from MadLib import CLILabeler, WebUILabeler, save_dataframe, load_dataframe
 warnings.filterwarnings('ignore')
 
