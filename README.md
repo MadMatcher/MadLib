@@ -21,7 +21,7 @@ Here's a simple example of using MadLib:
 ```python
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
-from MadLib import create_features, featurize, create_seeds, train_matcher
+from MadLib import create_features, featurize, create_seeds, train_matcher, GoldLabeler, SKLearnModel
 
 # Sample datasets
 df_a = pd.DataFrame({
@@ -38,8 +38,8 @@ df_b = pd.DataFrame({
 
 # Generate candidate pairs
 candidates = pd.DataFrame({
-    'id1_list': [[1], [2], [3]],
-    'id2': [101, 102, 103]
+    'id2': [101, 102, 103],
+    'id1_list': [[1], [2], [3]]
 })
 
 # Create features for comparison
@@ -49,21 +49,20 @@ features = create_features(df_a, df_b, ['name', 'email'], ['name', 'email'])
 fvs = featurize(features, df_a, df_b, candidates)
 
 # Create labeled seeds for training
-gold_labels = pd.DataFrame({'id1': [1, 3], 'id2': [101, 103]})
-gold_labeler = {'name': 'gold', 'gold': gold_labels}
+gold_df = pd.DataFrame({'id1': [1, 3], 'id2': [101, 103]})
+gold_labeler = GoldLabeler(gold=gold_df)
 seeds = create_seeds(fvs, nseeds=2, labeler=gold_labeler)
 
 # Train a matcher model
-model_spec = {
-    'model_type': 'sklearn',
-    'model': LogisticRegression,
-    'nan_fill': 0.0,
-    'model_args': {'random_state': 42}
-}
-trained_model = train_matcher(model_spec, seeds)
+model = SKLearnModel(
+     model=LogisticRegression,
+     nan_fill=0.0,
+     random_state=42
+)
+trained_model = train_matcher(model, seeds)
 
 # Apply the model to make predictions
-predictions = apply_matcher(trained_model, fvs, 'feature_vectors', 'prediction')
+predictions = apply_matcher(trained_model, fvs, 'feature_vectors', 'prediction', 'confidence')
 ```
 
 ## Spark vs Pandas
