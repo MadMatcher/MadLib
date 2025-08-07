@@ -14,11 +14,11 @@ A comprehensive Python library for entity matching and record linkage, providing
 
 Please reference the installation guides. 
 
-For single machine installation, with Pandas see the [single-machine installation guide](https://github.com/MadMatcher/MadLib/blob/main/docs/installation-guides/install-single-machine.md). 
+For single machine installation with Pandas, see the [single-machine installation guide](https://github.com/MadMatcher/MadLib/blob/main/docs/installation-guides/install-single-machine.md). 
 
-For single machine installation, with Spark see the [single-machine installation guide](https://github.com/MadMatcher/MadLib/blob/main/docs/installation-guides/install-single-machine.md). 
+For single machine installation with Spark, see the [single-machine installation guide](https://github.com/MadMatcher/MadLib/blob/main/docs/installation-guides/install-single-machine.md). 
 
-For cloud-based cluster installation, see the [cloud-based-cluster installation guide](https://github.com/MadMatcher/MadLib/blob/main/docs/installation-guides/install-cloud-based-cluster.md).
+For cloud-based cluster installation with Spark, see the [cloud-based-cluster installation guide](https://github.com/MadMatcher/MadLib/blob/main/docs/installation-guides/install-cloud-based-cluster.md).
 
 ## Quick Start
 
