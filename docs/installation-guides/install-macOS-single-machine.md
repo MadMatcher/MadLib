@@ -113,7 +113,7 @@ You can install MadLib from PyPI, using the following command:
 ```
 	pip install MadLib
 ```
-This command will install MadLib and all of its dependencies, such as Joblib, mmh3, Numba, Numpy, Numpydoc, Pandas, Py_Stringmatching, PySpark, Scikit-Learn, Scipy, Threadpoolctl, TQDM, and Xgboost.
+This command will install MadLib and all of its dependencies, such as Flask, Joblib, mmh3, Numba, Numpy, Numpydoc, Pandas, Pyarrow, Py_Stringmatching, PySpark, Requests, Scikit-Learn, Scipy, Streamlit, Tabulate, Threadpoolctl, TQDM, Xgboost, Xxhash.
 
 #### Option 2: Pip Installing from GitHub
 
