@@ -1,3 +1,4 @@
+**This guide can be used if you are using Spark on a cluster of machines.**
 ## How to Install MadLib on a Cluster of Machines
 
 Here we provide instructions for installing MadLib on a cluster of machines on the cloud, specifically on Amazon Web Services (AWS). You can adapt this guide to install MadLib on a cluster of local machines. We have tested these installation instructions only with Ubuntu 22.04, Java Temurin JDK 17, Python 3.12, and Spark 3.5.6.
