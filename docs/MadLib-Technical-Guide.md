@@ -940,6 +940,54 @@ uncertain_examples = [
 # Active learning would pick the first two for labeling
 ```
 
+## Saving + Loading Functions
+
+MadLib provides functions to help you save/load your generated features (from a call to features()) and DataFrames, whether they are Pandas or Spark DataFrames.
+
+### Features
+#### save_features(features, path)
+Save a list of feature objects to disk using pickle serialization. 
+```
+from MadLib import save_features
+
+features: List[Callable]   # List of feature objects to save
+path: str                  # Path where to save the features file
+
+Returns: None
+```
+#### load_features(path)
+Load a list of feature objects from disk using pickle deserialization. 
+```
+from MadLib import load_features
+
+path: str                  # Path to the saved features file
+
+Returns: List[Callable]    # List of feature objects
+```
+
+### DataFrames
+#### save_dataframe(dataframe, path)
+Save a DataFrame to disk with automatic detection between Pandas and Spark DataFrames. 
+Saves the DataFrame as a parquet file.
+```
+from MadLib import save_dataframe
+
+features: Union[pd.DataFrame, pyspark.sql.DataFrame]   # DataFrame to save
+path: str                                              # Path where to save the DataFrame
+
+Returns: None
+```
+#### load_dataframe(path, df_type)
+Load a DataFrame from disk based on the specified type.
+```
+from MadLib import load_dataframe
+
+path: str                  # Path to the saved DataFrame parquet file
+df_type: str               # Type of DataFrame to load ('pandas' or 'sparkdf')
+
+Returns:    Union[pd.DataFrame, pyspark.sql.DataFrame]  # Loaded Dataframe
+```
+
 ## Built-in Labeler Classes
 
 MadLib provides several built-in labeler classes for different labeling workflows. You can use these directly or extend them for custom logic. All labelers inherit from the public `Labeler` abstract class:
