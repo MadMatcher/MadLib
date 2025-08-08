@@ -40,7 +40,14 @@ The above workflow is a very standard ML workflow for classification. For the EM
      + Given a pair (x,y) to be labeled, the CLI (command-line interface) labeler will display this pair on the CLI and ask you to label the pair as match, non-match, or unsure. If you run Spark on a cluster, then this labeler is likely to display the pair on a CLI on the master node (assuming that you submit the PySpark script on this node).
      + The Web-baser labeler runs a browser and a Web server. When a MadLib function wants you to label a pair of tuples (x,y), it sends this pair to the Web server, which in turn sends it to the browser, where you can label the pair as match, non-match, or unsure. If you run on a local machine, then the Web server will run locally on that machine. If you run Spark on a cluster, then the Web server is likely to run on the master node (assuming that you submit the PySpark script on this node).
  
-#### Different Matching Workflows
+#### Different EM Workflows
+You can combine the MadLib functions (in a Python script) to create a variety of EM workflows. For example:
+* A Pandas workflow that uses active learning to find and label a set of examples, use them to train a matcher M, then apply M to predict match/non-match for all examples in the candidate set C.
+* A variation of the above workflow that uses Spark on a cluster of machines to scale to a very large set C.
+* A workflow in which the user has been given a set of labeled examples. The workflow trains a matcher M on these examples then apply it to the examples in C.
+* A workflow in which you just want to label a set of examples.
+
+Later we provide Python scripts for five such workflows. More workflows can be constructed using MadLib functions. 
 
 
 ## Understanding Entity Matching
