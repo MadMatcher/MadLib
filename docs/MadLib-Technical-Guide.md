@@ -6,6 +6,7 @@ This document provides a quick overview of the functions in MadLib: how they wor
 
 We start by discussing the basic concepts underlying MadLib. You can skip this section if you are already familiar with them. 
 
+#### The Matching Step
 Let A and B be two tables that we want to match, that is, find tuple pairs (x,y) where tuple x of A matches tuple y of B. We refer to such pair (x,y) as a <u>match</u>. We assume blocking has been performed on A and B, producing a set C of <u>candidate tuple pairs</u> (we call these pairs "candidates" because each may be a candidata for a match). 
 
 Now we enter the matching step, in which we will apply a rule- or machine-learning (ML) based matcher to each pair (x,y) in C to predict match/non-match. Today ML-based matchers are most common, so in MadLib we provide support for these matchers. The overall matching workflow is as follows: 
@@ -15,7 +16,8 @@ Now we enter the matching step, in which we will apply a rule- or machine-learni
 3. We convert each pair in T into a feature vector, then use them to train a ML classification model M. We will refer to M as "matcher".
 4. We apply matcher M to each feature vector in D to predict whether the vector (and thus the corresponding pair (x,y) in C) is a match/non-match.
 
-The above workflow is a very standard ML workflow for classification. For the EM setting it raises the following questions: 
+#### Challenges
+The above workflow is a very standard ML workflow for classification. For the EM setting it raises the following challenges: 
 
 * **How to create the features?** We do this by using a set of heuristics that analyze the columns of Tables A and B, and use a set of well-known similarity functions and tokenizers. We discuss more below.
   
@@ -36,7 +38,10 @@ The above workflow is a very standard ML workflow for classification. For the EM
 * **How to label examples?** We provide three labelers: gold, CLI, and Web-based.
      + The gold labeler assumes you have the set of all true matches between Tables A and B. We call this set **the gold set**. Given a pair of tuples (x,y) to be labeled, the gold labeler just consults this set, and return 1.0 (that is, match) if (x,y) is in the gold set, and return 0.0 (that is, non-match) otherwise. The gold labeler is commonly used to test and debug code and for commputing matching accuracy.
      + Given a pair (x,y) to be labeled, the CLI (command-line interface) labeler will display this pair on the CLI and ask you to label the pair as match, non-match, or unsure. If you run Spark on a cluster, then this labeler is likely to display the pair on a CLI on the master node (assuming that you submit the PySpark script on this node).
-     + Given a pair (x,y) to be labeled, the Web-based labeler will run a Web server somewhere, then send this pair to the Web server.
+     + The Web-baser labeler runs a browser and a Web server. When a MadLib function wants you to label a pair of tuples (x,y), it sends this pair to the Web server, which in turn sends it to the browser, where you can label the pair as match, non-match, or unsure. If you run on a local machine, then the Web server will run locally on that machine. If you run Spark on a cluster, then the Web server is likely to run on the master node (assuming that you submit the PySpark script on this node).
+ 
+#### Different Matching Workflows
+
 
 ## Understanding Entity Matching
 
