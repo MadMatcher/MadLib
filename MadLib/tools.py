@@ -463,7 +463,7 @@ def load_dataframe(path, df_type):
         path_str = str(path)
         # if we are on a cluster but without a distributed file system, load as pandas
         if not master.startswith("local") and "://" not in path_str:
-            pdf = spark.read.parquet(path_str).toPandas() 
+            pdf = pd.read_parquet(path_str)
             logger.info(f"Successfully loaded pandas DataFrame with shape {pdf.shape} from {path_str}")
             return spark.createDataFrame(pdf)
         spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "true")
