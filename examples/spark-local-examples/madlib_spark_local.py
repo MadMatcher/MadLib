@@ -1,5 +1,5 @@
 """
-This example shows how to use MadLib with Spark DataFrames.
+This example shows how to use MadLib with Spark DataFrames on a local machine.
 Complete workflow using dblp_acm dataset with gold labeler.
 """
 
@@ -8,7 +8,6 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, when, lit, sum as spark_sum
 from xgboost import XGBClassifier
 import warnings
-from pathlib import Path
 warnings.filterwarnings('ignore')
 
 
@@ -22,23 +21,23 @@ from MadLib import GoldLabeler, SKLearnModel
 
 # Initialize Spark session
 spark = SparkSession.builder \
-   .master("{url of spark master}") \
+   .master("local[*]") \
    .appName("MadLib Spark Example") \
    .config('spark.sql.execution.arrow.pyspark.enabled', 'true')\
    .getOrCreate()
 
 
 # Load data using Spark
-data_dir = Path(__file__).resolve().parent
-table_a = spark.read.parquet(str(data_dir / 'table_a.parquet'))
-table_b = spark.read.parquet(str(data_dir / 'table_b.parquet'))
-candidates = spark.read.parquet(str(data_dir / 'cand.parquet'))
+table_a = spark.read.parquet('../data/dblp_acm/table_a.parquet')
+table_b = spark.read.parquet('../data/dblp_acm/table_b.parquet')
+candidates = spark.read.parquet('../data/dblp_acm/cand.parquet')
 candidates = candidates.withColumnRenamed('_id', 'id2') \
    .withColumnRenamed('ids', 'id1_list') \
    .select('id2', 'id1_list')
-gold_labels = spark.read.parquet(str(data_dir / 'gold.parquet'))
+gold_labels = spark.read.parquet('../data/dblp_acm/gold.parquet')
 
-# create features
+
+# create feature objects 
 features = create_features(
    A=table_a,
    B=table_b,
@@ -109,20 +108,19 @@ trained_model = train_matcher(
 )
 
 
-# apply matcher
+# Apply matcher
 predictions = apply_matcher(
-   model=trained_model,
-   df=downsampled_fvs,
-   feature_col='feature_vectors',
-   prediction_col='prediction',
-   confidence_col='confidence'
+    model=trained_model,
+    df=downsampled_fvs,
+    feature_col='feature_vectors',
+    prediction_col='prediction',
+    confidence_col='confidence'
 )
 
 predictions.show()
 
 # Calculate metrics
 gold_labels = gold_labels.select('id1', 'id2').withColumn('gold_label', lit(1.0))
-
 
 evaluation_data = predictions.join(
    gold_labels,

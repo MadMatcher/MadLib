@@ -418,6 +418,10 @@ def save_dataframe(dataframe, path):
         logger.info(f"Successfully saved pandas DataFrame to {path}")
     elif isinstance(dataframe, SparkDataFrame):
         logger.info(f"Saving Spark DataFrame to {path}")
+        # Materialize the DataFrame before saving to ensure it's properly cached
+        # Use count() to trigger materialization without persisting to memory
+        row_count = dataframe.count()
+        logger.info(f"Materializing Spark DataFrame with {row_count} rows")
         dataframe.write.mode('overwrite').parquet(str(path))
         logger.info(f"Successfully saved Spark DataFrame to {path}")
     else:

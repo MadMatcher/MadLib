@@ -10,9 +10,9 @@ from MadLib import CLILabeler, WebUILabeler, save_dataframe, load_dataframe
 warnings.filterwarnings('ignore')
 
 # Load data
-table_a = pd.read_parquet('./data/dblp_acm/table_a.parquet')
-table_b = pd.read_parquet('./data/dblp_acm/table_b.parquet')
-candidates = pd.read_parquet('./data/dblp_acm/cand.parquet')
+table_a = pd.read_parquet('../data/dblp_acm/table_a.parquet')
+table_b = pd.read_parquet('../data/dblp_acm/table_b.parquet')
+candidates = pd.read_parquet('../data/dblp_acm/cand.parquet')
 candidates = candidates.rename(columns={'_id': 'id2', 'ids': 'id1_list'})
 candidates = candidates[['id2', 'id1_list']]
 # Create CLI labeler

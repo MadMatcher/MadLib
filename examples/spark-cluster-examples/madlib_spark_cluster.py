@@ -1,5 +1,5 @@
 """
-This example shows how to use MadLib with Spark DataFrames.
+This example shows how to use MadLib with Spark DataFrames on a cluster.
 Complete workflow using dblp_acm dataset with gold labeler.
 """
 
@@ -8,6 +8,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, when, lit, sum as spark_sum
 from xgboost import XGBClassifier
 import warnings
+from pathlib import Path
 warnings.filterwarnings('ignore')
 
 
@@ -21,23 +22,23 @@ from MadLib import GoldLabeler, SKLearnModel
 
 # Initialize Spark session
 spark = SparkSession.builder \
-   .master("local[*]") \
+   .master("{url of spark master}") \
    .appName("MadLib Spark Example") \
    .config('spark.sql.execution.arrow.pyspark.enabled', 'true')\
    .getOrCreate()
 
 
 # Load data using Spark
-table_a = spark.read.parquet('./data/dblp_acm/table_a.parquet')
-table_b = spark.read.parquet('./data/dblp_acm/table_b.parquet')
-candidates = spark.read.parquet('./data/dblp_acm/cand.parquet')
+data_dir = Path(__file__).resolve().parent.parent / 'data' / 'dblp_acm'
+table_a = spark.read.parquet(str(data_dir / 'table_a.parquet'))
+table_b = spark.read.parquet(str(data_dir / 'table_b.parquet'))
+candidates = spark.read.parquet(str(data_dir / 'cand.parquet'))
 candidates = candidates.withColumnRenamed('_id', 'id2') \
    .withColumnRenamed('ids', 'id1_list') \
    .select('id2', 'id1_list')
-gold_labels = spark.read.parquet('./data/dblp_acm/gold.parquet')
+gold_labels = spark.read.parquet(str(data_dir / 'gold.parquet'))
 
-
-# create feature objects 
+# create features
 features = create_features(
    A=table_a,
    B=table_b,
@@ -68,7 +69,6 @@ downsampled_fvs = down_sample(
 # create a gold labeler object
 gold_labeler = GoldLabeler(gold=gold_labels)
 
-
 # create seeds
 seeds = create_seeds(
    fvs=downsampled_fvs,
@@ -79,7 +79,6 @@ seeds = create_seeds(
 print(f"   Created {seeds.count()} initial seeds")
 print(f"   Positive seeds: {seeds.filter(seeds['label'] == 1.0).count()}")
 print(f"   Negative seeds: {seeds.filter(seeds['label'] == 0.0).count()}")
-
 
 # specify an ML model
 model = SKLearnModel(
@@ -108,19 +107,20 @@ trained_model = train_matcher(
 )
 
 
-# Apply matcher
+# apply matcher
 predictions = apply_matcher(
-    model=trained_model,
-    df=downsampled_fvs,
-    feature_col='feature_vectors',
-    prediction_col='prediction',
-    confidence_col='confidence'
+   model=trained_model,
+   df=downsampled_fvs,
+   feature_col='feature_vectors',
+   prediction_col='prediction',
+   confidence_col='confidence'
 )
 
 predictions.show()
 
 # Calculate metrics
 gold_labels = gold_labels.select('id1', 'id2').withColumn('gold_label', lit(1.0))
+
 
 evaluation_data = predictions.join(
    gold_labels,

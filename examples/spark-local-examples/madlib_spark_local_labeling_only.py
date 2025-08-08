@@ -1,5 +1,5 @@
 """
-This example shows how to use MadLib with Spark DataFrames.
+This example shows how to use MadLib with Spark DataFrames on a local machine.
 Labeling only with the dblp_acm dataset.
 """
 
@@ -9,12 +9,16 @@ from pyspark.sql import SparkSession
 from MadLib import CLILabeler, WebUILabeler, save_dataframe, load_dataframe
 warnings.filterwarnings('ignore')
 
-spark = SparkSession.builder.getOrCreate()
+spark = SparkSession.builder \
+   .master("local[*]") \
+   .appName("MadLib Spark Labeling Only") \
+   .config('spark.sql.execution.arrow.pyspark.enabled', 'true')\
+   .getOrCreate()
 
 # Load data
-table_a = spark.read.parquet('./data/dblp_acm/table_a.parquet')
-table_b = spark.read.parquet('./data/dblp_acm/table_b.parquet')
-candidates = spark.read.parquet('./data/dblp_acm/cand.parquet')
+table_a = spark.read.parquet('../data/dblp_acm/table_a.parquet')
+table_b = spark.read.parquet('../data/dblp_acm/table_b.parquet')
+candidates = spark.read.parquet('../data/dblp_acm/cand.parquet')
 candidates = candidates.withColumnRenamed('_id', 'id2').withColumnRenamed('ids', 'id1_list')
 candidates = candidates.select('id2', 'id1_list')
 
