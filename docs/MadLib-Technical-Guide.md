@@ -11,7 +11,17 @@ Let A and B be two tables that we want to match, that is, find tuple pairs (x,y)
 Now we enter the matching step, in which we will apply a rule- or machine-learning (ML) based matcher to each pair (x,y) in C to predict match/non-match. Today ML-based matchers are most common, so in MadLib we provide support for these matchers. The overall matching workflow is as follows: 
 
 1. We create a set of features, then convert each pair of tuples (x,y) in C into a feature vector. Let D be the set of all feature vectors.
-2. We create training data T, which is a set of tuple pairs where each pair 
+2. We create training data T, which is a set of tuple pairs where each pair has been labeled match/non-match.
+3. We convert each pair in T into a feature vector, then use them to train a ML classification model M. We will refer to M as "matcher".
+4. We apply matcher M to each feature vector in D to predict whether the vector (and thus the corresponding pair (x,y) in C) is a match/non-match.
+
+The above workflow is a very standard ML workflow for classification. For the EM setting it raises the following questions: 
+
+* How to create the features? We do this by using a set of heuristics that analyze the columns of Tables A and B, and use a set of well-known similarity functions and tokenizers. We discuss more below.
+* How to create training data? You may already have a set of labeled tuple pairs (perhaps obtained from a related project). In that case you can just use that data. But a very common scenario is that you do not have anything yet, and you don't know where to start. In general, you cannot just take a random sample of tuple pairs from the candidate set C then label them, because it is very likely that this sample will contain very few true matches, and thus is not a very good sample for training matcher M. We provide a solution to this problem that uses active learning to select a few hundreds "good" examples (that is, tuple pairs) from the candidate set C for you to label.
+* How to scale? If Tables A and B have millions of tuples (which is very commmon in practice), the candidate set C (obtained after blocking) can be huge, having 100M to 1B tuple pairs or more. This would create several serious problems:
+   + Featurizing C, that is, converting each tuple pair in C into a feature vector can take hours or days. We provide a fast solution to this problem, using Spark on a cluster of machines.
+   + Using active learning to select a few hundreds "good" tuple pairs from the candiate set C for you to label is going to be very slow, because C is so large and conceptually we have to examine all tuple pairs in C to select the "good" ones. 
 
 ## Understanding Entity Matching
 
