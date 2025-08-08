@@ -28,12 +28,15 @@ The above workflow is a very standard ML workflow for classification. For the EM
    + Using active learning to select a few hundreds "good" tuple pairs from the candiate set C for you to label is going to be very slow, because C is so large and conceptually we have to examine all tuple pairs in C to select the "good" ones. We provide a solution that takes a far smaller sample S from C (having say just 5M tuple pairs), then performs active learning on S (not on C) to select "good" examples for you to label. As mentioned earlier, S cannot be a random sample of C because in that case it is likely to contain very few true matches, and thus is not a good sample from which to select "good" examples to label.
    + The default way that we do active learning, say on S, is in the **batch mode**. That is, we examine all examples in S, select 10 "good" examples, ask you to label them as match/non-match, then re-examine the examples in S, select another 10 "good" examples, ask you to label those, and so on. This sometimes has a lag time: you label 10 examples, submit, then *must wait a few seconds before you are given the next 10 examples to label*. To avoid such lag time, we provide a solution that do active learning in the **continuous mode**. In this mode, you do not have to wait and can just label continuously. The downside is that you may have to label a bit more examples (compared to the batch mode) to reach the same matching accuracy.
  
-* **What are the runtime environments?** We provide 3 runtime environments:
+* **What are the runtime environments?** We provide three runtime environments:
      + **Spark on a cluster of machines**: This is well suited for when you have a lot of data.
      + **Spark on a single machine**: Use this if you do not have a lot of data, or if you want to test your PySpark script before you run it on a cluster of machines.
      + **Pandas on a single machine**: Use this if you do not have a lot of data and you do not know Spark or do not want to run it.
 
-* **How to label examples?**
+* **How to label examples?** We provide three labelers: gold, CLI, and Web-based.
+     + The gold labeler assumes you have the set of all true matches between Tables A and B. We call this set **the gold set**. Given a pair of tuples (x,y) to be labeled, the gold labeler just consults this set, and return 1.0 (that is, match) if (x,y) is in the gold set, and return 0.0 (that is, non-match) otherwise. The gold labeler is commonly used to test and debug code and for commputing matching accuracy.
+     + Given a pair (x,y) to be labeled, the CLI (command-line interface) labeler will display this pair on the CLI and ask you to label the pair as match, non-match, or unsure. If you run Spark on a cluster, then this labeler is likely to display the pair on a CLI on the master node (assuming that you submit the PySpark script on this node).
+     + Given a pair (x,y) to be labeled, the Web-based labeler will run a Web server somewhere, then send this pair to the Web server.
 
 ## Understanding Entity Matching
 
