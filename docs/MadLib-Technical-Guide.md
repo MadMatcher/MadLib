@@ -50,63 +50,8 @@ You can combine the MadLib functions (in a Python script) to create a variety of
 Later we provide Python scripts for five such workflows. More workflows can be constructed using MadLib functions. 
 
 
-## Understanding Entity Matching
 
-### What is Entity Matching?
-
-Entity matching (also known as record linkage or data matching) is the process of identifying and linking records that refer to the same real-world entity across different datasets. For example:
-
-- Matching customer records across different databases
-- Identifying duplicate product listings
-- Linking patient records across healthcare systems
-
-Consider these examples:
-
-```
-Dataset A:
-"John Smith, 123 Main St, New York"
-"J. Smith, 123 Main Street, NY"
-
-Dataset B:
-"Smith, John, 123 Main Street, New York, NY"
-"John Smith Jr., 123 Main St., New York"
-```
-
-These records might refer to the same person, but they're written differently. Entity matching helps determine which records represent the same entity.
-
-### Why is Entity Matching Challenging?
-
-1. **Data Inconsistency**
-
-   - Different formats ("John Smith" vs "Smith, John")
-   - Typos and errors ("Main Street" vs "Main St." vs "Main Streat")
-   - Missing information
-   - Different conventions across systems
-
-2. **Scale**
-   - Comparing every record with every other record is computationally expensive
-   - Large datasets make manual matching impractical
-   - Need for automated, accurate solutions
-
-## Core Concepts
-
-### Record Matching Pipeline
-
-The matching process follows several steps, each building on the previous:
-
-1. **Feature Generation**  
-   What it is: Converting raw record pairs into comparable characteristics  
-   Example: Converting "John Smith" and "Smith, John" into features that capture their similarity
-2. **Model Training**  
-   What it is: Teaching a model to recognize what features indicate matching records  
-   How it works: Using known matches and non-matches to learn patterns
-
-3. **Prediction**  
-   What it is: Using learned patterns to determine if two previously unseen records represent the same entity
-
-4. **Active Learning**  
-   What it is: Creating labeled data with human (or simulated human) labeling  
-   How it works: The model picks the examples that are most ambiguous and has the user label them
+### MOVE PART BELOW LATER
 
 ### Understanding Features
 
@@ -167,7 +112,8 @@ When using MadLib, it's crucial to understand how your chosen similarity functio
 
 **Best Practice:** Always test your similarity functions with examples to see how the score relates to the probability of a match
 
-## Core Functions In-Depth
+### The Core Functions of MadLib
+We now describe the core functions that you can combine to create a variety of EM workflows. 
 
 ### create_features()
 
