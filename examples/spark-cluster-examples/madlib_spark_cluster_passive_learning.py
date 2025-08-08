@@ -7,7 +7,7 @@ We provide an example of how to create this format using labeled_pairs if your c
 """
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, when, collect_list
+from pyspark.sql.functions import lit, collect_list
 from xgboost import XGBClassifier
 from pathlib import Path
 import warnings
@@ -37,7 +37,7 @@ candidates = candidates.withColumnRenamed('_id', 'id2') \
     .select('id2', 'id1_list')
 
 # Load and format labeled pairs
-labeled_pairs = spark.read.parquet('../data/dblp_acm/gold.parquet')
+labeled_pairs = spark.read.parquet(str(data_dir / 'gold.parquet'))
 
 # Select only the columns we need (id1 and id2) and add label column
 # In this example, our gold data only contains matches. So, labeled pairs are all matches (label = 1.0) 

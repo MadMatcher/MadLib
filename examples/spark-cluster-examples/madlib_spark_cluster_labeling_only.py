@@ -53,8 +53,9 @@ for row in candidates.collect():
 labeled_candidates = spark.createDataFrame(labeled_candidates)
 
 # Save the labeled pairs to a parquet file on the master node
-save_dataframe(labeled_candidates, 'labeled_candidates.parquet')
+save_path = str(data_dir / 'labeled_candidates.parquet')
+save_dataframe(labeled_candidates, save_path)
 
 # to load the labeled candidates back in from the master node:
-labeled_candidates = load_dataframe('labeled_candidates.parquet', 'sparkdf')
+labeled_candidates = load_dataframe(save_path, 'sparkdf')
 labeled_candidates.show()
