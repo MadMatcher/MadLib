@@ -116,8 +116,7 @@ When using MadLib, it's crucial to understand how your chosen similarity functio
 We now describe the core functions that you can combine to create a variety of EM workflows. 
 
 ### create_features()
-
-This function analyzes your data and creates combinations of tokenizers and similarity functions. Let's break down how it works:
+This function uses heuristics that analyzes the columns of Tables A and B to create a set of features. The features uses a combination of similarity functions and tokenizers. See here for a brief discussion of similarity functions and tokenizers for MadLib. 
 
 ```python
 def create_features(
@@ -133,16 +132,16 @@ def create_features(
 
 **Parameter Explanations:**
 
-`A`: Your first dataset (pandas DataFrame)
+`A`: Your first dataset (DataFrame)
 
-- What it is: Any pandas DataFrame containing records you want to match against dataset B
+- What it is: Any DataFrame containing records you want to match against dataset B
 - Schema requirement: Must have an `_id` column with unique identifiers for each record
 - Example: A customer database with columns like `['_id', 'name', 'address', 'phone']`
 - Purpose: These are your "candidate" records - potential matches for records in B
 
-`B`: Your second dataset (pandas DataFrame)
+`B`: Your second dataset (DataFrame)
 
-- What it is: The pandas DataFrame containing records you want to to find matches for
+- What it is: The DataFrame containing records you want to to find matches for
 - Schema requirement: Must have an `_id` column with unique identifiers for each record
 - Example: A prospect database with columns like `['_id', 'name', 'address', 'phone']`
 - Purpose: These are your "reference" records - the ones you want to find duplicates or matches for
@@ -150,16 +149,18 @@ def create_features(
 `a_cols`: Column names from dataset A to use for comparison
 
 - What it is: List of strings specifying which columns from A contain the data you want to compare
-- Purpose: Tells the system which fields in A contain meaningful information for matching
+- Purpose: Tells the system which columns in A contain meaningful information for matching
 - Example: `['name', 'address', 'phone']` - these are the columns that will help identify if two records represent the same entity
 - Requirement: These columns must be the same as the columns for b_cols
 
 `b_cols`: Column names from dataset B to use for comparison
 
 - What it is: List of strings specifying which columns from B contain the data you want to compare
-- Purpose: Tells the system which fields in B contain meaningful information for matching
+- Purpose: Tells the system which columns in B contain meaningful information for matching
 - Example: `['name', 'address', 'phone']` - these are the columns that will help identify if two records represent the same entity
 - Requirement: These columns must be the same as the columns for a_cols
+
+**Discussion:** Tables A and B can be Pandas or Spark DataFrame, depending on whether your runtime environment is Pandas on a single machine, Spark on a single machine, or Spark on a cluster of machines. Further, as of now, we require a_cols and b_cols to be the same list of column names. But in the future this function will be extended so that it can handle the case where these two lists are different. 
 
 `sim_functions`: Custom similarity functions (optional)
 
