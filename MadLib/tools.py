@@ -422,7 +422,7 @@ def save_dataframe(dataframe, path):
         path_str = str(path)
         # if we are on a cluster but without a distributed file system, save as pandas
         if not master.startswith("local") and "://" not in path_str:
-            pdf = dataframe.toPandas()  # be sure it's small!
+            pdf = dataframe.toPandas() 
             logger.info(f"Saving pandas DataFrame with shape {pdf.shape} to {path_str}")
             pdf.to_parquet(path_str)
             logger.info(f"Successfully saved pandas DataFrame to {path_str}")
@@ -459,6 +459,13 @@ def load_dataframe(path, df_type):
         return dataframe
     elif df_type.lower() == 'sparkdf':
         spark = SparkSession.builder.getOrCreate()
+        master = spark.sparkContext.master
+        path_str = str(path)
+        # if we are on a cluster but without a distributed file system, load as pandas
+        if not master.startswith("local") and "://" not in path_str:
+            pdf = spark.read.parquet(path_str).toPandas() 
+            logger.info(f"Successfully loaded pandas DataFrame with shape {pdf.shape} from {path_str}")
+            return spark.createDataFrame(pdf)
         spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "true")
         dataframe = spark.read.parquet(str(path))
         logger.info(f"Successfully loaded Spark DataFrame from {path}")
