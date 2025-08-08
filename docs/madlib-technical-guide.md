@@ -1,15 +1,16 @@
 ## MadLib Technical Guide
 
-This document provides a quick overview of the functions in MadLib: how they work and how to use them. After you have installed MadLib, we recommend that you read this document, then study the five sample Python scripts that implement various matching workflows. This should give you sufficient knowledge to implement your own matching workflows. 
+This document provides a quick overview of the functions in MadLib: how they work and how to use them. After you have installed MadLib, we recommend that you read this document, then study the five sample Python scripts that implement various matching workflows. This should give you sufficient knowledge to implement your own matching workflows.
 
 ### Preliminaries
 
-We start by discussing the basic concepts underlying MadLib. You can skip this section if you are already familiar with them. 
+We start by discussing the basic concepts underlying MadLib. You can skip this section if you are already familiar with them.
 
 #### The Matching Step
-Let A and B be two tables that we want to match, that is, find tuple pairs (x,y) where tuple x of A matches tuple y of B. We refer to such pair (x,y) as a <u>match</u>. We assume blocking has been performed on A and B, producing a set C of <u>candidate tuple pairs</u> (we call these pairs "candidates" because each may be a candidata for a match). 
 
-Now we enter the matching step, in which we will apply a rule- or machine-learning (ML) based matcher to each pair (x,y) in C to predict match/non-match. Today ML-based matchers are most common, so in MadLib we provide support for these matchers. The overall matching workflow is as follows: 
+Let A and B be two tables that we want to match, that is, find tuple pairs (x,y) where tuple x of A matches tuple y of B. We refer to such pair (x,y) as a <u>match</u>. We assume blocking has been performed on A and B, producing a set C of <u>candidate tuple pairs</u> (we call these pairs "candidates" because each may be a candidata for a match).
+
+Now we enter the matching step, in which we will apply a rule- or machine-learning (ML) based matcher to each pair (x,y) in C to predict match/non-match. Today ML-based matchers are most common, so in MadLib we provide support for these matchers. The overall matching workflow is as follows:
 
 1. We create a set of features, then convert each pair of tuples (x,y) in C into a feature vector. Let D be the set of all feature vectors.
 2. We create training data T, which is a set of tuple pairs where each pair has been labeled match/non-match.
@@ -17,43 +18,48 @@ Now we enter the matching step, in which we will apply a rule- or machine-learni
 4. We apply matcher M to each feature vector in D to predict whether the vector (and thus the corresponding pair (x,y) in C) is a match/non-match.
 
 #### Challenges
-The above workflow is a very standard ML workflow for classification. For the EM setting it raises the following challenges: 
 
-* **How to create the features?** We do this by using a set of heuristics that analyze the columns of Tables A and B, and use a set of well-known similarity functions and tokenizers. We discuss more below.
-  
-* **How to create training data?** There are two scenarios:
-   + You may already have a set of labeled tuple pairs (perhaps obtained from a related project). In that case you can just use that data. We call this **passive learning**.
-   + But a more common scenario is that you do not have anything yet, and you don't know where to start. In general, you cannot just take a random sample of tuple pairs from the candidate set C then label them, because it is very likely that this sample will contain very few true matches, and thus is not a very good sample for training matcher M. We provide a solution to this problem that examines the tuple pairs in the set C to select a few hundreds "good" examples (that is, tuple pairs) for you to label. This is called **active learning** in the ML literature.
-     
-* **How to scale?** If Tables A and B have millions of tuples (which is very commmon in practice), the candidate set C (obtained after blocking) can be huge, having 100M to 1B tuple pairs or more. This would create several serious problems:
-   + Featurizing C, that is, converting each tuple pair in C into a feature vector can take hours or days. We provide a fast solution to this problem, using Spark on a cluster of machines.
-   + Using active learning to select a few hundreds "good" tuple pairs from the candiate set C for you to label is going to be very slow, because C is so large and conceptually we have to examine all tuple pairs in C to select the "good" ones. We provide a solution that takes a far smaller sample S from C (having say just 5M tuple pairs), then performs active learning on S (not on C) to select "good" examples for you to label. As mentioned earlier, S cannot be a random sample of C because in that case it is likely to contain very few true matches, and thus is not a good sample from which to select "good" examples to label.
-   + The default way that we do active learning, say on S, is in the **batch mode**. That is, we examine all examples in S, select 10 "good" examples, ask you to label them as match/non-match, then re-examine the examples in S, select another 10 "good" examples, ask you to label those, and so on. This sometimes has a lag time: you label 10 examples, submit, then *must wait a few seconds before you are given the next 10 examples to label*. To avoid such lag time, we provide a solution that do active learning in the **continuous mode**. In this mode, you do not have to wait and can just label continuously. The downside is that you may have to label a bit more examples (compared to the batch mode) to reach the same matching accuracy.
- 
-* **What are the runtime environments?** We provide three runtime environments:
-     + **Spark on a cluster of machines**: This is well suited for when you have a lot of data.
-     + **Spark on a single machine**: Use this if you do not have a lot of data, or if you want to test your PySpark script before you run it on a cluster of machines.
-     + **Pandas on a single machine**: Use this if you do not have a lot of data and you do not know Spark or do not want to run it.
+The above workflow is a very standard ML workflow for classification. For the EM setting it raises the following challenges:
 
-* **How to label examples?** We provide three labelers: gold, CLI, and Web-based.
-     + The gold labeler assumes you have the set of all true matches between Tables A and B. We call this set **the gold set**. Given a pair of tuples (x,y) to be labeled, the gold labeler just consults this set, and return 1.0 (that is, match) if (x,y) is in the gold set, and return 0.0 (that is, non-match) otherwise. The gold labeler is commonly used to test and debug code and for commputing matching accuracy.
-     + Given a pair (x,y) to be labeled, the CLI (command-line interface) labeler will display this pair on the CLI and ask you to label the pair as match, non-match, or unsure. If you run Spark on a cluster, then this labeler is likely to display the pair on a CLI on the master node (assuming that you submit the PySpark script on this node).
-     + The Web-baser labeler runs a browser and a Web server. When a MadLib function wants you to label a pair of tuples (x,y), it sends this pair to the Web server, which in turn sends it to the browser, where you can label the pair as match, non-match, or unsure. If you run on a local machine, then the Web server will run locally on that machine. If you run Spark on a cluster, then the Web server is likely to run on the master node (assuming that you submit the PySpark script on this node).
- 
+- **How to create the features?** We do this by using a set of heuristics that analyze the columns of Tables A and B, and use a set of well-known similarity functions and tokenizers. We discuss more below.
+- **How to create training data?** There are two scenarios:
+  - You may already have a set of labeled tuple pairs (perhaps obtained from a related project). In that case you can just use that data. We call this **passive learning**.
+  - But a more common scenario is that you do not have anything yet, and you don't know where to start. In general, you cannot just take a random sample of tuple pairs from the candidate set C then label them, because it is very likely that this sample will contain very few true matches, and thus is not a very good sample for training matcher M. We provide a solution to this problem that examines the tuple pairs in the set C to select a few hundreds "good" examples (that is, tuple pairs) for you to label. This is called **active learning** in the ML literature.
+- **How to scale?** If Tables A and B have millions of tuples (which is very commmon in practice), the candidate set C (obtained after blocking) can be huge, having 100M to 1B tuple pairs or more. This would create several serious problems:
+
+  - Featurizing C, that is, converting each tuple pair in C into a feature vector can take hours or days. We provide a fast solution to this problem, using Spark on a cluster of machines.
+  - Using active learning to select a few hundreds "good" tuple pairs from the candiate set C for you to label is going to be very slow, because C is so large and conceptually we have to examine all tuple pairs in C to select the "good" ones. We provide a solution that takes a far smaller sample S from C (having say just 5M tuple pairs), then performs active learning on S (not on C) to select "good" examples for you to label. As mentioned earlier, S cannot be a random sample of C because in that case it is likely to contain very few true matches, and thus is not a good sample from which to select "good" examples to label.
+  - The default way that we do active learning, say on S, is in the **batch mode**. That is, we examine all examples in S, select 10 "good" examples, ask you to label them as match/non-match, then re-examine the examples in S, select another 10 "good" examples, ask you to label those, and so on. This sometimes has a lag time: you label 10 examples, submit, then _must wait a few seconds before you are given the next 10 examples to label_. To avoid such lag time, we provide a solution that do active learning in the **continuous mode**. In this mode, you do not have to wait and can just label continuously. The downside is that you may have to label a bit more examples (compared to the batch mode) to reach the same matching accuracy.
+
+- **What are the runtime environments?** We provide three runtime environments:
+
+  - **Spark on a cluster of machines**: This is well suited for when you have a lot of data.
+  - **Spark on a single machine**: Use this if you do not have a lot of data, or if you want to test your PySpark script before you run it on a cluster of machines.
+  - **Pandas on a single machine**: Use this if you do not have a lot of data and you do not know Spark or do not want to run it.
+
+- **How to label examples?** We provide three labelers: gold, CLI, and Web-based.
+  - The gold labeler assumes you have the set of all true matches between Tables A and B. We call this set **the gold set**. Given a pair of tuples (x,y) to be labeled, the gold labeler just consults this set, and return 1.0 (that is, match) if (x,y) is in the gold set, and return 0.0 (that is, non-match) otherwise. The gold labeler is commonly used to test and debug code and for commputing matching accuracy.
+  - Given a pair (x,y) to be labeled, the CLI (command-line interface) labeler will display this pair on the CLI and ask you to label the pair as match, non-match, or unsure. If you run Spark on a cluster, then this labeler is likely to display the pair on a CLI on the master node (assuming that you submit the PySpark script on this node).
+  - The Web-baser labeler runs a browser and a Web server. When a MadLib function wants you to label a pair of tuples (x,y), it sends this pair to the Web server, which in turn sends it to the browser, where you can label the pair as match, non-match, or unsure. If you run on a local machine, then the Web server will run locally on that machine. If you run Spark on a cluster, then the Web server is likely to run on the master node (assuming that you submit the PySpark script on this node).
+
 #### Different EM Workflows
-You can combine the MadLib functions (in a Python script) to create a variety of EM workflows. For example:
-* A Pandas workflow that uses active learning to find and label a set of examples, use them to train a matcher M, then apply M to predict match/non-match for all examples in the candidate set C.
-* A variation of the above workflow that uses Spark on a cluster of machines to scale to a very large set C.
-* A workflow in which the user has been given a set of labeled examples. The workflow trains a matcher M on these examples then apply it to the examples in C.
-* A workflow in which you just want to label a set of examples.
 
-Later we provide Python scripts for five such workflows. More workflows can be constructed using MadLib functions. 
+You can combine the MadLib functions (in a Python script) to create a variety of EM workflows. For example:
+
+- A Pandas workflow that uses active learning to find and label a set of examples, use them to train a matcher M, then apply M to predict match/non-match for all examples in the candidate set C.
+- A variation of the above workflow that uses Spark on a cluster of machines to scale to a very large set C.
+- A workflow in which the user has been given a set of labeled examples. The workflow trains a matcher M on these examples then apply it to the examples in C.
+- A workflow in which you just want to label a set of examples.
+
+Later we provide Python scripts for five such workflows. More workflows can be constructed using MadLib functions.
 
 ### The Core Functions of MadLib
-We now describe the core functions that you can combine to create a variety of EM workflows. 
+
+We now describe the core functions that you can combine to create a variety of EM workflows.
 
 ### create_features()
-This function uses heuristics that analyzes the columns of Tables A and B to create a set of features. The features uses a combination of similarity functions and tokenizers. See [here](./sim-functions-tokenizers.md) for a brief discussion of similarity functions and tokenizers for MadLib. 
+
+This function uses heuristics that analyzes the columns of Tables A and B to create a set of features. The features uses a combination of similarity functions and tokenizers. See [here](./sim-functions-tokenizers.md) for a brief discussion of similarity functions and tokenizers for MadLib.
 
 ```python
 def create_features(
@@ -97,18 +103,18 @@ def create_features(
 - Example: `['name', 'address', 'phone']` - these are the columns that will help identify if two records represent the same entity
 - Requirement: These columns must be the same as the columns for a_cols
 
-*Discussion: Tables A and B can be Pandas or Spark DataFrame, depending on whether your runtime environment is Pandas on a single machine, Spark on a single machine, or Spark on a cluster of machines. Further, as of now, we require a_cols and b_cols to be the same list of column names. But in the future this function will be extended so that it can handle the case where these two lists are different.* 
+_Discussion: Tables A and B can be Pandas or Spark DataFrame, depending on whether your runtime environment is Pandas on a single machine, Spark on a single machine, or Spark on a cluster of machines. Further, as of now, we require a_cols and b_cols to be the same list of column names. But in the future this function will be extended so that it can handle the case where these two lists are different._
 
 `sim_functions`: Custom similarity functions (optional)
 
-- What it is: List of function objects that define how to compute similarity between values. These are the custom similarity functions provided by the user. 
+- What it is: List of function objects that define how to compute similarity between values. These are the custom similarity functions provided by the user.
 - Default behavior: If None, uses the default similarity functions supplied by MadLib. These are TF-IDF, Jaccard, SIF, Overlap Coefficient, and Cosine.
 - Purpose: Allows you to customize how the system determines if two values are similar
 - When to customize: When you have domain-specific knowledge about what makes records similar
 
 `tokenizers`: Custom text processing functions (optional)
 
-- What it is: List of tokenizer objects that define how to break text into comparable pieces. These are the custom tokenizers provided by the user. 
+- What it is: List of tokenizer objects that define how to break text into comparable pieces. These are the custom tokenizers provided by the user.
 - Default behavior: If None, uses the default tokenizers provided by MadLib. These are Stripped Whitespace, Numeric, and 3-gram tokenizers.
 - Purpose: Allows you to customize how text is preprocessed before similarity comparison
 - When to customize: When your data has special formatting or you need specialized text processing
@@ -120,16 +126,16 @@ def create_features(
 - Example: 0.5 means if more than 50% of values in a column are missing, that column won't be used for feature generation
 - Why it is important: Columns with mostly missing data provide little useful information for matching
 
-Here is roughly how this function create the features. 
+Here is roughly how this function create the features.
 
 1. **Column Analysis**
-    
-* Identifies numeric columns (integer, float) vs text columns
-* Columns with too many null values (above null_threshold) are excluded
-* Computes average token count for each tokenizer-column combination
+
+- Identifies numeric columns (integer, float) vs text columns
+- Columns with too many null values (above null_threshold) are excluded
+- Computes average token count for each tokenizer-column combination
 
 2. **Feature Creation Strategy**
-   
+
    a) **Exact Match Features**: Created for all columns that pass the null threshold
 
    ```python
@@ -332,7 +338,7 @@ def featurize(
        # fill_na defaults to 0.0, no need to specify unless you want a different fill value
    )
 
-   # Result DataFrame looks like OPTION 1
+   # Result DataFrame looks like
    result = pd.DataFrame({
        'id2': [1, 1, 2, 2],
        'id1': [10, 11, 12, 13],                # id1_list gets expanded to individual id1 entries
@@ -343,17 +349,18 @@ def featurize(
            [0.1, 0.05, 0.02, 0.08, 0.12]   # Feature vector for A record 13 vs B record 2
        ],
        'source': ['blocking_system', 'blocking_system', 'manual_review', 'manual_review'],  # Preserved from candidates
+       'score': [4.6, 1.0, 4.03, 0.37] # score generated by the call to featurize
        '_id': [0, 1, 2, 3]   # unique row identifiers generated by MadLib
    })
    ```
 
-result DataFrame OPTION 2:
-| id2 | id1 | feature_vectors | source | \_id |
-|-----|-----|---------------------------------------|------------------|-----|
-| 1 | 10 | [0.9, 0.95, 0.98, 0.85, 0.92] | blocking_system | 0 |
-| 1 | 11 | [0.3, 0.2, 0.1, 0.15, 0.25] | blocking_system | 1 |
-| 2 | 12 | [0.8, 0.7, 0.9, 0.75, 0.88] | manual_review | 2 |
-| 2 | 13 | [0.1, 0.05, 0.02, 0.08, 0.12] | manual_review | 3 |
+Result DataFrame (visualized as table):
+| id2 | id1 | feature_vectors | source | score | \_id |
+|-----|-----|----------------|--------|-------|-----|
+| 1 | 10 | [0.9, 0.95, 0.98, 0.85, 0.92] | blocking_system | 4.6 | 0 |
+| 1 | 11 | [0.3, 0.2, 0.1, 0.15, 0.25] | blocking_system | 1.0 | 1 |
+| 2 | 12 | [0.8, 0.7, 0.9, 0.75, 0.88] | manual_review | 4.03 | 2 |
+| 2 | 13 | [0.1, 0.05, 0.02, 0.08, 0.12] | manual_review | 0.37 | 3 |
 
 ### down_sample()
 
@@ -534,7 +541,7 @@ def train_matcher(
 
 `model`: Machine learning model configuration
 
-- What it is: Either a dictionary specifying model type and parameters, or a pre-configured MLModel object
+- What it is: A pre-configured MLModel object
 - Purpose: Defines what type of machine learning algorithm to use and how to configure it
 - Common types: Random Forest, Logistic Regression, Gradient Boosting
 - Why it is configurable: Different datasets may work better with different algorithms
@@ -807,7 +814,7 @@ Example with continuous mode:
 ```python
 def label_data(
     model = model,
-    mode = "batch",
+    mode = "continuous",
     labeler = Labeler,
     fvs = fvs,
     seeds = seeds,
@@ -1297,6 +1304,7 @@ We are also saving the labeled data to 'web-labeling-data.parquet'. This file wi
 **Case 3: Using with Spark on a cluster**:
 
 ```python
+from pathlib import Path
 # Create web labeler with custom configuration
 web_labeler = WebUILabeler(
     a_df=customers_df,
@@ -1307,13 +1315,14 @@ web_labeler = WebUILabeler(
     flask_host='0.0.0.0'  # Allow other processes to hit the endpoints (desired behavior)
 )
 
+parquet_file_path = Path(__file__).resolve()
 # Use in active learning
 labeled_data = label_data(
     model=model,
     mode='continuous',
     labeler=web_labeler,
     fvs=feature_vectors,
-    parquet_file_path='web-labeling-data.parquet'
+    parquet_file_path=str(parquet_file_path / 'web-labeling-data.parquet')
 )
 ```
 
