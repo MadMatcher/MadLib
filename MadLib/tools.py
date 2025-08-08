@@ -417,11 +417,17 @@ def save_dataframe(dataframe, path):
         dataframe.to_parquet(path)
         logger.info(f"Successfully saved pandas DataFrame to {path}")
     elif isinstance(dataframe, SparkDataFrame):
+        spark = SparkSession.builder.getOrCreate()
+        master = spark.sparkContext.master
+        path_str = str(path)
+        # if we are on a cluster but without a distributed file system, save as pandas
+        if not master.startswith("local") and "://" not in path_str:
+            pdf = dataframe.toPandas()  # be sure it's small!
+            logger.info(f"Saving pandas DataFrame with shape {pdf.shape} to {path_str}")
+            pdf.to_parquet(path_str)
+            logger.info(f"Successfully saved pandas DataFrame to {path_str}")
+            return
         logger.info(f"Saving Spark DataFrame to {path}")
-        # Materialize the DataFrame before saving to ensure it's properly cached
-        # Use count() to trigger materialization without persisting to memory
-        row_count = dataframe.count()
-        logger.info(f"Materializing Spark DataFrame with {row_count} rows")
         dataframe.write.mode('overwrite').parquet(str(path))
         logger.info(f"Successfully saved Spark DataFrame to {path}")
     else:
