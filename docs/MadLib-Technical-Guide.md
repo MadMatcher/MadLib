@@ -1,12 +1,17 @@
-# MadLib Technical Guide
+## MadLib Technical Guide
 
-This document provides an in-depth technical overview of MadLib's functionality, internal workings, and advanced use cases.
+This document provides a quick overview of the functions in MadLib: how they work and how to use them. After you have installed MadLib, we recommend that you read this document, then study the five sample Python scripts that implement various matching workflows. This should give you sufficient knowledge to implement your own matching workflows. 
 
-For quick start guide and basic usage, refer to the [README file](https://github.com/MadMatcher/MadLib/blob/main/README.md).
+### Preliminaries
 
-For an interactive walkthrough, refer to the [Python Notebook](https://github.com/MadMatcher/MadLib/blob/main/examples/madlib_examples.ipynb).
+We start by discussing the basic concepts underlying MadLib. You can skip this section if you are already familiar with them. 
 
-For a general overview of the API, see the [API Docs](https://madmatcher.github.io/MadLib/).
+Let A and B be two tables that we want to match, that is, find tuple pairs (x,y) where tuple x of A matches tuple y of B. We refer to such pair (x,y) as a match. We assume blocking has been performed on A and B, producing a set C of candidate tuple pairs (we call these pairs "candidates" because each may be a candidata for a match). 
+
+Now we enter the matching step, in which we will apply a rule- or machine-learning (ML) based matcher to each pair (x,y) in C to predict match/non-match. Today ML-based matchers are most common, so in MadLib we provide support for these matchers. The overall matching workflow is as follows: 
+
+1. We create a set of features, then convert each pair of tuples (x,y) in C into a feature vector. Let D be the set of all feature vectors.
+2. We create training data T, which is a set of tuple pairs where each pair 
 
 ## Understanding Entity Matching
 
