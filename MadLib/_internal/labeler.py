@@ -26,7 +26,9 @@ log = get_logger(__name__)
 
 
 class Labeler(ABC):
-
+    """
+    Base class for labelers.
+    """
     @abstractmethod
     def __call__(self, id1: int, id2: int):
         """
@@ -40,7 +42,14 @@ class Labeler(ABC):
 
 
 class GoldLabeler(Labeler):
+    """
+    Gold labeler for labeling pairs of records.
 
+    Parameters
+    ----------
+    gold : Union[pd.DataFrame, SparkDataFrame]
+        the gold dataframe, should contain columns 'id1' and 'id2'
+    """
     def __init__(self, gold):
         if isinstance(gold, SparkDataFrame):
             gold = gold.toPandas()
@@ -51,7 +60,16 @@ class GoldLabeler(Labeler):
 
 
 class DelayedGoldLabeler(Labeler):
+    """
+    Delayed gold labeler for labeling pairs of records.
 
+    Parameters
+    ----------
+    gold : Union[pd.DataFrame, SparkDataFrame]
+        the gold dataframe, should contain columns 'id1' and 'id2'
+    delay_secs : int
+        the number of seconds that the labeler waits until it outputs the label
+    """
     def __init__(self, gold, delay_secs):
         if isinstance(gold, SparkDataFrame):
             gold = gold.toPandas()
@@ -66,6 +84,18 @@ class DelayedGoldLabeler(Labeler):
 
 
 class CLILabeler(Labeler):
+    """
+    CLI for labeling pairs of records.
+
+    Parameters
+    ----------
+    a_df : Union[pd.DataFrame, SparkDataFrame]
+        the first dataframe
+    b_df : Union[pd.DataFrame, SparkDataFrame]
+        the second dataframe
+    id_col : str, default '_id'
+        the column name of the id column
+    """
     def __init__(self, a_df, b_df, id_col: str = '_id'):
         self._a_df = a_df
         self._b_df = b_df
@@ -281,6 +311,18 @@ class CLILabeler(Labeler):
         print(tabulate(table, headers=('field', 'value'), tablefmt="github"))
 
 class CustomLabeler(Labeler):
+    """
+    Custom labeler for labeling pairs of records.
+
+    Parameters
+    ----------
+    a_df : Union[pd.DataFrame, SparkDataFrame]
+        the first dataframe
+    b_df : Union[pd.DataFrame, SparkDataFrame]
+        the second dataframe
+    id_col : str, default '_id'
+        the column name of the id column
+    """
     def __init__(self, a_df, b_df, id_col: str = '_id'):
         self._a_df = a_df
         self._b_df = b_df

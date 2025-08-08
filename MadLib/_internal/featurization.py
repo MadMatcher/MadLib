@@ -78,14 +78,50 @@ class BuildCache:
 
 
 def get_base_sim_functions():
+    """
+    get the base similarity functions
+
+    Returns
+    -------
+    list
+        a list of similarity functions, currently includes:
+        - TFIDFFeature
+        - JaccardFeature
+        - SIFFeature
+        - OverlapCoeffFeature
+        - CosineFeature
+    """
     return SIM_FUNCTIONS
 
 
 def get_base_tokenizers():
+    """
+    get the base tokenizers
+
+    Returns
+    -------
+    list
+        a list of tokenizers, currently includes:
+        - StrippedWhiteSpaceTokenizer
+        - NumericTokenizer
+        - QGramTokenizer(3)
+    """
     return TOKENIZERS
 
 
 def get_extra_tokenizers():
+    """
+    get the extra tokenizers
+
+    Returns
+    -------
+    list
+        a list of extratokenizers, currently includes:
+        - AlphaNumericTokenizer
+        - QGramTokenizer(5)
+        - StrippedQGramTokenizer(3)
+        - StrippedQGramTokenizer(5)
+    """
     return EXTRA_TOKENIZERS
 
 

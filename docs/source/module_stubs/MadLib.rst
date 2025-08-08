@@ -1,0 +1,6 @@
+﻿MadLib
+======
+
+.. automodule:: MadLib
+
+   
