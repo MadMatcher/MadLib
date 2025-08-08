@@ -6,7 +6,8 @@ This document provides a quick overview of the functions in MadLib: how they wor
 
 We start by discussing the basic concepts underlying MadLib. You can skip this section if you are already familiar with them. 
 
-Let A and B be two tables that we want to match, that is, find tuple pairs (x,y) where tuple x of A matches tuple y of B. We refer to such pair (x,y) as a match. We assume blocking has been performed on A and B, producing a set C of candidate tuple pairs (we call these pairs "candidates" because each may be a candidata for a match). 
+#### The Matching Step
+Let A and B be two tables that we want to match, that is, find tuple pairs (x,y) where tuple x of A matches tuple y of B. We refer to such pair (x,y) as a <u>match</u>. We assume blocking has been performed on A and B, producing a set C of <u>candidate tuple pairs</u> (we call these pairs "candidates" because each may be a candidata for a match). 
 
 Now we enter the matching step, in which we will apply a rule- or machine-learning (ML) based matcher to each pair (x,y) in C to predict match/non-match. Today ML-based matchers are most common, so in MadLib we provide support for these matchers. The overall matching workflow is as follows: 
 
@@ -15,71 +16,42 @@ Now we enter the matching step, in which we will apply a rule- or machine-learni
 3. We convert each pair in T into a feature vector, then use them to train a ML classification model M. We will refer to M as "matcher".
 4. We apply matcher M to each feature vector in D to predict whether the vector (and thus the corresponding pair (x,y) in C) is a match/non-match.
 
-The above workflow is a very standard ML workflow for classification. For the EM setting it raises the following questions: 
+#### Challenges
+The above workflow is a very standard ML workflow for classification. For the EM setting it raises the following challenges: 
 
-* How to create the features? We do this by using a set of heuristics that analyze the columns of Tables A and B, and use a set of well-known similarity functions and tokenizers. We discuss more below.
-* How to create training data? You may already have a set of labeled tuple pairs (perhaps obtained from a related project). In that case you can just use that data. But a very common scenario is that you do not have anything yet, and you don't know where to start. In general, you cannot just take a random sample of tuple pairs from the candidate set C then label them, because it is very likely that this sample will contain very few true matches, and thus is not a very good sample for training matcher M. We provide a solution to this problem that uses active learning to select a few hundreds "good" examples (that is, tuple pairs) from the candidate set C for you to label.
-* How to scale? If Tables A and B have millions of tuples (which is very commmon in practice), the candidate set C (obtained after blocking) can be huge, having 100M to 1B tuple pairs or more. This would create several serious problems:
+* **How to create the features?** We do this by using a set of heuristics that analyze the columns of Tables A and B, and use a set of well-known similarity functions and tokenizers. We discuss more below.
+  
+* **How to create training data?** There are two scenarios:
+   + You may already have a set of labeled tuple pairs (perhaps obtained from a related project). In that case you can just use that data. We call this **passive learning**.
+   + But a more common scenario is that you do not have anything yet, and you don't know where to start. In general, you cannot just take a random sample of tuple pairs from the candidate set C then label them, because it is very likely that this sample will contain very few true matches, and thus is not a very good sample for training matcher M. We provide a solution to this problem that examines the tuple pairs in the set C to select a few hundreds "good" examples (that is, tuple pairs) for you to label. This is called **active learning** in the ML literature.
+     
+* **How to scale?** If Tables A and B have millions of tuples (which is very commmon in practice), the candidate set C (obtained after blocking) can be huge, having 100M to 1B tuple pairs or more. This would create several serious problems:
    + Featurizing C, that is, converting each tuple pair in C into a feature vector can take hours or days. We provide a fast solution to this problem, using Spark on a cluster of machines.
-   + Using active learning to select a few hundreds "good" tuple pairs from the candiate set C for you to label is going to be very slow, because C is so large and conceptually we have to examine all tuple pairs in C to select the "good" ones. 
+   + Using active learning to select a few hundreds "good" tuple pairs from the candiate set C for you to label is going to be very slow, because C is so large and conceptually we have to examine all tuple pairs in C to select the "good" ones. We provide a solution that takes a far smaller sample S from C (having say just 5M tuple pairs), then performs active learning on S (not on C) to select "good" examples for you to label. As mentioned earlier, S cannot be a random sample of C because in that case it is likely to contain very few true matches, and thus is not a good sample from which to select "good" examples to label.
+   + The default way that we do active learning, say on S, is in the **batch mode**. That is, we examine all examples in S, select 10 "good" examples, ask you to label them as match/non-match, then re-examine the examples in S, select another 10 "good" examples, ask you to label those, and so on. This sometimes has a lag time: you label 10 examples, submit, then *must wait a few seconds before you are given the next 10 examples to label*. To avoid such lag time, we provide a solution that do active learning in the **continuous mode**. In this mode, you do not have to wait and can just label continuously. The downside is that you may have to label a bit more examples (compared to the batch mode) to reach the same matching accuracy.
+ 
+* **What are the runtime environments?** We provide three runtime environments:
+     + **Spark on a cluster of machines**: This is well suited for when you have a lot of data.
+     + **Spark on a single machine**: Use this if you do not have a lot of data, or if you want to test your PySpark script before you run it on a cluster of machines.
+     + **Pandas on a single machine**: Use this if you do not have a lot of data and you do not know Spark or do not want to run it.
 
-## Understanding Entity Matching
+* **How to label examples?** We provide three labelers: gold, CLI, and Web-based.
+     + The gold labeler assumes you have the set of all true matches between Tables A and B. We call this set **the gold set**. Given a pair of tuples (x,y) to be labeled, the gold labeler just consults this set, and return 1.0 (that is, match) if (x,y) is in the gold set, and return 0.0 (that is, non-match) otherwise. The gold labeler is commonly used to test and debug code and for commputing matching accuracy.
+     + Given a pair (x,y) to be labeled, the CLI (command-line interface) labeler will display this pair on the CLI and ask you to label the pair as match, non-match, or unsure. If you run Spark on a cluster, then this labeler is likely to display the pair on a CLI on the master node (assuming that you submit the PySpark script on this node).
+     + The Web-baser labeler runs a browser and a Web server. When a MadLib function wants you to label a pair of tuples (x,y), it sends this pair to the Web server, which in turn sends it to the browser, where you can label the pair as match, non-match, or unsure. If you run on a local machine, then the Web server will run locally on that machine. If you run Spark on a cluster, then the Web server is likely to run on the master node (assuming that you submit the PySpark script on this node).
+ 
+#### Different EM Workflows
+You can combine the MadLib functions (in a Python script) to create a variety of EM workflows. For example:
+* A Pandas workflow that uses active learning to find and label a set of examples, use them to train a matcher M, then apply M to predict match/non-match for all examples in the candidate set C.
+* A variation of the above workflow that uses Spark on a cluster of machines to scale to a very large set C.
+* A workflow in which the user has been given a set of labeled examples. The workflow trains a matcher M on these examples then apply it to the examples in C.
+* A workflow in which you just want to label a set of examples.
 
-### What is Entity Matching?
+Later we provide Python scripts for five such workflows. More workflows can be constructed using MadLib functions. 
 
-Entity matching (also known as record linkage or data matching) is the process of identifying and linking records that refer to the same real-world entity across different datasets. For example:
 
-- Matching customer records across different databases
-- Identifying duplicate product listings
-- Linking patient records across healthcare systems
 
-Consider these examples:
-
-```
-Dataset A:
-"John Smith, 123 Main St, New York"
-"J. Smith, 123 Main Street, NY"
-
-Dataset B:
-"Smith, John, 123 Main Street, New York, NY"
-"John Smith Jr., 123 Main St., New York"
-```
-
-These records might refer to the same person, but they're written differently. Entity matching helps determine which records represent the same entity.
-
-### Why is Entity Matching Challenging?
-
-1. **Data Inconsistency**
-
-   - Different formats ("John Smith" vs "Smith, John")
-   - Typos and errors ("Main Street" vs "Main St." vs "Main Streat")
-   - Missing information
-   - Different conventions across systems
-
-2. **Scale**
-   - Comparing every record with every other record is computationally expensive
-   - Large datasets make manual matching impractical
-   - Need for automated, accurate solutions
-
-## Core Concepts
-
-### Record Matching Pipeline
-
-The matching process follows several steps, each building on the previous:
-
-1. **Feature Generation**  
-   What it is: Converting raw record pairs into comparable characteristics  
-   Example: Converting "John Smith" and "Smith, John" into features that capture their similarity
-2. **Model Training**  
-   What it is: Teaching a model to recognize what features indicate matching records  
-   How it works: Using known matches and non-matches to learn patterns
-
-3. **Prediction**  
-   What it is: Using learned patterns to determine if two previously unseen records represent the same entity
-
-4. **Active Learning**  
-   What it is: Creating labeled data with human (or simulated human) labeling  
-   How it works: The model picks the examples that are most ambiguous and has the user label them
+### MOVE PART BELOW LATER
 
 ### Understanding Features
 
@@ -140,11 +112,11 @@ When using MadLib, it's crucial to understand how your chosen similarity functio
 
 **Best Practice:** Always test your similarity functions with examples to see how the score relates to the probability of a match
 
-## Core Functions In-Depth
+### The Core Functions of MadLib
+We now describe the core functions that you can combine to create a variety of EM workflows. 
 
 ### create_features()
-
-This function analyzes your data and creates combinations of tokenizers and similarity functions. Let's break down how it works:
+This function uses heuristics that analyzes the columns of Tables A and B to create a set of features. The features uses a combination of similarity functions and tokenizers. See here for a brief discussion of similarity functions and tokenizers for MadLib. 
 
 ```python
 def create_features(
@@ -160,16 +132,16 @@ def create_features(
 
 **Parameter Explanations:**
 
-`A`: Your first dataset (pandas DataFrame)
+`A`: Your first dataset (DataFrame)
 
-- What it is: Any pandas DataFrame containing records you want to match against dataset B
+- What it is: Any DataFrame containing records you want to match against dataset B
 - Schema requirement: Must have an `_id` column with unique identifiers for each record
 - Example: A customer database with columns like `['_id', 'name', 'address', 'phone']`
 - Purpose: These are your "candidate" records - potential matches for records in B
 
-`B`: Your second dataset (pandas DataFrame)
+`B`: Your second dataset (DataFrame)
 
-- What it is: The pandas DataFrame containing records you want to to find matches for
+- What it is: The DataFrame containing records you want to to find matches for
 - Schema requirement: Must have an `_id` column with unique identifiers for each record
 - Example: A prospect database with columns like `['_id', 'name', 'address', 'phone']`
 - Purpose: These are your "reference" records - the ones you want to find duplicates or matches for
@@ -177,16 +149,18 @@ def create_features(
 `a_cols`: Column names from dataset A to use for comparison
 
 - What it is: List of strings specifying which columns from A contain the data you want to compare
-- Purpose: Tells the system which fields in A contain meaningful information for matching
+- Purpose: Tells the system which columns in A contain meaningful information for matching
 - Example: `['name', 'address', 'phone']` - these are the columns that will help identify if two records represent the same entity
 - Requirement: These columns must be the same as the columns for b_cols
 
 `b_cols`: Column names from dataset B to use for comparison
 
 - What it is: List of strings specifying which columns from B contain the data you want to compare
-- Purpose: Tells the system which fields in B contain meaningful information for matching
+- Purpose: Tells the system which columns in B contain meaningful information for matching
 - Example: `['name', 'address', 'phone']` - these are the columns that will help identify if two records represent the same entity
 - Requirement: These columns must be the same as the columns for a_cols
+
+**Discussion:** Tables A and B can be Pandas or Spark DataFrame, depending on whether your runtime environment is Pandas on a single machine, Spark on a single machine, or Spark on a cluster of machines. Further, as of now, we require a_cols and b_cols to be the same list of column names. But in the future this function will be extended so that it can handle the case where these two lists are different. 
 
 `sim_functions`: Custom similarity functions (optional)
 
