@@ -53,7 +53,7 @@ Later we provide Python scripts for five such workflows. More workflows can be c
 We now describe the core functions that you can combine to create a variety of EM workflows. 
 
 ### create_features()
-This function uses heuristics that analyzes the columns of Tables A and B to create a set of features. The features uses a combination of similarity functions and tokenizers. See here for a brief discussion of similarity functions and tokenizers for MadLib. 
+This function uses heuristics that analyzes the columns of Tables A and B to create a set of features. The features uses a combination of similarity functions and tokenizers. See [here](./sim-functions-tokenizers.md) for a brief discussion of similarity functions and tokenizers for MadLib. 
 
 ```python
 def create_features(
