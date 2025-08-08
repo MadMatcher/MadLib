@@ -49,74 +49,11 @@ You can combine the MadLib functions (in a Python script) to create a variety of
 
 Later we provide Python scripts for five such workflows. More workflows can be constructed using MadLib functions. 
 
-
-
-### MOVE PART BELOW LATER
-
-### Understanding Features
-
-A feature is a way to compare two values and determine how similar they are. Think of it as answering questions like:
-
-- How similar are these two names?
-- How different are these two ages?
-
-Features are created through two main components:
-
-1. **Tokenizers**  
-   What they are: Tools that break text into pieces  
-   Example:
-
-   ```python
-   Input: "John Smith"
-   Tokenizer output: ["john", "smith"]
-
-   Input: "123 Main Street"
-   Tokenizer output: ["123", "main", "street"]
-   ```
-
-   Breaking text into tokens helps handle:
-
-   - Different word orders
-   - Extra/missing words
-   - Punctuation
-   - Typos
-   - Variations in formatting
-   - etc.
-
-2. **Similarity Functions**  
-   What they are: Methods to compute how similar two sets of tokens are  
-   Available similarity functions in MadLib (as of July 31, 2025):
-   - TF-IDF: Term frequency-inverse document frequency similarity
-   - Jaccard: Set-based similarity using intersection over union
-   - SIF: Smooth inverse frequency similarity
-   - Overlap Coefficient: Set overlap measure
-   - Cosine: Vector space similarity between token vectors
-
-### Understanding Your Similiarity Functions
-
-When using MadLib, it's crucial to understand how your chosen similarity functions work:
-
-**Why This Matters:**
-
-- Different similarity functions interpret "high" and "low" scores differently
-- Some functions return higher scores for more similar items
-- Some functions return higher scores for less similar items
-- Some functions have different score ranges (0-1, 0-100, etc.)
-
-**Common Patterns:**
-
-- **Set-based functions** (Jaccard, Overlap): Higher scores = more similar
-- **Distance functions** (Edit Distance): Lower scores = more similar
-- **Vector functions** (Cosine, TF-IDF): Higher scores = more similar
-- **Custom functions**: You need to test and understand them yourself
-
-**Best Practice:** Always test your similarity functions with examples to see how the score relates to the probability of a match
-
 ### The Core Functions of MadLib
 We now describe the core functions that you can combine to create a variety of EM workflows. 
 
 ### create_features()
-This function uses heuristics that analyzes the columns of Tables A and B to create a set of features. The features uses a combination of similarity functions and tokenizers. See here for a brief discussion of similarity functions and tokenizers for MadLib. 
+This function uses heuristics that analyzes the columns of Tables A and B to create a set of features. The features uses a combination of similarity functions and tokenizers. See [here](./sim-functions-tokenizers.md) for a brief discussion of similarity functions and tokenizers for MadLib. 
 
 ```python
 def create_features(
@@ -160,19 +97,19 @@ def create_features(
 - Example: `['name', 'address', 'phone']` - these are the columns that will help identify if two records represent the same entity
 - Requirement: These columns must be the same as the columns for a_cols
 
-**Discussion:** Tables A and B can be Pandas or Spark DataFrame, depending on whether your runtime environment is Pandas on a single machine, Spark on a single machine, or Spark on a cluster of machines. Further, as of now, we require a_cols and b_cols to be the same list of column names. But in the future this function will be extended so that it can handle the case where these two lists are different. 
+*Discussion: Tables A and B can be Pandas or Spark DataFrame, depending on whether your runtime environment is Pandas on a single machine, Spark on a single machine, or Spark on a cluster of machines. Further, as of now, we require a_cols and b_cols to be the same list of column names. But in the future this function will be extended so that it can handle the case where these two lists are different.* 
 
 `sim_functions`: Custom similarity functions (optional)
 
-- What it is: List of function objects that define how to compute similarity between values
-- Default behavior: If None, uses TF-IDF, Jaccard, SIF, Overlap Coefficient, and Cosine similarity functions
+- What it is: List of function objects that define how to compute similarity between values. These are the custom similarity functions provided by the user. 
+- Default behavior: If None, uses the default similarity functions supplied by MadLib. These are TF-IDF, Jaccard, SIF, Overlap Coefficient, and Cosine.
 - Purpose: Allows you to customize how the system determines if two values are similar
 - When to customize: When you have domain-specific knowledge about what makes records similar
 
 `tokenizers`: Custom text processing functions (optional)
 
-- What it is: List of tokenizer objects that define how to break text into comparable pieces
-- Default behavior: If None, uses Stripped Whitespace, Numeric, and 3-gram tokenizers
+- What it is: List of tokenizer objects that define how to break text into comparable pieces. These are the custom tokenizers provided by the user. 
+- Default behavior: If None, uses the default tokenizers provided by MadLib. These are Stripped Whitespace, Numeric, and 3-gram tokenizers.
 - Purpose: Allows you to customize how text is preprocessed before similarity comparison
 - When to customize: When your data has special formatting or you need specialized text processing
 
@@ -183,23 +120,16 @@ def create_features(
 - Example: 0.5 means if more than 50% of values in a column are missing, that column won't be used for feature generation
 - Why it is important: Columns with mostly missing data provide little useful information for matching
 
+Here is roughly how this function create the features. 
+
 1. **Column Analysis**
-   What it does: Examines your data to understand its characteristics
-
-   a) Data Type Detection
-
-   - Identifies numeric columns (integer, float) vs text columns
-   - All data is eventually converted to strings for processing
-   - Columns with too many null values (above null_threshold) are excluded
-
-   b) Content Analysis
-
-   - Analyzes average token count for each tokenizer-column combination
-   - Determines which features to create based on token counts
+    
+* Identifies numeric columns (integer, float) vs text columns
+* Columns with too many null values (above null_threshold) are excluded
+* Computes average token count for each tokenizer-column combination
 
 2. **Feature Creation Strategy**
-   The function creates features systematically based on data characteristics:
-
+   
    a) **Exact Match Features**: Created for all columns that pass the null threshold
 
    ```python
