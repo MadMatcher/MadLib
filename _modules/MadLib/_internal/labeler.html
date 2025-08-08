@@ -97,9 +97,11 @@
 
 
 <div class="viewcode-block" id="Labeler">
-<a class="viewcode-back" href="../../../module_stubs/MadLib._internal.labeler.Labeler.html#MadLib._internal.labeler.Labeler">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.Labeler">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Labeler</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for labelers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">id2</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -113,19 +115,38 @@
 
 
 
+<div class="viewcode-block" id="GoldLabeler">
+<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.GoldLabeler">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">GoldLabeler</span><span class="p">(</span><span class="n">Labeler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gold labeler for labeling pairs of records.</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gold : Union[pd.DataFrame, SparkDataFrame]</span>
+<span class="sd">        the gold dataframe, should contain columns &#39;id1&#39; and &#39;id2&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gold</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gold</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">):</span>
             <span class="n">gold</span> <span class="o">=</span> <span class="n">gold</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gold</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">gold</span><span class="p">[</span><span class="s1">&#39;id1&#39;</span><span class="p">],</span> <span class="n">gold</span><span class="p">[</span><span class="s1">&#39;id2&#39;</span><span class="p">]))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id1</span><span class="p">,</span> <span class="n">id2</span><span class="p">):</span>
-        <span class="k">return</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="p">(</span><span class="n">id1</span><span class="p">,</span> <span class="n">id2</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gold</span> <span class="k">else</span> <span class="mf">0.0</span>
+        <span class="k">return</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="p">(</span><span class="n">id1</span><span class="p">,</span> <span class="n">id2</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gold</span> <span class="k">else</span> <span class="mf">0.0</span></div>
+
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">DelayedGoldLabeler</span><span class="p">(</span><span class="n">Labeler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Delayed gold labeler for labeling pairs of records.</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gold : Union[pd.DataFrame, SparkDataFrame]</span>
+<span class="sd">        the gold dataframe, should contain columns &#39;id1&#39; and &#39;id2&#39;</span>
+<span class="sd">    delay_secs : int</span>
+<span class="sd">        the number of seconds that the labeler waits until it outputs the label</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gold</span><span class="p">,</span> <span class="n">delay_secs</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gold</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">):</span>
             <span class="n">gold</span> <span class="o">=</span> <span class="n">gold</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>
@@ -139,7 +160,21 @@
         <span class="k">return</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="p">(</span><span class="n">id1</span><span class="p">,</span> <span class="n">id2</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gold</span> <span class="k">else</span> <span class="mf">0.0</span>
 
 
+<div class="viewcode-block" id="CLILabeler">
+<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.CLILabeler">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CLILabeler</span><span class="p">(</span><span class="n">Labeler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    CLI for labeling pairs of records.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a_df : Union[pd.DataFrame, SparkDataFrame]</span>
+<span class="sd">        the first dataframe</span>
+<span class="sd">    b_df : Union[pd.DataFrame, SparkDataFrame]</span>
+<span class="sd">        the second dataframe</span>
+<span class="sd">    id_col : str, default &#39;_id&#39;</span>
+<span class="sd">        the column name of the id column</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a_df</span><span class="p">,</span> <span class="n">b_df</span><span class="p">,</span> <span class="n">id_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;_id&#39;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_a_df</span> <span class="o">=</span> <span class="n">a_df</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_b_df</span> <span class="o">=</span> <span class="n">b_df</span>
@@ -352,18 +387,28 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_print_dict</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Tabulate the key/value pairs of a dict.&quot;&quot;&quot;</span>
         <span class="n">table</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;field&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">),</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;github&quot;</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;field&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">),</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;github&quot;</span><span class="p">))</span></div>
+
 
 <div class="viewcode-block" id="CustomLabeler">
-<a class="viewcode-back" href="../../../module_stubs/MadLib._internal.labeler.CustomLabeler.html#MadLib._internal.labeler.CustomLabeler">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.CustomLabeler">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">CustomLabeler</span><span class="p">(</span><span class="n">Labeler</span><span class="p">):</span>
-<div class="viewcode-block" id="CustomLabeler.__init__">
-<a class="viewcode-back" href="../../../module_stubs/MadLib._internal.labeler.CustomLabeler.html#MadLib._internal.labeler.CustomLabeler.__init__">[docs]</a>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Custom labeler for labeling pairs of records.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a_df : Union[pd.DataFrame, SparkDataFrame]</span>
+<span class="sd">        the first dataframe</span>
+<span class="sd">    b_df : Union[pd.DataFrame, SparkDataFrame]</span>
+<span class="sd">        the second dataframe</span>
+<span class="sd">    id_col : str, default &#39;_id&#39;</span>
+<span class="sd">        the column name of the id column</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a_df</span><span class="p">,</span> <span class="n">b_df</span><span class="p">,</span> <span class="n">id_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;_id&#39;</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_a_df</span> <span class="o">=</span> <span class="n">a_df</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_b_df</span> <span class="o">=</span> <span class="n">b_df</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_id_col</span> <span class="o">=</span> <span class="n">id_col</span></div>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id_col</span> <span class="o">=</span> <span class="n">id_col</span>
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id1</span><span class="p">,</span> <span class="n">id2</span><span class="p">):</span>
@@ -374,7 +419,7 @@
         <span class="k">return</span> <span class="n">label</span>
 
 <div class="viewcode-block" id="CustomLabeler.label_pair">
-<a class="viewcode-back" href="../../../module_stubs/MadLib._internal.labeler.CustomLabeler.html#MadLib._internal.labeler.CustomLabeler.label_pair">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.CustomLabeler.label_pair">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">label_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row1</span><span class="p">,</span> <span class="n">row2</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -407,6 +452,8 @@
         <span class="nb">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;field&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">),</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;github&quot;</span><span class="p">))</span></div>
 
         
+<div class="viewcode-block" id="WebUILabeler">
+<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.WebUILabeler">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">WebUILabeler</span><span class="p">(</span><span class="n">Labeler</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Web interface for labeling pairs of records.</span>
@@ -684,7 +731,8 @@
 <span class="s1">        st.write(&quot;No pair to label. Waiting...&quot;)</span>
 <span class="s1">        time.sleep(0.2)</span>
 <span class="s1">        st.rerun()</span>
-<span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">&#39;&#39;&#39;</span></div>
+
 
 
 </pre></div>

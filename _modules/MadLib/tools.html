@@ -85,8 +85,13 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseEstimator</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xxhash</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._internal.ml_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">MLModel</span><span class="p">,</span> <span class="n">SKLearnModel</span><span class="p">,</span> <span class="n">SparkMLModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._internal.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span><span class="p">,</span> <span class="n">convert_arrays_for_spark</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._internal.labeler</span><span class="w"> </span><span class="kn">import</span> <span class="n">Labeler</span><span class="p">,</span> <span class="n">CLILabeler</span><span class="p">,</span> <span class="n">GoldLabeler</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._internal.active_learning.ent_active_learner</span><span class="w"> </span><span class="kn">import</span> <span class="n">EntropyActiveLearner</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._internal.active_learning.cont_entropy_active_learner</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContinuousEntropyActiveLearner</span>
@@ -97,7 +102,8 @@
     <span class="n">get_extra_tokenizers</span><span class="p">,</span>
     <span class="n">featurize</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._internal.api_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">_create_matching_model</span><span class="p">,</span> <span class="n">_create_labeler</span><span class="p">,</span> <span class="n">_create_training_model</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="c1"># Re-export the public functions</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
@@ -110,12 +116,16 @@
     <span class="s1">&#39;create_seeds&#39;</span><span class="p">,</span>
     <span class="s1">&#39;train_matcher&#39;</span><span class="p">,</span>
     <span class="s1">&#39;apply_matcher&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;label_data&#39;</span>
+    <span class="s1">&#39;label_data&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;save_features&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;load_features&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;save_dataframe&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;load_dataframe&#39;</span>
 <span class="p">]</span>
 
 
 <div class="viewcode-block" id="down_sample">
-<a class="viewcode-back" href="../../module_stubs/MadLib.tools.html#MadLib.tools.down_sample">[docs]</a>
+<a class="viewcode-back" href="../../module_stubs/MadLib.html#MadLib.down_sample">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">down_sample</span><span class="p">(</span>
     <span class="n">fvs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
     <span class="n">percent</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -191,37 +201,37 @@
 
 
 <div class="viewcode-block" id="create_seeds">
-<a class="viewcode-back" href="../../module_stubs/MadLib.tools.html#MadLib.tools.create_seeds">[docs]</a>
+<a class="viewcode-back" href="../../module_stubs/MadLib.html#MadLib.create_seeds">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_seeds</span><span class="p">(</span>
     <span class="n">fvs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
     <span class="n">nseeds</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">labeler</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Labeler</span><span class="p">,</span> <span class="n">Dict</span><span class="p">],</span>
+    <span class="n">labeler</span><span class="p">:</span> <span class="n">Labeler</span><span class="p">,</span>
     <span class="n">score_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;score&#39;</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    create seeds seeds to train a model</span>
-
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create labeled seed examples for active learning.</span>
+<span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    fvs : pandas DataFrame</span>
-<span class="sd">        the DataFrame with feature vectors that is your training data</span>
+<span class="sd">    fvs : Union[pd.DataFrame, SparkDataFrame]</span>
+<span class="sd">        DataFrame containing feature vectors with scores</span>
 <span class="sd">    nseeds : int</span>
 <span class="sd">        the number of seeds you want to use to train an initial model</span>
-<span class="sd">    labeler : Union[Labeler, Dict]</span>
-<span class="sd">        the labeler object (or a labeler_spec dict) you want to use to assign labels to rows</span>
-<span class="sd">    score_column : str</span>
+<span class="sd">    labeler : Labeler</span>
+<span class="sd">        the labeler object you want to use to assign labels to rows</span>
+<span class="sd">    score_column : str, default=&#39;score&#39;</span>
 <span class="sd">        the name of the score column in your fvs DataFrame</span>
-
+<span class="sd">        </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    pandas DataFrame</span>
+<span class="sd">    Union[pd.DataFrame, SparkDataFrame]</span>
 <span class="sd">        A DataFrame with labeled seeds, schema is (previous schema of fvs, `label`) where the values in </span>
 <span class="sd">        label are either 0.0 or 1.0</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">labeler</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-        <span class="n">labeler</span> <span class="o">=</span> <span class="n">_create_labeler</span><span class="p">(</span><span class="n">labeler</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">nseeds</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;no seeds would be created&quot;</span><span class="p">)</span>
+    <span class="n">return_pandas</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
+    <span class="c1"># Initialize spark session if needed for SparkDataFrame operations</span>
+    <span class="n">spark</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">return_pandas</span> <span class="k">else</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
     <span class="c1"># gold labeler overrides the score column with 1.0 for gold pairs and 0.0 for non-gold pairs</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">labeler</span><span class="p">,</span> <span class="n">GoldLabeler</span><span class="p">):</span>
         <span class="n">gold_pairs</span> <span class="o">=</span> <span class="n">labeler</span><span class="o">.</span><span class="n">_gold</span>
@@ -284,33 +294,38 @@
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No seeds were labeled before stopping&quot;</span><span class="p">)</span>
     
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;seeds: pos_count = </span><span class="si">{</span><span class="n">pos_count</span><span class="si">}</span><span class="s2"> neg_count = </span><span class="si">{</span><span class="n">neg_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">seeds</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="n">return_pandas</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">seeds</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">seeds_clean</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="n">seeds</span><span class="p">:</span>
+            <span class="n">seed_clean</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">seed</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+            <span class="n">seeds_clean</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seed_clean</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span><span class="n">seeds_clean</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="train_matcher">
-<a class="viewcode-back" href="../../module_stubs/MadLib.tools.html#MadLib.tools.train_matcher">[docs]</a>
+<a class="viewcode-back" href="../../module_stubs/MadLib.html#MadLib.train_matcher">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">train_matcher</span><span class="p">(</span>
-    <span class="n">model_spec</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">MLModel</span><span class="p">],</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">MLModel</span><span class="p">,</span>
     <span class="n">labeled_data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
-    <span class="n">feature_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;features&quot;</span><span class="p">,</span>
+    <span class="n">feature_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;feature_vectors&quot;</span><span class="p">,</span>
     <span class="n">label_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;label&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MLModel</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Train a matcher model on labeled data.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    model_spec : Union[Dict, MLModel]</span>
-<span class="sd">        Either:</span>
-<span class="sd">        - A dict with model configuration (e.g. {&#39;model_type&#39;: &#39;sklearn&#39;, &#39;model&#39;: XGBClassifier, &#39;model_args&#39;:{&#39;max_depth&#39;: 6}})</span>
-<span class="sd">        - An MLModel instance</span>
+<span class="sd">    model : MLModel</span>
+<span class="sd">        An MLModel instance to train</span>
 <span class="sd">    labeled_data : pandas DataFrame</span>
 <span class="sd">        DataFrame containing the labeled data</span>
-<span class="sd">    feature_col : str, optional</span>
+<span class="sd">    feature_col : str, default=&quot;feature_vectors&quot;</span>
 <span class="sd">        Name of the column containing feature vectors</span>
-<span class="sd">    label_col : str, optional</span>
+<span class="sd">    label_col : str, default=&quot;label&quot;</span>
 <span class="sd">        Name of the column containing labels</span>
-
+<span class="sd">        </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    MLModel</span>
@@ -321,93 +336,91 @@
     <span class="c1"># on apply, we should expect to get a trained model. </span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">labeled_data</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">):</span>
         <span class="n">labeled_data</span> <span class="o">=</span> <span class="n">labeled_data</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">_create_training_model</span><span class="p">(</span><span class="n">model_spec</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">labeled_data</span><span class="p">,</span> <span class="n">feature_col</span><span class="p">,</span> <span class="n">label_col</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="apply_matcher">
-<a class="viewcode-back" href="../../module_stubs/MadLib.tools.html#MadLib.tools.apply_matcher">[docs]</a>
+<a class="viewcode-back" href="../../module_stubs/MadLib.html#MadLib.apply_matcher">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">apply_matcher</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">MLModel</span><span class="p">,</span> <span class="n">SKLearnModel</span><span class="p">,</span> <span class="n">SparkMLModel</span><span class="p">],</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">MLModel</span><span class="p">,</span>
     <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
     <span class="n">feature_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">output_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="n">prediction_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">confidence_col</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply a trained model to make predictions.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    model_spec : Union[MLModel, SKLearn Model, SparkMLModel]</span>
-<span class="sd">        Either:</span>
-<span class="sd">        - A trained MLModel instance</span>
-<span class="sd">        - A trained scikit-learn or Spark model instance</span>
+<span class="sd">    model : MLModel</span>
+<span class="sd">        A trained MLModel instance</span>
 <span class="sd">    df : pandas DataFrame</span>
 <span class="sd">        The DataFrame to make predictions on</span>
 <span class="sd">    feature_col : str</span>
 <span class="sd">        Name of the column containing feature vectors</span>
-<span class="sd">    output_col : str</span>
+<span class="sd">    prediction_col : str</span>
 <span class="sd">        Name of the column to store predictions in</span>
+<span class="sd">    confidence_col : str, optional</span>
+<span class="sd">        Name of the column to store confidence scores in. If provided, both predictions</span>
+<span class="sd">        and confidence scores will be computed efficiently in a single pass.</span>
 <span class="sd">        </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    pandas DataFrame</span>
-<span class="sd">        The input DataFrame with predictions added</span>
+<span class="sd">    Union[pd.DataFrame, SparkDataFrame]</span>
+<span class="sd">        The input DataFrame with predictions added (and confidence scores if requested)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">):</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">_create_matching_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">feature_col</span><span class="p">,</span> <span class="n">output_col</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="n">confidence_col</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_with_confidence</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">feature_col</span><span class="p">,</span> <span class="n">prediction_col</span><span class="p">,</span> <span class="n">confidence_col</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">feature_col</span><span class="p">,</span> <span class="n">prediction_col</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="label_data">
-<a class="viewcode-back" href="../../module_stubs/MadLib.tools.html#MadLib.tools.label_data">[docs]</a>
+<a class="viewcode-back" href="../../module_stubs/MadLib.html#MadLib.label_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">label_data</span><span class="p">(</span>
-    <span class="n">model_spec</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">MLModel</span><span class="p">],</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">MLModel</span><span class="p">,</span>
     <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="s2">&quot;continuous&quot;</span><span class="p">],</span>
-    <span class="n">labeler_spec</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="n">Labeler</span><span class="p">],</span>
+    <span class="n">labeler</span><span class="p">:</span> <span class="n">Labeler</span><span class="p">,</span>
     <span class="n">fvs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
-    <span class="n">seeds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">seeds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">learner_kwargs</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate labeled data using active learning.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    model_spec : Union[Dict, MLModel]</span>
-<span class="sd">        Either:</span>
-<span class="sd">        - A dict with model configuration (e.g. {&#39;model_type&#39;: &#39;sklearn&#39;, &#39;model_class&#39;: XGBClassifier})</span>
-<span class="sd">        - An MLModel instance</span>
+<span class="sd">    model : MLModel</span>
+<span class="sd">        An MLModel instance</span>
 <span class="sd">    mode : Literal[&quot;batch&quot;, &quot;continuous&quot;]</span>
 <span class="sd">        Whether to use batch or continuous active learning</span>
-<span class="sd">    labeler_spec : Union[str, Dict, Labeler]</span>
-<span class="sd">        Either:</span>
-<span class="sd">        - A dict with labeler configuration (e.g. {&#39;name&#39;: &#39;cli&#39;, &#39;a_df&#39;: df_a, &#39;b_df&#39;: df_b})</span>
-<span class="sd">        - A Labeler instance</span>
+<span class="sd">    labeler : Labeler</span>
+<span class="sd">        A Labeler instance</span>
 <span class="sd">    fvs : pandas DataFrame</span>
 <span class="sd">        The data that needs to be labeled</span>
-<span class="sd">    seeds : pandas DataFrame, optional</span>
+<span class="sd">    seeds : Union[pandas DataFrame, SparkDataFrame], optional</span>
 <span class="sd">        Initial labeled examples to start with</span>
 <span class="sd">    **learner_kwargs :</span>
 <span class="sd">        Additional keyword arguments to pass to the active learner constructor. For batch mode, see EntropyActiveLearner (e.g. batch_size, max_iter). For continuous mode, see ContinuousEntropyActiveLearner (e.g. queue_size, max_labeled, on_demand_stop).</span>
 <span class="sd">        </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    pandas DataFrame</span>
+<span class="sd">    Union[pd.DataFrame, SparkDataFrame]</span>
 <span class="sd">        DataFrame with ids of potential matches and the corresponding label</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
         
     <span class="c1"># Create model and labeler</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">_create_training_model</span><span class="p">(</span><span class="n">model_spec</span><span class="p">)</span>
-    <span class="n">labeler</span> <span class="o">=</span> <span class="n">_create_labeler</span><span class="p">(</span><span class="n">labeler_spec</span><span class="p">)</span>
+    <span class="n">return_pandas</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">spark</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;spark.sql.execution.arrow.pyspark.enabled&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">)</span>
         <span class="n">fvs</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span><span class="n">fvs</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">seeds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">seeds</span> <span class="o">=</span> <span class="n">create_seeds</span><span class="p">(</span><span class="n">fvs</span><span class="o">=</span><span class="n">fvs</span><span class="p">,</span> <span class="n">nseeds</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">fvs</span><span class="o">.</span><span class="n">count</span><span class="p">()),</span> <span class="n">labeler</span><span class="o">=</span><span class="n">labeler</span><span class="p">,</span> <span class="n">score_column</span><span class="o">=</span><span class="s1">&#39;score&#39;</span><span class="p">)</span>
-    
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">seeds</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">):</span>
+        <span class="n">seeds</span> <span class="o">=</span> <span class="n">seeds</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;batch&quot;</span><span class="p">:</span>
         <span class="n">learner</span> <span class="o">=</span> <span class="n">EntropyActiveLearner</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">labeler</span><span class="p">,</span> <span class="o">**</span><span class="n">learner_kwargs</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;continuous&quot;</span><span class="p">:</span>
@@ -415,7 +428,148 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mode must be either &#39;batch&#39; or &#39;continuous&#39;, not </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">labeled_data</span> <span class="o">=</span> <span class="n">learner</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">seeds</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">labeled_data</span></div>
+    <span class="k">if</span> <span class="n">return_pandas</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">labeled_data</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Convert arrays to PySpark-compatible format</span>
+        <span class="n">labeled_data</span> <span class="o">=</span> <span class="n">convert_arrays_for_spark</span><span class="p">(</span><span class="n">labeled_data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span><span class="n">labeled_data</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="save_features">
+<a class="viewcode-back" href="../../module_stubs/MadLib.html#MadLib.save_features">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_features</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save a list of feature objects to disk using pickle serialization.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    features : List[Callable]</span>
+<span class="sd">        List of feature objects to save</span>
+<span class="sd">    path : str</span>
+<span class="sd">        Path where to save the features file</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">features</span><span class="p">)</span><span class="si">}</span><span class="s2"> features to </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully saved features to </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="load_features">
+<a class="viewcode-back" href="../../module_stubs/MadLib.html#MadLib.load_features">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_features</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load a list of feature objects from disk using pickle deserialization.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path : str</span>
+<span class="sd">        Path to the saved features file</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    List[Callable]</span>
+<span class="sd">        List of loaded feature objects</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading features from </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">features</span><span class="p">)</span><span class="si">}</span><span class="s2"> features from </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">features</span></div>
+
+
+
+<div class="viewcode-block" id="save_dataframe">
+<a class="viewcode-back" href="../../module_stubs/MadLib.html#MadLib.save_dataframe">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">save_dataframe</span><span class="p">(</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save a DataFrame to disk, automatically detecting whether it&#39;s a pandas or Spark DataFrame.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataframe : Union[pd.DataFrame, pyspark.sql.DataFrame]</span>
+<span class="sd">        DataFrame to save (pandas or Spark)</span>
+<span class="sd">    path : str</span>
+<span class="sd">        Path where to save the DataFrame</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving pandas DataFrame with shape </span><span class="si">{</span><span class="n">dataframe</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">dataframe</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully saved pandas DataFrame to </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">):</span>
+        <span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+        <span class="n">master</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sparkContext</span><span class="o">.</span><span class="n">master</span>
+        <span class="n">path_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="c1"># if we are on a cluster but without a distributed file system, save as pandas</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">master</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;local&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;://&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">path_str</span><span class="p">:</span>
+            <span class="n">pdf</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span> 
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving pandas DataFrame with shape </span><span class="si">{</span><span class="n">pdf</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">path_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">pdf</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">path_str</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully saved pandas DataFrame to </span><span class="si">{</span><span class="n">path_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saving Spark DataFrame to </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">dataframe</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="s1">&#39;overwrite&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">parquet</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully saved Spark DataFrame to </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported DataFrame type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">dataframe</span><span class="p">)</span><span class="si">}</span><span class="s2">. &quot;</span>
+                       <span class="sa">f</span><span class="s2">&quot;Expected pandas.DataFrame or pyspark.sql.DataFrame&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="load_dataframe">
+<a class="viewcode-back" href="../../module_stubs/MadLib.html#MadLib.load_dataframe">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_dataframe</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">df_type</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load a DataFrame from disk based on the specified type.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    path : str</span>
+<span class="sd">        Path to the saved DataFrame file</span>
+<span class="sd">    df_type : str</span>
+<span class="sd">        Type of DataFrame to load (&#39;pandas&#39; or &#39;sparkdf&#39;)</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Union[pd.DataFrame, pyspark.sql.DataFrame]</span>
+<span class="sd">        Loaded DataFrame</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading DataFrame from </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> as </span><span class="si">{</span><span class="n">df_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">df_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;pandas&#39;</span><span class="p">:</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully loaded pandas DataFrame with shape </span><span class="si">{</span><span class="n">dataframe</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> from </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
+    <span class="k">elif</span> <span class="n">df_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;sparkdf&#39;</span><span class="p">:</span>
+        <span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+        <span class="n">master</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sparkContext</span><span class="o">.</span><span class="n">master</span>
+        <span class="n">path_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="c1"># if we are on a cluster but without a distributed file system, load as pandas</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">master</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;local&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;://&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">path_str</span><span class="p">:</span>
+            <span class="n">pdf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">path_str</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully loaded pandas DataFrame with shape </span><span class="si">{</span><span class="n">pdf</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> from </span><span class="si">{</span><span class="n">path_str</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span><span class="n">pdf</span><span class="p">)</span>
+        <span class="n">spark</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;spark.sql.execution.arrow.pyspark.enabled&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">)</span>
+        <span class="n">dataframe</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">parquet</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully loaded Spark DataFrame from </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dataframe</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported DataFrame type: </span><span class="si">{</span><span class="n">df_type</span><span class="si">}</span><span class="s2">. &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;Expected &#39;pandas&#39; or &#39;sparkdf&#39;&quot;</span><span class="p">)</span></div>
 
 </pre></div>
 

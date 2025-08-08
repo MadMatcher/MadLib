@@ -79,7 +79,8 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.storage</span><span class="w"> </span><span class="kn">import</span> <span class="n">MemmapDataFrame</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">threading</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lock</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">repartition_df</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span><span class="p">,</span> <span class="n">repartition_df</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.tokenizer</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AlphaNumericTokenizer</span><span class="p">,</span>
     <span class="n">NumericTokenizer</span><span class="p">,</span>
@@ -126,6 +127,7 @@
     <span class="n">CosineFeature</span><span class="p">,</span>
 <span class="p">]</span>
 
+<span class="n">log</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">BuildCache</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -147,22 +149,58 @@
 
 
 <div class="viewcode-block" id="get_base_sim_functions">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.tools.html#MadLib._internal.featurization.get_base_sim_functions">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.get_base_sim_functions">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_base_sim_functions</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    get the base similarity functions</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        a list of similarity functions, currently includes:</span>
+<span class="sd">        - TFIDFFeature</span>
+<span class="sd">        - JaccardFeature</span>
+<span class="sd">        - SIFFeature</span>
+<span class="sd">        - OverlapCoeffFeature</span>
+<span class="sd">        - CosineFeature</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">SIM_FUNCTIONS</span></div>
 
 
 
 <div class="viewcode-block" id="get_base_tokenizers">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.tools.html#MadLib._internal.featurization.get_base_tokenizers">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.get_base_tokenizers">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_base_tokenizers</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    get the base tokenizers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        a list of tokenizers, currently includes:</span>
+<span class="sd">        - StrippedWhiteSpaceTokenizer</span>
+<span class="sd">        - NumericTokenizer</span>
+<span class="sd">        - QGramTokenizer(3)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">TOKENIZERS</span></div>
 
 
 
 <div class="viewcode-block" id="get_extra_tokenizers">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.tools.html#MadLib._internal.featurization.get_extra_tokenizers">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.get_extra_tokenizers">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_extra_tokenizers</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    get the extra tokenizers</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        a list of extratokenizers, currently includes:</span>
+<span class="sd">        - AlphaNumericTokenizer</span>
+<span class="sd">        - QGramTokenizer(5)</span>
+<span class="sd">        - StrippedQGramTokenizer(3)</span>
+<span class="sd">        - StrippedQGramTokenizer(5)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">EXTRA_TOKENIZERS</span></div>
 
 
@@ -201,7 +239,7 @@
 
 
 <div class="viewcode-block" id="create_features">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.tools.html#MadLib._internal.featurization.create_features">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.create_features">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_features</span><span class="p">(</span>
     <span class="n">A</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
     <span class="n">B</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span>
@@ -324,15 +362,15 @@
 
 
 <div class="viewcode-block" id="featurize">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.tools.html#MadLib._internal.featurization.featurize">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.featurize">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">featurize</span><span class="p">(</span>
     <span class="n">features</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">],</span>
     <span class="n">A</span><span class="p">,</span>
     <span class="n">B</span><span class="p">,</span>
     <span class="n">candidates</span><span class="p">,</span>
-    <span class="n">output_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;features&#39;</span><span class="p">,</span>
+    <span class="n">output_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;feature_vectors&#39;</span><span class="p">,</span>
     <span class="n">fill_na</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    applies the featurizer to the record pairs in candidates</span>
 
@@ -347,16 +385,21 @@
 <span class="sd">    candidates : Union[pd.DataFrame, SparkDataFrame]</span>
 <span class="sd">        id pairs of A and B that are potential matches</span>
 <span class="sd">    output_col : str</span>
-<span class="sd">        the name of the column for the resulting feature vectors, default `fvs`</span>
+<span class="sd">        the name of the column for the resulting feature vectors, default `feature_vectors`</span>
 <span class="sd">    fill_na : float</span>
 <span class="sd">        value to fill in for missing data, default 0.0</span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    pandas DataFrame</span>
+<span class="sd">    Union[pd.DataFrame, SparkDataFrame]</span>
 <span class="sd">        DataFrame with feature vectors created with the following schema:</span>
-<span class="sd">        (`id2`, `id1`, `fv`, other columns from candidates)</span>
+<span class="sd">        (`id2`, `id1`, `fv`, other columns from candidates).</span>
+<span class="sd">        Returns pandas DataFrame if inputs A and B are pandas DataFrames,</span>
+<span class="sd">        otherwise returns Spark DataFrame.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">return_pandas</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+    <span class="n">spark</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;spark.sql.execution.arrow.pyspark.enabled&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">)</span>
+    <span class="n">return_pandas</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
         <span class="n">A</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
@@ -365,9 +408,42 @@
         <span class="n">candidates</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span><span class="n">candidates</span><span class="p">)</span>
     <span class="n">table_a_preproc</span><span class="p">,</span> <span class="n">table_b_preproc</span> <span class="o">=</span> <span class="n">_build</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span>
     <span class="n">fvs</span> <span class="o">=</span> <span class="n">_gen_fvs</span><span class="p">(</span><span class="n">candidates</span><span class="p">,</span> <span class="n">table_a_preproc</span><span class="p">,</span> <span class="n">table_b_preproc</span><span class="p">,</span> <span class="n">output_col</span><span class="p">,</span> <span class="n">fill_na</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span>
-    <span class="n">fvs</span> <span class="o">=</span> <span class="n">fvs</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">fvs</span></div>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;scoring feature vectors&#39;</span><span class="p">)</span>
+    <span class="n">positively_correlated</span> <span class="o">=</span> <span class="n">_get_pos_cor_features</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
 
+    <span class="n">fvs</span> <span class="o">=</span> <span class="n">_score_fvs</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">output_col</span><span class="p">,</span> <span class="n">positively_correlated</span><span class="p">)</span>    
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;scored feature vectors&#39;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">fvs</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span> <span class="k">if</span> <span class="n">return_pandas</span> <span class="k">else</span> <span class="n">fvs</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_pos_cor_features</span><span class="p">(</span><span class="n">features</span><span class="p">):</span>
+    <span class="n">positively_correlated_features</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;exact_match&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;needleman_wunch&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;smith_waterman&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;jaccard&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;overlap_coeff&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;cosine&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;monge_elkan_jw&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;tf_idf&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;sif&#39;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="p">[</span><span class="mi">1</span> <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="k">for</span> <span class="n">prefix</span> <span class="ow">in</span> <span class="n">positively_correlated_features</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">features</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_score_fvs</span><span class="p">(</span><span class="n">fvs</span><span class="p">,</span> <span class="n">output_col</span><span class="p">,</span> <span class="n">positively_correlated</span><span class="p">):</span>
+    <span class="n">pos_cor_array</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">F</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">positively_correlated</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">fvs</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;score&quot;</span><span class="p">,</span> <span class="n">F</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
+        <span class="n">F</span><span class="o">.</span><span class="n">zip_with</span><span class="p">(</span><span class="n">output_col</span><span class="p">,</span> <span class="n">pos_cor_array</span><span class="p">,</span> 
+                    <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">F</span><span class="o">.</span><span class="n">nanvl</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">F</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span> <span class="o">*</span> <span class="n">y</span><span class="p">),</span>
+                    <span class="n">F</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span> 
+                    <span class="k">lambda</span> <span class="n">acc</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">acc</span> <span class="o">+</span> <span class="n">x</span><span class="p">)</span>
+                    <span class="p">)</span>
+            <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_build</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">features</span><span class="p">):</span>
@@ -518,8 +594,6 @@
     <span class="k">return</span> <span class="n">f_mat</span>
 
 
-<div class="viewcode-block" id="score">
-<a class="viewcode-back" href="../../../module_stubs/MadLib._internal.featurization.score.html#MadLib._internal.featurization.score">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">score</span><span class="p">(</span>
         <span class="n">fvs</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
         <span class="n">features</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
@@ -535,8 +609,7 @@
 <span class="sd">    features : pandas DataFrame</span>
 <span class="sd">        a DataFrame containing initialized feature objects for columns in A, B                      </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">pass</span></div>
-
+    <span class="k">pass</span>
 </pre></div>
 
            </div>
