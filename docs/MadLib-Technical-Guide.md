@@ -6,7 +6,7 @@ This document provides a quick overview of the functions in MadLib: how they wor
 
 We start by discussing the basic concepts underlying MadLib. You can skip this section if you are already familiar with them. 
 
-Let A and B be two tables that we want to match, that is, find tuple pairs (x,y) where tuple x of A matches tuple y of B. We refer to such pair (x,y) as a match. We assume blocking has been performed on A and B, producing a set C of candidate tuple pairs (we call these pairs "candidates" because each may be a candidata for a match). 
+Let A and B be two tables that we want to match, that is, find tuple pairs (x,y) where tuple x of A matches tuple y of B. We refer to such pair (x,y) as a <u>match</u>. We assume blocking has been performed on A and B, producing a set C of <u>candidate tuple pairs</u> (we call these pairs "candidates" because each may be a candidata for a match). 
 
 Now we enter the matching step, in which we will apply a rule- or machine-learning (ML) based matcher to each pair (x,y) in C to predict match/non-match. Today ML-based matchers are most common, so in MadLib we provide support for these matchers. The overall matching workflow is as follows: 
 
