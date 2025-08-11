@@ -274,9 +274,6 @@ Intuitively, the sample contains the top-scoring rows of all the buckets. The to
    ```
 
 ### create_seeds()
-
-What it does: Creates initial training examples when you don't have any labeled data yet. Seeds are the starting point for teaching your model what matches look like.
-
 ```python
 def create_seeds(
     fvs: Union[pd.DataFrame, SparkDataFrame],  # Your feature vectors
@@ -285,6 +282,10 @@ def create_seeds(
     score_column: str = 'score'                # Column with similarity scores
 ) -> pd.DataFrame
 ```
+This function selects 'nseeds' rows from a set of feature vectors 'fvs', then asks the user to label these rows as match/non-match, using a 'labeler' object. This function is typically used to provide a set of 'nseeds' labeled examples for the first iteration of active learning (which typically examines 'fvs' to find more rows to label, to create training data for the matcher). 
+* 
+ 
+
 
 **Parameter Explanations:**
 
