@@ -6,8 +6,9 @@ Labeling only with the dblp_acm dataset.
 import warnings
 from pyspark.sql import SparkSession
 from pathlib import Path
+import pyspark.sql.functions as F
 # Import MadLib functions
-from MadLib import WebUILabeler, save_dataframe, load_dataframe
+from MadLib import WebUILabeler, save_dataframe, load_dataframe, label_pairs
 warnings.filterwarnings('ignore')
 
 spark = SparkSession.builder \
@@ -22,7 +23,8 @@ table_a = spark.read.parquet(str(data_dir / 'table_a.parquet'))
 table_b = spark.read.parquet(str(data_dir / 'table_b.parquet'))
 candidates = spark.read.parquet(str(data_dir / 'cand.parquet'))
 candidates = candidates.withColumnRenamed('_id', 'id2').withColumnRenamed('ids', 'id1_list')
-candidates = candidates.select('id2', 'id1_list')
+# explode the id1_list column to get id2, id1 pairs
+candidates = candidates.select('id2', F.explode('id1_list').alias('id1'))
 
 # with default settings, you can open the web UI labeler by going to:
 # http://{public ip of spark master node}:8501
@@ -33,29 +35,17 @@ labeler = WebUILabeler(
     id_col='_id'
 )
 
-label = 0
-labeled_candidates = []
-for row in candidates.collect():
-    id2 = row.id2
-    id1_list = row.id1_list
-    for id1 in id1_list:
-        label = labeler(id1, id2)
-        if label == -1.0:   # -1.0 means the user wants to stop labeling
-            break
-        labeled_candidates.append({
-            'id1': id1,
-            'id2': id2,
-            'label': label
-        })
-    if label == -1.0:   # -1.0 means the user wants to stop labeling
-        break
+labeled_pairs = label_pairs(
+    labeler=labeler,
+    pairs=candidates
+)
 
-labeled_candidates = spark.createDataFrame(labeled_candidates)
+labeled_pairs = spark.createDataFrame(labeled_pairs)
 
 # Save the labeled pairs to a parquet file on the master node
-save_path = str(data_dir / 'labeled_candidates.parquet')
-save_dataframe(labeled_candidates, save_path)
+save_path = str(data_dir / 'labeled_pairs.parquet')
+save_dataframe(labeled_pairs, save_path)
 
-# to load the labeled candidates back in from the master node:
-labeled_candidates = load_dataframe(save_path, 'sparkdf')
-labeled_candidates.show()
+# to load the labeled pairs back in from the master node:
+labeled_pairs = load_dataframe(save_path, 'sparkdf')
+labeled_pairs.show()

@@ -373,17 +373,18 @@ def label_pairs(
     """
     if isinstance(pairs, pd.DataFrame):
         label = 0
-        labeled_pairs = pd.DataFrame()
+        labeled_pairs = []
         id1_col, id2_col = pairs.columns[0], pairs.columns[1]
         for _, row in pairs.iterrows():
             label = labeler(row[id1_col], row[id2_col])
             if label == -1.0:   # -1.0 means the user wants to stop labeling
                 break
-            labeled_pairs = labeled_pairs.append({
+            labeled_pairs.append({
                 id1_col: row[id1_col],
                 id2_col: row[id2_col],
                 'label': label
             })
+        labeled_pairs = pd.DataFrame(labeled_pairs)
     elif isinstance(pairs, SparkDataFrame):
         spark = SparkSession.builder.getOrCreate()
         labeled_pairs = []

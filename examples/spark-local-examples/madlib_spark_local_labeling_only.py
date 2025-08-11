@@ -5,8 +5,9 @@ Labeling only with the dblp_acm dataset.
 
 import warnings
 from pyspark.sql import SparkSession
+import pyspark.sql.functions as F
 # Import MadLib functions
-from MadLib import CLILabeler, WebUILabeler, save_dataframe, load_dataframe
+from MadLib import CLILabeler, WebUILabeler, save_dataframe, load_dataframe, label_pairs
 warnings.filterwarnings('ignore')
 
 spark = SparkSession.builder \
@@ -20,7 +21,8 @@ table_a = spark.read.parquet('../data/dblp_acm/table_a.parquet')
 table_b = spark.read.parquet('../data/dblp_acm/table_b.parquet')
 candidates = spark.read.parquet('../data/dblp_acm/cand.parquet')
 candidates = candidates.withColumnRenamed('_id', 'id2').withColumnRenamed('ids', 'id1_list')
-candidates = candidates.select('id2', 'id1_list')
+# explode the id1_list column to get id2, id1 pairs
+candidates = candidates.select('id2', F.explode('id1_list').alias('id1'))
 
 # Create CLI labeler
 labeler = CLILabeler(
@@ -38,28 +40,14 @@ labeler = WebUILabeler(
 )
 """
 
-label = 0
-labeled_candidates = []
-for row in candidates.collect():
-    id2 = row.id2
-    id1_list = row.id1_list
-    for id1 in id1_list:
-        label = labeler(id1, id2)
-        if label == -1.0:   # -1.0 means the user wants to stop labeling
-            break
-        labeled_candidates.append({
-            'id1': id1,
-            'id2': id2,
-            'label': label
-        })
-    if label == -1.0:   # -1.0 means the user wants to stop labeling
-        break
-
-labeled_candidates = spark.createDataFrame(labeled_candidates)
+labeled_pairs = label_pairs(
+    labeler=labeler,
+    pairs=candidates
+)
 
 # Save the labeled pairs to a parquet file
-save_dataframe(labeled_candidates, 'labeled_candidates.parquet')
+save_dataframe(labeled_pairs, 'labeled_pairs.parquet')
 
-# to load the labeled candidates back in:
-labeled_candidates = load_dataframe('labeled_candidates.parquet', 'sparkdf')
-labeled_candidates.show()
+# to load the labeled pairs back in:
+labeled_pairs = load_dataframe('labeled_pairs.parquet', 'sparkdf')
+labeled_pairs.show()
