@@ -22,7 +22,10 @@ _See [Built-in Labeler Classes](#built-in-labeler-classes) for available options
 * `pairs`: A Pandas or Spark dataframe that specifies a set of pairs of record IDs. This DataFrame must have at least two columns:
   - `column 1`: Record IDs from table A
   - `column 2`: Record IDs from table B
-  - 
+  
 The columns may be named anything, but the first column must have the records IDs from table A and the second column must have the record IDs from table B.
 Table A and Table B are specified as `a_df` and `b_df`, respectively, when you create your labeler object.
-If there are more than two columns, only the first two columns will be considered. The rest will be ignored and are not for labeling data.
+If there are more than two columns, only the first two columns will be considered. The rest will be ignored.
+
+**What label_pairs returns:**
+A Pandas or Spark DataFrame with the columns `column 1`, `column 2`, `label`. `column 1` and `column 2` will be the names of the first and second columns from the `pairs` DataFrame. The return type (Pandas or Spark DataFrame) will match the input type of `pairs`. 
