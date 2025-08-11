@@ -249,38 +249,15 @@ def down_sample(
 ) -> Union[pd.DataFrame, SparkDataFrame]
 ```
 As discussed earlier, if the candidates set (the output of blocking) is large (e.g., having 50M+ examples), then performing certain operations, such as active learning, on it takes a long time. In such cases, we may want to perform these operations on a sample of the candidates set instead. This function returns such a sample. This is not a random sample because a random sample is likely to contain very few true matches, making it unsuitable for training a matcher. 
-* fvs is a Pandas or Spark dataframe where each row contains a feature vector. This dataframe must also contain a column named in score_column. We will use this column to sample.
-* 
+* 'fvs' is a Pandas or Spark dataframe where each row contains a feature vector. This dataframe must contain a column named in score_column and a column named in search_id_column. We will use these two columns to sample (see below). Typically fvs is the dataframe output by the featurize() function. 
+* 'percent' is a number in [0,1] indicating the size of the sample as a fraction of the size of 'fvs'. For example 'percent = 0.1' means we want the sample's size to be 10% of the size of 'fvs'. The smaller the sample size, the faster downstream operations that use the sample will run, but we may also lose important patterns in 'fvs'.
+* 'search_id_column' is the ID column in 'fvs'. Its values uniquely identify the rows of 'fvs'. Note that if you use featurize() to create 'fvs', then featurize() automatically adds an ID column called '_id' to 'fvs'.
+* 'score_column' is a column in 'fvs' that contains a numeric score for each row. This score must be such that the higher the score, the more likely that the row is a match (recall that each row of 'fvs' refers to a pair of records from A and B). If you use featurize() to create 'fvs', then featurize() automatically add such a column called 'score'.
+* 'bucket_size' is a parameter used by down_sample, as we describe below. 
 
-**Parameter Explanations:**
-
-`fvs`: Your feature vectors dataset
-
-- What it is: A DataFrame containing feature vectors - can be pandas or Spark DataFrame
-- Required content: Must contain feature vectors and similarity scores for record pairs
-- Schema expectation: Must have an id column that uniquely identifies each row ('\_id' if this is the output from the featurize() function) and a column with similarity scores ('score' if this is the output from the featurize() function)
-- Purpose: This is the data you want to reduce in size while maintaining representativeness
-
-`percent`: Fraction of data to keep
-
-- What it is: A decimal number between 0.0 and 1.0 representing how much data to retain
-- Example values: 0.1 = keep 10%, 0.5 = keep 50%, 0.8 = keep 80%
-- Purpose: Controls the size reduction - smaller values create smaller, faster-to-process datasets
-- Trade-off consideration: Smaller percentages run faster but may lose important patterns
-
-`search_id_column`: Unique identifier for each comparison
-
-- What it is: String name of the column that uniquely identifies each record pair comparison
-- Purpose: Ensures each comparison can be uniquely tracked during the sampling process
-- Requirements: Values in this column must be unique across all rows
-- Default value (if you used featurize()): '\_id'
-
-`score_column`: Similarity score column name
-
-- What it is: String name of the column containing similarity scores for each record pair
-- Data type expected: Numeric values where higher numbers indicate greater similarity
-- Purpose: Used to create stratified samples across different similarity levels
-- Default value (if you used featurize()): 'score'
+**How down_sample Works:** This function works as follows: 
+1. Scans through all rows in 'fvs' and assigns the rows into a set of buckets, using a hash function on the values of 'search_id_column'. It ensures that the size of each bucket never exceeds 'bucket_size'.
+2. For each bucket of size *n*, the function first sorts the rows in that bucket in decreasing order of 
 
 `bucket_size`: Hash bucket size for representative sampling
 
