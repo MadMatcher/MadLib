@@ -239,9 +239,6 @@ We can visualize the resulting dataframe as the following table:
 The output dataframe also has a column '_id', which assigns an ID to each record pair. This column will be used by downstream functions, such as down_sample and others. 
 
 ### down_sample()
-
-What it does: When you have large datasets, this function can be helpful to sample data while preserving high-scoring and low-scoring combinations.
-
 ```python
 def down_sample(
     fvs: Union[pd.DataFrame, SparkDataFrame],  # Your feature vectors
@@ -251,6 +248,9 @@ def down_sample(
     bucket_size: int = 1000                    # Hash bucket size for representative sampling
 ) -> Union[pd.DataFrame, SparkDataFrame]
 ```
+As discussed earlier, if the candidates set (the output of blocking) is large (e.g., having 50M+ examples), then performing certain operations, such as active learning, on it takes a long time. In such cases, we may want to perform these operations on a sample of the candidates set instead. This function returns such a sample. This is not a random sample because a random sample is likely to contain very few true matches, making it unsuitable for training a matcher. 
+* fvs is a Pandas or Spark dataframe where each row contains a feature vector. This dataframe must also contain a column named in score_column. We will use this column to sample.
+* 
 
 **Parameter Explanations:**
 
