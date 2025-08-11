@@ -27,7 +27,8 @@ from .tools import (
     save_features,
     load_features,
     save_dataframe,
-    load_dataframe
+    load_dataframe,
+    label_pairs
 )
 
 __all__ = [
@@ -55,6 +56,7 @@ __all__ = [
     'train_matcher',
     'apply_matcher',
     'label_data',
+    'label_pairs',
     'save_features',
     'load_features',
     'save_dataframe',

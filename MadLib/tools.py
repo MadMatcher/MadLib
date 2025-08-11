@@ -11,6 +11,7 @@ from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
 from pyspark.sql.window import Window
 from pyspark.sql import DataFrame as SparkDataFrame
+from pyspark.sql.types import StructType, StructField, DoubleType
 from sklearn.base import BaseEstimator
 import xxhash
 import numpy as np
@@ -46,6 +47,7 @@ __all__ = [
     'train_matcher',
     'apply_matcher',
     'label_data',
+    'label_pairs',
     'save_features',
     'load_features',
     'save_dataframe',
@@ -350,6 +352,65 @@ def label_data(
         labeled_data = convert_arrays_for_spark(labeled_data)
         return spark.createDataFrame(labeled_data)
 
+
+def label_pairs(
+        labeler: Labeler,
+        pairs: Union[pd.DataFrame, SparkDataFrame]
+) -> Union[pd.DataFrame, SparkDataFrame]:
+    """Label pairs without active learning.
+
+    Parameters
+    ----------
+    labeler : Labeler
+        A Labeler instance
+    pairs : Union[pd.DataFrame, SparkDataFrame]
+        The pairs to label
+
+    Returns
+    -------
+    Union[pd.DataFrame, SparkDataFrame]
+        DataFrame with labeled pairs
+    """
+    if isinstance(pairs, pd.DataFrame):
+        label = 0
+        labeled_pairs = pd.DataFrame()
+        id1_col, id2_col = pairs.columns[0], pairs.columns[1]
+        for _, row in pairs.iterrows():
+            label = labeler(row[id1_col], row[id2_col])
+            if label == -1.0:   # -1.0 means the user wants to stop labeling
+                break
+            labeled_pairs = labeled_pairs.append({
+                id1_col: row[id1_col],
+                id2_col: row[id2_col],
+                'label': label
+            })
+    elif isinstance(pairs, SparkDataFrame):
+        spark = SparkSession.builder.getOrCreate()
+        labeled_pairs = []
+        id1_col, id2_col = pairs.columns[0], pairs.columns[1]
+        for row in pairs.collect():
+            label = labeler(row[id1_col], row[id2_col])
+            if label == -1.0:   # -1.0 means the user wants to stop labeling
+                break
+            labeled_pairs.append({
+                id1_col: row[id1_col],
+                id2_col: row[id2_col],
+                'label': float(label)
+            })
+        if labeled_pairs:
+            labeled_pairs = spark.createDataFrame(labeled_pairs)
+        else:
+            # Create empty DF with the correct schema
+            id1_type = pairs.schema[id1_col].dataType
+            id2_type = pairs.schema[id2_col].dataType
+            schema = StructType([
+                StructField(id1_col, id1_type, True),
+                StructField(id2_col, id2_type, True),
+                StructField('label', DoubleType(), True)
+            ])
+            labeled_pairs = spark.createDataFrame([], schema)
+
+    return labeled_pairs
 
 def save_features(features, path):
     """
