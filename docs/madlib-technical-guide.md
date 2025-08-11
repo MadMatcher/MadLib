@@ -257,39 +257,12 @@ As discussed earlier, if the candidates set (the output of blocking) is large (e
 
 **How down_sample Works:** This function works as follows: 
 1. Scans through all rows in 'fvs' and assigns the rows into a set of buckets, using a hash function on the values of 'search_id_column'. It ensures that the size of each bucket never exceeds 'bucket_size'.
-2. For each bucket of size *n*, the function first sorts the rows in that bucket in decreasing order of 
+2. For each bucket of size *n*, the function first sorts the rows in that bucket in decreasing order of score in 'score_column', then takes the top *n.'percent'* rows in that order.
+3. The function returns the union of all the rows taken from the buckets to be the desired sample.
 
-`bucket_size`: Hash bucket size for representative sampling
+Intuitively, the sample contains the top-scoring rows of all the buckets. The top-scoring rows are likely to contain matches, and so the sample is likely to contain a reasonable number of matches. The above function performs Steps 1-3 using Spark to save time. 
 
-- What it is: Integer specifying the target size of each hash bucket for data partitioning
-- Default value: 1000 records per bucket
-- Purpose: Controls how the data is split into buckets for representative sampling - larger buckets provide more granular sampling
-- When to adjust: Use smaller values for more granular sampling, larger values for faster processing
-
-**Why you may need downsampling:**
-
-- Large datasets are slow to process
-- You want to train models on manageable amounts of data
-- You need to maintain the same patterns in a smaller dataset
-
-**How it works:**
-
-1. **Score Analysis**: Looks at your similarity scores to understand the distribution
-
-   ```python
-   # Example score distribution in your data
-   # Note: Interpretation depends on your similarity functions
-   # You need to understand what your scoring functions return:
-   # - Some functions return higher scores for more similar items
-   # - Some functions return higher scores for less similar items
-   # - Some functions have different ranges (0-1, 0-100, etc.)
-   high_scores = [0.95, 0.94, 0.93, 0.92, 0.91]      # Likely matches (depending on your scoring)
-   medium_scores = [0.7, 0.6, 0.5, 0.4, 0.35]        # Uncertain cases
-   low_scores = [0.3, 0.2, 0.1, 0.05, 0.02]          # Likely non-matches (depending on your scoring)
-   ```
-
-2. **Stratified Sampling**: Takes the top 'percent' scoring records from each bucket as the sample
-
+**Example:** The following code returns 10% of 'feature_vectors' as the sample:
    ```python
    sampled_data = down_sample(
        feature_vectors,
@@ -298,8 +271,6 @@ As discussed earlier, if the candidates set (the output of blocking) is large (e
        score_column='similarity',      # Your similarity score column
        bucket_size=500                 # The number of records in each bucket
    )
-
-   # If you had 100,000 pairs, you'll get 10,000 pairs
    ```
 
 ### create_seeds()
