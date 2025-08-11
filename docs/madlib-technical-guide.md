@@ -83,7 +83,6 @@ The above function returns a list of features. Each feature is an executable obj
 **Example:** Suppose A has columns `['_id', 'name', 'address', 'phone']` and B has columns `['_id', 'name', 'address', 'phone', 'comment']`. Then both a_cols and b_cols can be `['name', 'address', 'phone']`, meaning we only want to create features involving these columns. Suppose null_threshold = 0.6, and suppose that column 'phone' has more than 70% of its values missing. Then we drop 'phone' and will create features involving just 'name' and 'address'. 
 
 **Creating Features for the Default Case:** If the parameter sim_function has value None, then we use a set of default similarity functions. As of now this set is the following five functions:
-
  - `TFIDFFeature`: Term frequency-inverse document frequency similarity
  - `JaccardFeature`: Set-based similarity using intersection over union
  - `SIFFeature`: Smooth inverse frequency similarity
@@ -91,7 +90,6 @@ The above function returns a list of features. Each feature is an executable obj
  - `CosineFeature`: Vector space cosine similarity
 
 If the parameter tokenizers has value None, then we use a set of default tokenizers. As of now this set is the following three functions: 
-
 - `StrippedWhiteSpaceTokenizer()`: Splits on whitespace and normalizes
 - `NumericTokenizer()`: Extracts numeric values from text
 - `QGramTokenizer(3)`: Creates 3-character sequences (3-grams)
@@ -121,45 +119,28 @@ In this case, we create the features as follows:
    CosineFeature(column_name, column_name, tokenizer=tokenizer)
    ```
 
-   d) **Special Features for AlphaNumeric Tokenizer**:  
-   Additional features for alphanumeric data
+**Creating Features for Other Cases:** You can add more similarity functions using the parameter sim_functions and more tokenizers using the parameter tokenizers.
 
-   ```python
-   # Only for AlphaNumericTokenizer with avg_count <= 10:
-   MongeElkanFeature(column_name, column_name, tokenizer=tokenizer)
-   EditDistanceFeature(column_name, column_name)
-   SmithWatermanFeature(column_name, column_name)
-   ```
-
-3. **Default Tokenizers and Similarity Functions**  
-   When no custom tokenizers or similarity functions are provided:
-
-   **Default Tokenizers:**
-
-   - `StrippedWhiteSpaceTokenizer()`: Splits on whitespace and normalizes
-   - `NumericTokenizer()`: Extracts numeric values from text
-   - `QGramTokenizer(3)`: Creates 3-character sequences (3-grams)
-
-   **Default Similarity Functions:**
-
-   - `TFIDFFeature`: Term frequency-inverse document frequency similarity
-   - `JaccardFeature`: Set-based similarity using intersection over union
-   - `SIFFeature`: Smooth inverse frequency similarity
-   - `OverlapCoeffFeature`: Set overlap coefficient
-   - `CosineFeature`: Vector space cosine similarity
-
-4. **Extra Tokenizers**  
-   If a user wants more tokenizers, we provide the following extra implemented tokenizers:
+In particular, we provide the following extra tokenizers that you can use: 
 
    - `AlphaNumericTokenizer()`: Extracts alphanumeric sequences
    - `QGramTokenizer(5)`: Creates 5-character sequences (5-grams)
    - `StrippedQGramTokenizer(3)`: Creates 3-grams with whitespace stripped
    - `StrippedQGramTokenizer(5)`: Creates 5-grams with whitespace stripped
 
-5. **Feature Creation Example**
+In this case, we create the features as follows: 
+* We still create the exact match features and the numeric features, as described in the default case.
+* We still create the token-based features, as in the default case. But now we do this for all tokenizers and similarity functions, including the extra ones.
+* Finally, we create the following special features if you have selected the AlphaNumeric tokenizer to be an extra tokenizer. 
+   ```python
+   # Only for AlphaNumericTokenizer with avg_count <= 10:
+   MongeElkanFeature(column_name, column_name, tokenizer=tokenizer)
+   EditDistanceFeature(column_name, column_name)
+   SmithWatermanFeature(column_name, column_name)
+   ```
+**Example:** The following is a simple example of creating features:
 
    ```python
-   # Real-world example - note that a_cols and b_cols must be the same
    features = create_features(
        customers_df, prospects_df,
        ['name', 'address', 'revenue'],
@@ -170,7 +151,7 @@ In this case, we create the features as follows:
    # 1. All columns get ExactMatchFeature
    # 2. If 'revenue' is numeric, it gets RelDiffFeature
    # 3. For each tokenizer (Defaults: StrippedWhiteSpace, Numeric, QGram):
-   #    - If average token count >= 3 over the column, creates all 5 similarity functions
+   #    - If average token count >= 3 over the column, creates features for all 5 similarity functions
    #    - If using AlphaNumericTokenizer and the average token count <= 10 over the column, it adds 3 extra features:
    #      * MongeElkanFeature: String similarity using Jaro-Winkler
    #      * EditDistanceFeature: Levenshtein edit distance
