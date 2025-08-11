@@ -58,22 +58,31 @@ Later we provide Python scripts for five such workflows. More workflows can be c
 We now describe the core functions that you can combine to create a variety of EM workflows.
 
 ### create_features()
-
-This function uses heuristics that analyzes the columns of Tables A and B to create a set of features. The features uses a combination of similarity functions and tokenizers. See [here](./sim-functions-tokenizers.md) for a brief discussion of similarity functions and tokenizers for MadLib.
-
 ```python
 def create_features(
     A: Union[pd.DataFrame, SparkDataFrame],                               # Your first dataset
     B: Union[pd.DataFrame, SparkDataFrame],                               # Your second dataset
     a_cols: List[str],                             # Columns from A to compare
     b_cols: List[str],                             # Columns from B to compare
-    sim_functions: Optional[List[Callable]] = None, # Custom similarity functions
-    tokenizers: Optional[List[Tokenizer]] = None,  # Custom tokenizers
+    sim_functions: Optional[List[Callable]] = None, # Extra similarity functions
+    tokenizers: Optional[List[Tokenizer]] = None,  # Extra tokenizers
     null_threshold: float = 0.5                    # Max null percentage allowed
 ) -> List[Callable]
 ```
 
-**Parameter Explanations:**
+This function uses heuristics that analyzes the columns of Tables A and B to create a set of features. The features uses a combination of similarity functions and tokenizers. See [here](./sim-functions-tokenizers.md) for a brief discussion of similarity functions and tokenizers for MadLib.
+
+* Parameters A and B are Pandas or Spark dataframes that are the two tables to match. Both dataframes must contain an `_id` column.
+* a_cols and b_cols are lists of column names from A and B. We use these columns to create features. As of now, a_cols and b_cols must be the same list. But in the future we will modify the function create_features to handle the case where these two lists can be different.
+* sim_functions is a list of extra sim_functions (in addition to the default sim functions used by MadLib, see below).
+* tokenizers is the list of extra tokenizers (in addition to the default tokenizers used by MadLib, see below).
+* null_threshold is a number in [0,1] specifying the maximal fraction of missing values allowed in a column. MadLib automatically excludes columns with too much missing data from feature generation (see below).
+
+The above function returns a list of features. Each feature is an executable object (as indicated by the `Callable` keyword). 
+
+**Example:** Suppose A has columns `['_id', 'name', 'address', 'phone']` and B has columns `['_id', 'name', 'address', 'phone', 'comment']`. Then both a_cols and b_cols can be `['name', 'address', 'phone']`, meaning we only want to create features involving these columns. Suppose null_threshold = 0.6, and suppose that column 'phone' has more than 70% of its values missing. Then we drop 'phone' and will create features involving just 'name' and 'address'. 
+
+**How Features are Created:**
 
 `A`: Your first dataset (DataFrame)
 
