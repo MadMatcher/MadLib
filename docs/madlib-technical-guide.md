@@ -72,7 +72,7 @@ def create_features(
 
 This function uses heuristics that analyzes the columns of Tables A and B to create a set of features. The features uses a combination of similarity functions and tokenizers. See [here](./sim-functions-tokenizers.md) for a brief discussion of similarity functions and tokenizers for MadLib.
 
-* Parameters A and B are Pandas or Spark dataframes that are the two tables to match. Both dataframes must contain an `_id` column.
+* Parameters A and B are Pandas or Spark dataframes (depending on whether your runtime environment is Pandas on a single machine, Spark on a single machine, or Spark on a cluster of machines). They are the two tables to match. Both dataframes must contain an `_id` column.
 * a_cols and b_cols are lists of column names from A and B. We use these columns to create features. As of now, a_cols and b_cols must be the same list. But in the future we will modify the function create_features to handle the case where these two lists can be different.
 * sim_functions is a list of extra sim_functions (in addition to the default sim functions used by MadLib, see below).
 * tokenizers is the list of extra tokenizers (in addition to the default tokenizers used by MadLib, see below).
@@ -82,89 +82,38 @@ The above function returns a list of features. Each feature is an executable obj
 
 **Example:** Suppose A has columns `['_id', 'name', 'address', 'phone']` and B has columns `['_id', 'name', 'address', 'phone', 'comment']`. Then both a_cols and b_cols can be `['name', 'address', 'phone']`, meaning we only want to create features involving these columns. Suppose null_threshold = 0.6, and suppose that column 'phone' has more than 70% of its values missing. Then we drop 'phone' and will create features involving just 'name' and 'address'. 
 
-**How Features are Created:**
+**Creating Features for the Default Case:** If the parameter sim_function has value None, then we use a set of default similarity functions. As of now this set is the following five functions:
 
-`A`: Your first dataset (DataFrame)
+ - `TFIDFFeature`: Term frequency-inverse document frequency similarity
+ - `JaccardFeature`: Set-based similarity using intersection over union
+ - `SIFFeature`: Smooth inverse frequency similarity
+ - `OverlapCoeffFeature`: Set overlap coefficient
+ - `CosineFeature`: Vector space cosine similarity
 
-- What it is: Any DataFrame containing records you want to match against dataset B
-- Schema requirement: Must have an `_id` column with unique identifiers for each record
-- Example: A customer database with columns like `['_id', 'name', 'address', 'phone']`
-- Purpose: These are your "candidate" records - potential matches for records in B
+If the parameter tokenizers has value None, then we use a set of default tokenizers. As of now this set is the following three functions: 
 
-`B`: Your second dataset (DataFrame)
+- `StrippedWhiteSpaceTokenizer()`: Splits on whitespace and normalizes
+- `NumericTokenizer()`: Extracts numeric values from text
+- `QGramTokenizer(3)`: Creates 3-character sequences (3-grams)
 
-- What it is: The DataFrame containing records you want to to find matches for
-- Schema requirement: Must have an `_id` column with unique identifiers for each record
-- Example: A prospect database with columns like `['_id', 'name', 'address', 'phone']`
-- Purpose: These are your "reference" records - the ones you want to find duplicates or matches for
+In this case, we create the features as follows: 
 
-`a_cols`: Column names from dataset A to use for comparison
-
-- What it is: List of strings specifying which columns from A contain the data you want to compare
-- Purpose: Tells the system which columns in A contain meaningful information for matching
-- Example: `['name', 'address', 'phone']` - these are the columns that will help identify if two records represent the same entity
-- Requirement: These columns must be the same as the columns for b_cols
-
-`b_cols`: Column names from dataset B to use for comparison
-
-- What it is: List of strings specifying which columns from B contain the data you want to compare
-- Purpose: Tells the system which columns in B contain meaningful information for matching
-- Example: `['name', 'address', 'phone']` - these are the columns that will help identify if two records represent the same entity
-- Requirement: These columns must be the same as the columns for a_cols
-
-_Discussion: Tables A and B can be Pandas or Spark DataFrame, depending on whether your runtime environment is Pandas on a single machine, Spark on a single machine, or Spark on a cluster of machines. Further, as of now, we require a_cols and b_cols to be the same list of column names. But in the future this function will be extended so that it can handle the case where these two lists are different._
-
-`sim_functions`: Custom similarity functions (optional)
-
-- What it is: List of function objects that define how to compute similarity between values. These are the custom similarity functions provided by the user.
-- Default behavior: If None, uses the default similarity functions supplied by MadLib. These are TF-IDF, Jaccard, SIF, Overlap Coefficient, and Cosine.
-- Purpose: Allows you to customize how the system determines if two values are similar
-- When to customize: When you have domain-specific knowledge about what makes records similar
-
-`tokenizers`: Custom text processing functions (optional)
-
-- What it is: List of tokenizer objects that define how to break text into comparable pieces. These are the custom tokenizers provided by the user.
-- Default behavior: If None, uses the default tokenizers provided by MadLib. These are Stripped Whitespace, Numeric, and 3-gram tokenizers.
-- Purpose: Allows you to customize how text is preprocessed before similarity comparison
-- When to customize: When your data has special formatting or you need specialized text processing
-
-`null_threshold`: Maximum allowed missing data fraction
-
-- What it is: A decimal number between 0.0 and 1.0 representing the maximum fraction of missing values allowed in a column
-- Purpose: Automatically excludes columns with too much missing data from feature generation
-- Example: 0.5 means if more than 50% of values in a column are missing, that column won't be used for feature generation
-- Why it is important: Columns with mostly missing data provide little useful information for matching
-
-Here is roughly how this function create the features.
-
-1. **Column Analysis**
-
-- Identifies numeric columns (integer, float) vs text columns
-- Columns with too many null values (above null_threshold) are excluded
-- Computes average token count for each tokenizer-column combination
-
-2. **Feature Creation Strategy**
-
-   a) **Exact Match Features**: Created for all columns that pass the null threshold
-
-   ```python
-   # Every column gets an exact match feature
-   ExactMatchFeature(column_name, column_name)
-   ```
-
-   b) **Numeric Features**: Created for columns that are detected as numeric
-
-   ```python
-   # Numeric columns get relative difference features
-   RelDiffFeature(column_name, column_name)
-   ```
-
-   c) **Token-based Features**:  
-   Created based on tokenizer analysis
-
+* First, we detect and drop all columns with too many missing values (above null_threshold). Then we analyze the remaining columns to detect their types (e.g., numeric vs text). We also compute the average token count for each tokenizer-column combination.
+* Then we create the following features:
+    + *Exact Match Features*: Created for all columns that pass the null threshold.
+     ```python
+     # Every column gets an exact match feature
+     ExactMatchFeature(column_name, column_name)
+     ```
+   + *Numeric Features*: Created for columns that are detected as numeric.
+     ```python
+     # Numeric columns get relative difference features
+     RelDiffFeature(column_name, column_name)
+     ```
+   + *Token-based Features*: Created based on tokenizer analysis
    ```python
    # For each tokenizer-column combination with avg_count >= 3:
-   # Creates all similarity functions (TF-IDF, Jaccard, SIF, Overlap, Cosine)
+   # Creates the five features using the default similarity functions (TF-IDF, Jaccard, SIF, Overlap, Cosine)
    TFIDFFeature(column_name, column_name, tokenizer=tokenizer)
    JaccardFeature(column_name, column_name, tokenizer=tokenizer)
    SIFFeature(column_name, column_name, tokenizer=tokenizer)
