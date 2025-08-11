@@ -234,7 +234,9 @@ We can visualize the resulting dataframe as the following table:
 | 2 | 12 | [0.8, 0.7, 0.9, 0.75, 0.88] | manual_review | 4.03 | 2 |
 | 2 | 13 | [0.1, 0.05, 0.02, 0.08, 0.12] | manual_review | 0.37 | 3 |
 
-**Discussion:** You can see that the output dataframe has two columns 'score' and '_id'. Column 'score' contains a score for each feature vector, indicating how likely it is that this vector (that is, the record pair corresponding to this vector) is a match. The higher the score, the more likely that the vector is a match. 
+**Discussion:** You can see that the output dataframe has two columns 'score' and '_id'. Column 'score' contains a score for each feature vector, indicating how likely it is that this vector (that is, the record pair corresponding to this vector) is a match. The higher the score, the more likely that the vector is a match. Right now we compute this score by summing up the values of all features we know to be positively correlated with the likelihood of being a match. 
+
+The output dataframe also has a column '_id', which assigns an ID to each record pair. This column will be used by downstream functions, such as down_sample and others. 
 
 ### down_sample()
 
