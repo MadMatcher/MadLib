@@ -28,4 +28,4 @@ Table A and Table B are specified as `a_df` and `b_df`, respectively, when you c
 If there are more than two columns, only the first two columns will be considered. The rest will be ignored.
 
 **What label_pairs returns:**
-A Pandas or Spark DataFrame with the columns `column 1`, `column 2`, `label`. `column 1` and `column 2` will be the names of the first and second columns from the `pairs` DataFrame. For example, if the `pairs` DataFrame had the columns `id1`, `id2, then the returned DataFrame would have the columns `id1`, `id2`, `label`. The return type (Pandas or Spark DataFrame) will match the input type of `pairs`. 
+A Pandas or Spark DataFrame with the columns `column 1`, `column 2`, `label`. `column 1` and `column 2` will be the names of the first and second columns from the `pairs` DataFrame. For example, if the `pairs` DataFrame had the columns `id1`, `id2`, then the returned DataFrame would have the columns `id1`, `id2`, `label`. The return type (Pandas or Spark DataFrame) will match the input type of `pairs`. 
