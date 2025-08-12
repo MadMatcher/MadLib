@@ -575,28 +575,22 @@ def label_data(
 ) -> Union[pd.DataFrame, SparkDataFrame]
 ```
 
-## Saving + Loading Functions
+### Saving and Loading Functions
 
-MadLib provides functions to help you save/load your generated features (from a call to create_features()). MadLib also provides functions to help you save/load DataFrames, no matter if they are Pandas or Spark DataFrames.
-
-### Features
+MadLib provides functions to help you save/load features (e.g., the output of create_features()) and dataframes (e.g., the output of featurize()).
 
 #### save_features(features, path)
-
-Save a list of feature objects to disk using pickle serialization.
-
 ```python
 from MadLib import save_features
-
 
 features: List[Callable]   # List of feature objects to save
 path: str                  # Path where to save the features file
 
 Returns: None
 ```
+This function saves a list of feature objects to disk using pickle serialization.
 
-**Case 1: Using Pandas on a Local Machine to save features**
-
+**Usage Examples:** If you use Pandas or Spark on a local machine to save features: 
 ```python
 from MadLib import save_features
 
@@ -608,27 +602,9 @@ features = create_features(
 
 save_features(features=features, path='./features.pkl')
 ```
-
 This will create a file called 'features.pkl' in the directory where your Python script lives on your local machine.
 
-**Case 2: Using Spark on a Local Machine to save features**
-
-```python
-from MadLib import save_features
-
-features = create_features(
-    customers_df, prospects_df,
-    ['name', 'address', 'revenue'],
-    ['name', 'address', 'revenue']
-)
-
-save_features(features=features, path='./features.pkl')
-```
-
-This will create a file called 'features.pkl' in the directory where your Python script lives on your local machine.
-
-**Case 3: Using Spark on a Cluster to save features**
-
+If you use Spark on a cluster to save features: 
 ```python
 from MadLib import save_features
 from pathlib import Path
@@ -641,13 +617,9 @@ features = create_features(
 
 save_features(features=features, path=str(Path(__file__).parent / 'features.pkl'))
 ```
-
 This will create a file called 'features.pkl' in the directory where your Python script lives (using spark-submit) on your master node.
 
 #### load_features(path)
-
-Load a list of feature objects from disk using pickle deserialization.
-
 ```python
 from MadLib import load_features
 
@@ -655,36 +627,23 @@ path: str                  # Path to the saved features file
 
 Returns: List[Callable]    # List of feature objects
 ```
+This function loads a list of feature objects from disk using pickle deserialization. 
 
-**Case 1: Using Pandas on a Local Machine to load features**
-
+**Usage Example:** If you use Pandas or Spark on a local machine to load the features: 
 ```python
 from MadLib import load_features
 
 features = load(path='./features.pkl')
 ```
-
 This will load in the features list from the 'features.pkl' file in the directory where your Python script lives on your local machine.
 
-**Case 2: Using Spark on a Local Machine to load features**
-
-```python
-from MadLib import load_features
-
-features = load(path='./features.pkl')
-```
-
-This will load in the features list from the 'features.pkl' file in the directory where your Python script lives on your local machine.
-
-**Case 3: Using Spark on a Cluster to save features**
-
+If you use Spark on a cluster to load the features: 
 ```python
 from MadLib import load_features
 from pathlib import Path
 
 features = load(path=str(Path(__file__).parent / 'features.pkl'))
 ```
-
 This will load in the features list from the 'features.pkl' file in the directory where your Python script lives (using spark-submit) on your master node.
 
 ### DataFrames
