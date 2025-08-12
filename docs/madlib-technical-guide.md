@@ -745,40 +745,17 @@ This will load in the feature vectors dataframe from the 'feature_vectors_df.par
 
 ### Built-in Labeler Classes
 
-MadLib provides several built-in labeler classes. You can use these directly or extend them. All labelers inherit from the public `Labeler` abstract class:
+MadLib provides several built-in labeler classes. You can use these directly or extend them. All labelers inherit from the public `Labeler` abstract class.
 
-### GoldLabeler
+#### GoldLabeler
 
-**This labeler can be used in the single machine mode with Pandas.**
+Given a pair of record IDs, this labeler consults the set of gold matches. If the pair of IDs exist in the set, then the labeler returns 1.0 (match), otherwise it returns 0.0 (non-match). This labeler can be used during the development and debugging process, or to compute the matching accuracy. 
 
-**This labeler can be used in the single machine mode with Spark.**
+This labeler can be used in all three settings: running Python on a single machine, running Spark on a single machine, or running Spark on a cluster. 
 
-**This labeler can be used in the cluster mode with Spark.**
-
-**Purpose**: Automated labeling using a gold set of known matches.
-
-**Usage**: `GoldLabeler(gold)`
-
-**Parameters**:
-
-- `gold` (DataFrame): A pandas DataFrame containing known matches with columns `id1` and `id2`
-  - `id1`: Record IDs from dataset A
-  - `id2`: Record IDs from dataset B that match the corresponding `id1` records
-
-**When to use**:
-
-- You have a ground truth dataset of known matches
-- You want to automate the labeling process completely
-- You're testing or validating your matching pipeline
-
-**How it works**:
-
-- Returns `1.0` for record pairs that exist in the gold standard DataFrame
-- Returns `0.0` for all other pairs
-- No human interaction required
-
-**Example**:
-
+To create a labeler of this type, use `GoldLabeler(gold)`, where 'gold' is a Pandas dataframe containing all gold matches with two columns: `id1` refers to the record IDs from Table A, and `id2` refer to the record IDs from Table B that match the corresponding `id1` records.
+ 
+**Usage Example**:
 ```python
 # Create gold standard data
 gold_matches = pd.DataFrame({
@@ -798,15 +775,13 @@ labeled_data = label_data(
 )
 ```
 
-### CLILabeler
+#### CLILabeler
 
-**This labeler can be used in the single machine mode with Pandas. For interactive labeleing, you may also refer to the WebUILabeler, if you choose.**
+Given a pair of record IDs, this labeler retrieves the corresponding tuples, displays them to the command-line interface, asks the user if the tuples match. The labeler returns 1.0, 0.0, 2.0, and -1.0 if the user clicks the "yes" button, "no" button, "unsure" button, and "stop" button, respectively.
 
-**This labeler can be used in the single machine mode with Spark. For interactive labeleing, you may also refer to the WebUILabeler, if you choose.**
+This labeler can be used for running Python or Spark on a single machine. It cannot be used for running Spark on a cluster (for that setting, you need to use the Web labeler, discussed below). 
 
-**This labeler can NOT be used in the cluster mode with Spark. For interactive labeling, you must use the WebUILabeler.**
 
-**Purpose**: Interactive command-line labeling for human review.
 
 **Usage**: `CLILabeler(a_df, b_df, id_col='_id')`
 
