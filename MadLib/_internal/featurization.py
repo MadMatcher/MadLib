@@ -434,7 +434,7 @@ def _preprocess_data(data, pp_for_a, pp_for_b, features):
 def _preprocess(df_itr, pp_for_a, pp_for_b, features):
     preprocess_chunk_size = 100
     for dataframe in df_itr:
-        for start in range(0, len(dataframe), preprocess_chunk_size):  # TODO: 100 used to be self._preprocess_chunk_size, may want to make a variable
+        for start in range(0, len(dataframe), preprocess_chunk_size):
             if start >= len(dataframe):
                 break
             end = min(start + preprocess_chunk_size, len(dataframe))

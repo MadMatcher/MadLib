@@ -205,6 +205,7 @@ def create_seeds(
             if label == -1.0:  # User requested to stop
                 break
             elif label == 2.0:  # User marked as unsure
+                i += 1
                 continue
             elif label == 1.0:  # Positive match
                 pos_count += 1
