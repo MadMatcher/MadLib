@@ -21,7 +21,7 @@ import logging
 import sys
 
 from ._internal.ml_model import MLModel, SKLearnModel, SparkMLModel
-from ._internal.utils import get_logger, convert_arrays_for_spark
+from ._internal.utils import get_logger, convert_arrays_for_spark, save_training_data_streaming, load_training_data_streaming
 from ._internal.labeler import Labeler, CLILabeler, GoldLabeler
 from ._internal.active_learning.ent_active_learner import EntropyActiveLearner
 from ._internal.active_learning.cont_entropy_active_learner import ContinuousEntropyActiveLearner
@@ -132,7 +132,8 @@ def create_seeds(
     fvs: Union[pd.DataFrame, SparkDataFrame],
     nseeds: int,
     labeler: Labeler,
-    score_column: str = 'score'
+    score_column: str = 'score',
+    parquet_file_path: str = 'active-matcher-training-data.parquet'
 ) -> Union[pd.DataFrame, SparkDataFrame]:
     """Create labeled seed examples for active learning.
     
@@ -146,7 +147,8 @@ def create_seeds(
         the labeler object you want to use to assign labels to rows
     score_column : str, default='score'
         the name of the score column in your fvs DataFrame
-        
+    parquet_file_path : str, default='active-matcher-training-data.parquet'
+        The path to save the labeled data to
     Returns
     -------
     Union[pd.DataFrame, SparkDataFrame]
@@ -155,6 +157,25 @@ def create_seeds(
     """
     if nseeds == 0:
         raise ValueError("no seeds would be created")
+    existing_training_data = load_training_data_streaming(parquet_file_path, logger)
+    
+    if existing_training_data is not None:
+        logger.info(f'Found {len(existing_training_data)} existing labeled examples')
+        # Check if we already have enough seeds
+        if len(existing_training_data) >= nseeds:
+            logger.info(f'Already have {len(existing_training_data)} labeled examples, returning existing data')
+            return existing_training_data.head(nseeds)
+        else:
+            logger.info(f'Using {len(existing_training_data)} existing examples, need {nseeds - len(existing_training_data)} more')
+            seeds = existing_training_data.to_dict('records')
+            pos_count = existing_training_data['label'].sum()
+            neg_count = len(existing_training_data) - pos_count
+    else:
+        logger.info(f'No existing labeled examples found, creating new seeds')
+        seeds = []
+        pos_count = 0
+        neg_count = 0
+
     return_pandas = isinstance(fvs, pd.DataFrame)
     # Initialize spark session if needed for SparkDataFrame operations
     spark = None if return_pandas else SparkSession.builder.getOrCreate()
@@ -213,6 +234,8 @@ def create_seeds(
                 neg_count += 1
             ex['label'] = label
             seeds.append(ex)
+            new_seed_df = pd.DataFrame([ex])
+            save_training_data_streaming(new_seed_df, parquet_file_path, logger)
         except StopIteration:
             print("Ran out of examples before reaching nseeds")
             break
@@ -303,6 +326,7 @@ def label_data(
     labeler: Labeler,
     fvs: Union[pd.DataFrame, SparkDataFrame],
     seeds: Optional[Union[pd.DataFrame, SparkDataFrame]] = None,
+    parquet_file_path: str = 'active-matcher-training-data.parquet',
     **learner_kwargs
 ) -> Union[pd.DataFrame, SparkDataFrame]:
     """Generate labeled data using active learning.
@@ -319,6 +343,8 @@ def label_data(
         The data that needs to be labeled
     seeds : Union[pandas DataFrame, SparkDataFrame], optional
         Initial labeled examples to start with
+    parquet_file_path : str, default='active-matcher-training-data.parquet'
+        The path to save the labeled data to
     **learner_kwargs :
         Additional keyword arguments to pass to the active learner constructor. For batch mode, see EntropyActiveLearner (e.g. batch_size, max_iter). For continuous mode, see ContinuousEntropyActiveLearner (e.g. queue_size, max_labeled, on_demand_stop).
         
