@@ -781,33 +781,9 @@ Given a pair of record IDs, this labeler retrieves the corresponding tuples, dis
 
 This labeler can be used for running Python or Spark on a single machine. It cannot be used for running Spark on a cluster (for that setting, you need to use the Web labeler, discussed below). 
 
+ To create a labeler object of this type, use `CLILabeler(a_df, b_df, id_col='_id')`. Here 'a_df' and 'b_df' are two Pandas or Spark dataframes that store the tuples of Tables A and B, respetively. Both dataframes must have ID columns with the name specified in 'id_col' (the default is '_id'). 
 
-
-**Usage**: `CLILabeler(a_df, b_df, id_col='_id')`
-
-**Parameters**:
-
-- `a_df` (DataFrame): Your first dataset (pandas or Spark DataFrame)
-- `b_df` (DataFrame): Your second dataset (pandas or Spark DataFrame)
-- `id_col` (str, default='\_id'): Column name containing unique record identifiers
-  - **When to change**: If your datasets use a different column name for unique IDs
-  - **Example**: Use `id_col='customer_id'` if your ID column is named 'customer_id'
-
-**When to use**:
-
-- You need human judgment for labeling decisions
-- You want to review record pairs interactively
-- You don't have access to a web browser or you prefer command-line tools
-
-**How it works**:
-
-- Displays record pairs side-by-side in the terminal
-- Prompts for user input: `yes` (match), `no` (non-match), `unsure` (skip), or `stop` (end labeling)
-- Shows all available fields by default
-- Returns the appropriate label (1.0, 0.0, or skips the pair)
-
-**Example**:
-
+**Usage Example:**
 ```python
 # Create CLI labeler with custom ID column
 cli_labeler = CLILabeler(
@@ -824,46 +800,25 @@ seeds = create_seeds(
 )
 ```
 
-### WebUILabeler
+#### WebUILabeler
 
-**This labeler can be used in the single machine mode with Pandas.**
+This labeler runs a Flask-based Web server and a Streamlit interface to enable labeling examples in a Web browers. It can be used in all three modes: Python on a single machine, Spark on a single machine, and Spark on a cluster. 
 
-**This labeler can be used in the single machine mode with Spark.**
-
-**This labeler can be used in the cluster mode with Spark.**
-
-**Purpose**: Interactive web-based labeling with a modern Streamlit interface.
-
-**Usage**: `WebUILabeler(a_df, b_df, id_col='_id', flask_port=5005, streamlit_port=8501, flask_host='127.0.0.1')`
-
-**Parameters**:
-
-- `a_df` (DataFrame): Your first dataset (pandas or Spark DataFrame)
-- `b_df` (DataFrame): Your second dataset (pandas or Spark DataFrame)
-- `id_col` (str, default='\_id'): Column name containing unique record identifiers
-  - **When to change**: If your datasets use a different column name for unique IDs
-- `flask_port` (int, default=5005): Port for the Flask backend API
-  - **When to change**: If port 5005 is already in use by another application
-  - **Example**: Use `flask_port=5006` if 5005 is occupied
+To create a labeler object of this type, use `WebUILabeler(a_df, b_df, id_col='_id', flask_port=5005, streamlit_port=8501, flask_host='127.0.0.1')`:
+- `a_df` (DataFrame): a Pandas or Spark dataframe storing the tuples of Table A. 
+- `b_df` (DataFrame): a Pandas or Spark dataframe storing the tuples of Table B. 
+- `id_col` (str, default='\_id'): Both a_df and b_df must have a column with this name, and this column refers to the tuple IDs. 
+- `flask_port` (int, default=5005): Port for the Flask backend API. 
+  - When to change: If port 5005 is already in use by another application
+  - Example: Use `flask_port=5006` if 5005 is occupied
 - `streamlit_port` (int, default=8501): Port for the Streamlit frontend
-  - **When to change**: If port 8501 is already in use by another application
-  - **Example**: Use `streamlit_port=8502` if 8501 is occupied
+  - When to change: If port 8501 is already in use by another application
+  - Example: Use `streamlit_port=8502` if 8501 is occupied
 - `flask_host` (str, default='127.0.0.1'): Host address for the Flask server
-  - **When to change**: If you need to access the interface from other machines on the network
-  - **Example**: Use `flask_host='0.0.0.0'` to allow external access
+  - When to change: If you need to access the interface from other machines on the network
+  - Example: Use `flask_host='0.0.0.0'` to allow external access
 
-**When to use**:
-
-- You prefer a graphical interface over command-line
-- You're working in a Python notebook or web-based environment
-
-**How it works**:
-
-- Automatically starts a Flask backend server and Streamlit frontend
-- Provides side-by-side record comparison with field selection
-
-**Case 1: Using with Pandas on a single machine**:
-
+**Example for Running Python on a Single Machine:**
 ```python
 # Create web labeler with custom configuration
 web_labeler = WebUILabeler(
@@ -884,12 +839,9 @@ labeled_data = label_data(
     parquet_file_path='./web-labeling-data.parquet'
 )
 ```
+To access the WebUI labeler, you will visit: 127.0.0.1:8502 on your local machine. We are also saving the labeled data to 'web-labeling-data.parquet'. This file will be saved in the directory where your Python script lives on your local machine.
 
-To access the WebUI labeler, you will visit: 127.0.0.1:8502 on your local machine.
-
-We are also saving the labeled data to 'web-labeling-data.parquet'. This file will be saved in the directory where your Python script lives on your local machine.
-**Case 2: Using with Spark on a single machine**:
-
+**Example for Running Spark on a Single Machine:**
 ```python
 # Create web labeler with custom configuration
 web_labeler = WebUILabeler(
@@ -911,12 +863,9 @@ labeled_data = label_data(
 )
 ```
 
-To access the WebUI labeler, you will visit: 127.0.0.1:8502 on your local machine.
+To access the WebUI labeler, you will visit: 127.0.0.1:8502 on your local machine. We are also saving the labeled data to 'web-labeling-data.parquet'. This file will be saved in the directory where your Python script lives on your local machine.
 
-We are also saving the labeled data to 'web-labeling-data.parquet'. This file will be saved in the directory where your Python script lives on your local machine.
-
-**Case 3: Using with Spark on a cluster**:
-
+**Example for Running Spark on a Cluster:**
 ```python
 from pathlib import Path
 # Create web labeler with custom configuration
@@ -940,36 +889,15 @@ labeled_data = label_data(
 )
 ```
 
-To access the WebUI labeler, you will visit: {public ip address of your master node}:8502 from your local machine.
+To access the WebUI labeler, you will visit: {public ip address of your master node}:8502 from your local machine. We are also saving the labeled data to 'web-labeling-data.parquet'. This file will be saved in the directory where your Python script lives (using spark-submit) on your master node.
 
-We are also saving the labeled data to 'web-labeling-data.parquet'. This file will be saved in the directory where your Python script lives (using spark-submit) on your master node.
+#### CustomLabeler
 
-### CustomLabeler
+You can implement your own labeler by subclassing `CustomLabeler` and implementing the `label_pair(row1, row2)` method. This method must return 1.0, 0.0, 2.0, and -1.0 for the cases where the user clicks the button match, non-match, unsure, and stop, respectively. 
 
-**Purpose**: Advanced users who want to implement their own labeling logic.
+The constructor should use a_df, b_df, and id_col, as described for the built-in labelers. 
 
-**Usage**: Subclass `CustomLabeler` and implement the `label_pair(row1, row2)` method.
-
-**Parameters** (constructor):
-
-- `a_df` (DataFrame): Your first dataset
-- `b_df` (DataFrame): Your second dataset
-- `id_col` (str, default='\_id'): Column name containing unique record identifiers
-
-**When to use**:
-
-- You have domain-specific labeling rules
-- You need access to full record data for complex decision making
-- You want to integrate external data sources or APIs
-
-**How it works**:
-
-- Allows implementation of complex matching logic
-- Can integrate with external systems or databases
-- Returns custom labels (typically 1.0 for match, 0.0 for non-match)
-
-**Example**:
-
+**Example:**
 ```python
 from MadLib import CustomLabeler
 
