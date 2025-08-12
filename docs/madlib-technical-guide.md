@@ -646,13 +646,7 @@ features = load(path=str(Path(__file__).parent / 'features.pkl'))
 ```
 This will load in the features list from the 'features.pkl' file in the directory where your Python script lives (using spark-submit) on your master node.
 
-### DataFrames
-
 #### save_dataframe(dataframe, path)
-
-Save a DataFrame to disk with automatic detection between Pandas and Spark DataFrames.
-Saves the DataFrame as a parquet file.
-
 ```python
 from MadLib import save_dataframe
 
@@ -661,9 +655,9 @@ path: str                                              # Path where to save the 
 
 Returns: None
 ```
+Save a dataframe to disk as a parquet file. Automatically detecting if it is a Pandas or Spark dataframe. 
 
-**Case 1: Using Pandas on a Local Machine to save a DataFrame**
-
+**Usage Examples:** If you save a Pandas dataframe on a local machine, or if you run Spark on a local machine and save a Spark dataframe: 
 ```python
 from MadLib import save_dataframe
 
@@ -677,29 +671,9 @@ feature_vectors_df = featurize(
 
 save_dataframe(dataframe=feature_vectors_df, path='./feature_vectors_df.parquet')
 ```
-
 This will create a file called 'feature_vectors_df.parquet' in the directory where your Python script lives on your local machine.
 
-**Case 2: Using Spark on a Local Machine to save a DataFrame**
-
-```python
-from MadLib import save_dataframe
-
-feature_vectors_df = featurize(
-    features,
-    customers_df,
-    prospects_df,
-    candidates_df,
-    output_col='feature_vectors'
-)
-
-save_dataframe(dataframe=feature_vectors_df, path='./feature_vectors_df.parquet')
-```
-
-This will create a file called 'feature_vectors_df.parquet' in the directory where your Python script lives on your local machine.
-
-**Case 3: Using Spark on a Cluster to save features**
-
+If you use Spark on a cluster and save a Spark dataframe: 
 ```python
 from MadLib import save_dataframe
 from pathlib import Path
@@ -714,13 +688,9 @@ feature_vectors_df = featurize(
 
 save_dataframe(dataframe=feature_vectors_df,  path=str(Path(__file__).parent / 'feature_vectors_df.parquet'))
 ```
-
 This will create a file called 'feature_vectors_df.parquet' in the directory where your Python script lives (using spark-submit) on your master node.
 
 #### load_dataframe(path, df_type)
-
-Load a DataFrame from disk based on the specified type.
-
 ```python
 from MadLib import load_dataframe
 
@@ -729,35 +699,30 @@ df_type: str               # Type of DataFrame to load ('pandas' or 'sparkdf')
 
 Returns:    Union[pd.DataFrame, pyspark.sql.DataFrame]  # Loaded Dataframe
 ```
+This function loads a dataframe from disk. 
 
-**Case 1: Using Pandas on a Local Machine to load a DataFrame**
-
+**Usage Examples:** If you use Pandas on a local machine and want to load a dataframe: 
 ```python
 from MadLib import load_dataframe
 
 feature_vectors_df = load_dataframe(path='./feature_vectors_df.parquet', df_type='pandas')
 ```
-
 This will load in the feature vectors dataframe from the 'feature_vectors_df.parquet' file in the directory where your Python script lives on your local machine.
 
-**Case 2: Using Spark on a Local Machine to load a DataFrame**
-
+If you use Spark on a local machine and want to load a dataframe: 
 ```python
 from MadLib import load_dataframe
 
 feature_vectors_df = load_dataframe(path='./feature_vectors_df.parquet', df_type='sparkdf')
 ```
-
 This will load in the feature vectors dataframe from the 'feature_vectors_df.parquet' file in the directory where your Python script lives on your local machine.
 
-**Case 3: Using Spark on a Cluster to load a DataFrame**
-
+Finally, if you use Spark on a cluster and want to load a dataframe: 
 ```python
 from MadLib import load_dataframe
 
 feature_vectors_df = load_dataframe(path=str(Path(__file__).parent / 'feature_vectors_df.parquet'), df_type='sparkdf')
 ```
-
 This will load in the feature vectors dataframe from the 'feature_vectors_df.parquet' file in the directory where your Python script lives (using spark-submit) on your master node.
 
 ## Built-in Labeler Classes
