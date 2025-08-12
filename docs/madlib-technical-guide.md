@@ -575,6 +575,10 @@ def label_data(
 ) -> Union[pd.DataFrame, SparkDataFrame]
 ```
 
+**What This Function Returns:** This function returns a dataframe, which has the same columns as the 'fvs' dataframe that was passed in as an input, plus the columns 'label' and 'labeled_in_iteration'. 'label' contains 1.0 for matches, 0.0 for non-matches. 
+
+'labeled_in_iteration' is which model number this labeled data came from. So, if it was labeled in batch 5, 'labeled_in_iteration' is 5. If 5 models had been trained in the continuous mode, and the new labeled examples came from this lastest model (model 5), then 'labeled_in_iteration' would be 5.
+
 #### label_pairs()
 ```python
 def label_pairs(
