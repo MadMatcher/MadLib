@@ -427,7 +427,7 @@ labeled_data = pd.DataFrame({
 })
 ```
 
-**Example of Calling the Function:**
+**Example Usage:**
 ```python
 # Train a model
 from sklearn.ensemble import RandomForestClassifier
@@ -453,9 +453,6 @@ trained_matcher = train_matcher(
 ```
 
 ### apply_matcher()
-
-What it does: Uses your trained model to predict matches on new data that hasn't been labeled yet.
-
 ```python
 def apply_matcher(
     model: MLModel,                          # Your trained model object
@@ -466,44 +463,13 @@ def apply_matcher(
 ) -> Union[pd.DataFrame, SparkDataFrame]
 ```
 
-**Parameter Explanations:**
+This function applies a trained matcher to new examples to predict match/non-match. 
+* 'model' is a trained MLModel object. It is typically the output of train_matcher(), and is a trained SKLearn model or a SparkML Transformer.
+* 'df' is a Pandas or Spark dataframe of examples. This dataframe must contain a column named in 'feature_col', referring to a feature vector.
+* 'prediction_col' will be a new column added to 'df'. The function will store the predict match or non-match (usually 1.0 or 0.0) in this column.
+* 'confidence_col' will be a new column added to 'df'. The function will store a confidence score in the range [0.5, 1.0] in this column. If omitted, the function will not store any confidence score in the output dataframe. 
 
-`model`: Your trained machine learning model
-
-- What it is: A trained MLModel object returned from `train_matcher()`, a trained SKLearn model, or a SparkML Transformer
-- Requirements: Must be a model that has already been trained on labeled data
-- Purpose: Contains the learned patterns for identifying matches between records
-- What it knows: How to convert feature vectors into match/non-match predictions
-
-`df`: Your unlabeled data to predict on
-
-- What it is: A pandas DataFrame or Spark DataFrame containing record pairs with computed feature vectors
-- Data source: If you are using the MadLib, it will be your output from `featurize()`
-- Required content: Must contain a column with feature vectors (specified by feature_col parameter)
-- Schema requirement: Must have the same feature vector structure as the training data
-- Purpose: These are the new record pairs you want to classify as matches or non-matches
-
-`feature_col`: Feature vector column identifier
-
-- What it is: String name of the column in df that contains the feature vectors
-- Expected content: Each row must contain an array/list of numeric similarity scores
-- Consistency requirement: Feature vectors must have same structure as those used during training
-- Purpose: Tells the model which column contains the input data for making predictions
-
-`prediction_col`: Prediction results column name
-
-- What it is: String that will become the name of the new column containing predictions
-- Output format: Column will contain numeric values (1.0 = match, 0.0 = non-match)
-- Purpose: Allows you to customize the output column name to fit your workflow
-
-`confidence_col`: Confidence score results column name
-
-- What it is: String that will become the name of the new column containing confidence scores
-- Output format: Column will contain numeric values (in the range [.50, 1))
-- Purpose: Allows you to customize the output column name to fit your workflow and if omitted, the confidence scores will not be in the resulting dataframe
-
-**What it returns:**
-
+For example, the output dataframe may look as follows (without a confidence score column): 
 ```python
 # Your input data with predictions added
 result = pd.DataFrame({
@@ -520,7 +486,6 @@ result = pd.DataFrame({
 ```
 
 **Example Usage:**
-
 ```python
 # Apply your trained model to new data
 predictions = apply_matcher(
@@ -537,9 +502,6 @@ print(f"Found {len(matches)} potential matches")
 ```
 
 ### label_data()
-
-What it does: Implements active learning by selecting which examples would be most helpful to label next, improving your model iteratively.
-
 ```python
 def label_data(
     model: MLModel,        # Untrained model object
@@ -555,6 +517,12 @@ def label_data(
     on_demand_stop: Optional[bool] = True # only for use with "continuous mode", if set to True, ignores max_labeled and waits for a stop label from the user. If using gold data, this must be set to False
 ) -> Union[pd.DataFrame, SparkDataFrame]
 ```
+
+This function implements an active learning process, which selects informative examples for a user to label, to create a set of labeled examples for later purposes, such as training a matcher. The active learning process can be batch or continuous, as we discuss at the start of this guide. 
+
+To understand this function, you should carefully read Section "Preliminaries" at the start of this guide. 
+
+
 
 Example with batch mode:
 
