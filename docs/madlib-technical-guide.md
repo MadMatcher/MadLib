@@ -522,10 +522,25 @@ This function implements an active learning process, which selects informative e
 
 To understand this function, you should carefully read Section "Preliminaries" at the start of this guide. 
 
+In what follows we explain the parameters of this function:
+* 'model' is an MLModel object, which represents a matcher M. 
+* 'mode' indicates how we want to do active learning: in the batch mode or the continuous mode.
+* 'labeler' is a Labeler object that the user will use to label examples (returned by the matcher M).
+* 'fvs' is a dataframe that consists of a set of examples from which we will select examples for the user to label.
+* 'seeds' is a small set of labeled examples we use to start the active learning process.
+* 'parquet_file_path' is the path to the file where we will store all examples that the user has labeled.
+* 'batch_size' and 'max_iter' are optional parameters used by active learning in the batch mode (explained below). 
+* 'queue_size', 'max_labeled', and 'on_demand_stop' are parameters used by active learning in the continuous mode (explained below).
 
+**How the Batch Mode Works:** Consider active learning (AL) in the batch mode. It works as follows: 
+1. Use 'seeds' to train the matcher M represented by 'model'. Note: 'seeds' must contain both matches and non-matches. Otherwise the function will terminate, reporting error.
+2. Iterate until the number of iterations reach 'max_iter':
+     + Apply matcher M to all examples in 'fvs', then select b = 'batch_size' examples that are unlabeled and appear most "informative" (in the sense that if they are labeled, then matcher M can learn the most from these examples).
+     + Ask the user to label these b examples using 'labeler'.
+     + Retrain matcher M using all examples that have been labeled so far (including also the seed examples).
+3. Return the trained matcher M, and save all labeled examples into the file indicated in 'parquet_file_path'. 
 
-Example with batch mode:
-
+Here is an example for the batch mode:
 ```python
 def label_data(
     model = model,
@@ -539,8 +554,14 @@ def label_data(
 ) -> Union[pd.DataFrame, SparkDataFrame]
 ```
 
-Example with continuous mode:
+**How the Continuous Mode Works:** Consider AL in the continuous mode. Here we no longer have the notion of iterations. Instead, the user will continously label examples, as discussed in Section "Preliminaries" at the start of this guide. 
+* In this mode, 'queue_size' is the **CLARIFY**
+* 'max_labeled' is the maximal number of examples that the user will label. AL will terminates after this. 
+* 'on_demand_stop': If this is True, then ignore 'max_labeled', let the user keep labeling, and stop only when the user hits a button on the labeler's UI indicating that the user wants to stop the labeling process.
 
+So if you use the gold labeler, then 'on_demand_stop' should be False. Otherwise, you can either set a value for 'max_labeled' and set 'on_demand_stop' to False, in order to label just a fixed number of examples. Or you can set 'on_demand_stop' to True, in order to label as many examples as you want. 
+
+Here is an example for the continuous mode:
 ```python
 def label_data(
     model = model,
@@ -552,60 +573,6 @@ def label_data(
     queue_size = 100    # allow the queue to have 100 unlabeled examples
     max_labeled = 1500    # continue the active learning process until 1500 examples are labeled
 ) -> Union[pd.DataFrame, SparkDataFrame]
-```
-
-**Parameter Explanations:**
-
-`model`: Model for active learning
-
-- What it is: A pre-configured MLModel object
-- Purpose: Defines what type of machine learning algorithm to use and how to configure it
-- Common types: Random Forest, Logistic Regression, Gradient Boosting
-- Why it is configurable: Different datasets may work better with different algorithms
-
-`mode`: Active learning strategy
-
-- What it is: String specifying how to conduct the labeling process
-- "batch" mode: Label a group of examples, then retrain the model, then repeat
-- "continuous" mode: Examples are labeled in one thread, the model gets trained in another thread and provides new examples continuously
-
-`labeler`: Method for generating labels
-
-- What it is: A Labeler object that defines how to label examples
-- Purpose: Provides the mechanism to convert unlabeled examples into labeled training data
-
-_See [Built-in Labeler Classes](#built-in-labeler-classes) for available options and usage._
-
-`fvs`: Pool of unlabeled feature vectors
-
-- What it is: A pandas DataFrame or Spark DataFrame containing feature vectors for record pairs that need labels
-- Data source: If you are using the MadLib, it will be your output from `featurize()`
-- Content requirements: Must contain feature vectors and any metadata needed for labeling decisions
-- Purpose: Provides the candidate pool from which active learning will select examples for labeling
-
-`seeds`: Initial labeled data (optional)
-
-- What it is: A pandas DataFrame containing already-labeled examples to start the active learning process
-- Data source: Could be the output from `create_seeds()` or any previously labeled data
-- Why it is optional: If None, active learning starts with no prior knowledge
-- Why it is helpful: Provides initial model training data to start the active learning process
-- Content requirements: Must contain feature vectors and labels in the same format as expected output
-
-**Why you may want to use label_data():** Instead of randomly labeling data, this focuses on examples where labeling will most improve your model's accuracy.
-
-**How Active Learning Works:**
-
-**Uncertainty Sampling**: Finds examples the model is most unsure about
-
-```python
-# Model predictions with confidence
-uncertain_examples = [
-    {'prediction': 1.0, 'confidence': 0.51},  # Very uncertain! (close to 0.5)
-    {'prediction': 0.0, 'confidence': 0.49},  # Very uncertain! (close to 0.5)
-    {'prediction': 1.0, 'confidence': 0.95},  # Very certain (high confidence)
-    {'prediction': 0.0, 'confidence': 0.95}   # Very certain (high confidence)
-]
-# Active learning would pick the first two for labeling
 ```
 
 ## Saving + Loading Functions
