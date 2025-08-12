@@ -941,23 +941,21 @@ seeds = create_seeds(
 
 ### Training Data Persistence
 
-MadLib automatically saves and loads training data during active learning and seed creation processes to ensure you don't lose your labeling progress. This is especially important for long labeling sessions or when working with large datasets.
+MadLib automatically saves and loads training data during active learning and seed creation processes to ensure that you don't lose your labeling progress. This is especially important for long labeling sessions or when working with large datasets.
 
 #### Automatic Training Data Saving
 
 When using `label_data()` or `create_seeds()`, MadLib automatically:
 
-1. **Saves Progress**: The system saves the training data after a batch (for batch active learning), or after an example is labeled (for continuous active learning) to a Parquet file (default: `active-matcher-training-data.parquet`)
+1. **Saves Progress**: The system saves the training data after a batch (for batch active learning), or after an example is labeled (for continuous active learning) to a Parquet file (default: `active-matcher-training-data.parquet`).
 
-2. **Resumes from Previous Session**: If you restart the labeling process, MadLib automatically detects and loads previously labeled data
+2. **Resumes from Previous Session**: If you restart the labeling process, MadLib automatically detects and loads previously labeled data.
 
-3. **Incremental Updates**: New labeled pairs are appended to existing training data without overwriting previous work
+3. **Incremental Updates**: New labeled pairs are appended to existing training data without overwriting previous work.
 
 #### Configuration Options
-
 You can customize where the training data is saved:
-
-````python
+```python
 # Custom file path for training data
 label_data(
     model=model_object,
@@ -966,20 +964,19 @@ label_data(
     fvs=feature_vectors,
     parquet_file_path='my-custom-training-data.parquet'  # Custom path
 )
+```
 
 #### File Format
-
 Training data is saved in Parquet format with the following schema:
-
 - `_id`: Unique identifier for each record pair
-- `id1`: Record ID from dataset A
-- `id2`: Record ID from dataset B
+- `id1`: Record ID from Table A
+- `id2`: Record ID from Table B
 - `features`: Feature vector (array of floats)
 - `label`: Ground truth label (1.0 for match, 0.0 for non-match)
 
-## Custom Feature Development
+### Custom Feature Development
 
-If the built-in features aren't enough for your use case, you can create your own:
+If the built-in features are not adequate for your use case, you can create your own feature, as illustrated by the following example: 
 
 ```python
 class PhoneNumberFeature(Featurizer):
@@ -1022,12 +1019,11 @@ class PhoneNumberFeature(Featurizer):
             return 0.0  # Different numbers
 ````
 
-## Best Practices
+### Best Practices
 
-### Starting a New Matching Project
+We end ths guide by sharing some simple tips for starting a new mathing project: 
 
 1. **Understand Your Data**
-
    ```python
    # Always start by exploring your data
    print("Dataset A shape:", df_a.shape)
@@ -1045,7 +1041,6 @@ class PhoneNumberFeature(Featurizer):
    ```
 
 2. **Start Small**
-
    ```python
    # Use a small sample first to test your pipeline
    sample_a = df_a.sample(1000)
@@ -1056,7 +1051,6 @@ class PhoneNumberFeature(Featurizer):
    ```
 
 3. **Validate Each Step**
-
    ```python
    # Check your feature creation
    features = create_features(...)
