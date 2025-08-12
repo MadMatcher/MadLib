@@ -255,7 +255,7 @@ As discussed earlier, if the candidates set (the output of blocking) is large (e
 * 'score_column' is a column in 'fvs' that contains a numeric score for each row. This score must be such that the higher the score, the more likely that the row is a match (recall that each row of 'fvs' refers to a pair of records from A and B). If you use featurize() to create 'fvs', then featurize() automatically add such a column called 'score'.
 * 'bucket_size' is a parameter used by down_sample, as we describe below. 
 
-**How down_sample Works:** This function works as follows: 
+**How It Works:** This function works as follows: 
 1. Scans through all rows in 'fvs' and assigns the rows into a set of buckets, using a hash function on the values of 'search_id_column'. It ensures that the size of each bucket never exceeds 'bucket_size'.
 2. For each bucket of size *n*, the function first sorts the rows in that bucket in decreasing order of score in 'score_column', then takes the top *n.'percent'* rows in that order.
 3. The function returns the union of all the rows taken from the buckets to be the desired sample.
@@ -296,7 +296,7 @@ Currently we provide three kinds of labeler: gold, command-line (CLI), and Web b
 * The CLI labeler takes as input an example, that is, the IDs of two records. It looks up Tables A and B with these IDs to retrieve the two records, then shows these two records to the user, so that the user can label match, non-match, or unsure.
 * The Web labeler is similar to the CLI labeler, but provides a Web-based labeling interface to the user (via a Web browser).
 
-**SAY SOMETHING ABOUT TERMINATION**
+The function will terminate returning a set of 'nseeds' examples labeled as match or non-match. Note that if the user labels an example as 'unsure', then the function will ignore that example and select another replacement example. 
  
 **Example:** The following example uses a gold labeler: 
 ```python
@@ -327,9 +327,6 @@ print(initial_labeled_data.head())
 ```
 
 ### train_matcher()
-
-What it does: Takes your labeled examples and teaches a machine learning model to recognize patterns that indicate matches.
-
 ```python
 def train_matcher(
     model: MLModel,                       # What type of model to train
@@ -338,44 +335,13 @@ def train_matcher(
     label_col: str = "label"              # Column name for your labels
 ) -> MLModel
 ```
+This function trains a matcher, that is, a classification model, on a set of labeled examples, each consisting of a feature vector and a label.
+* 'model' is a pre-configured MLModel object. Common classification models being used are random forest, XGBoost, logistic regression, etc.
+* 'labeled_data' is a Pandas or Spark dataframe. This dataframe must have two columns. The column named in 'feature_col' contains feature vectors, and the column named in 'label_col' contains the label (typically 0.0 and 1.0) for the corresponding vector. 
 
-**Parameter Explanations:**
+**Examples of MLModel Objects:** In what follows we discuss several common MLModel object types: 
 
-`model`: Machine learning model configuration
-
-- What it is: A pre-configured MLModel object
-- Purpose: Defines what type of machine learning algorithm to use and how to configure it
-- Common types: Random Forest, Logistic Regression, Gradient Boosting
-- Why it is configurable: Different datasets may work better with different algorithms
-
-`labeled_data`: Your training dataset
-
-- What it is: A pandas DataFrame or Spark DataFrame containing record pairs with known match/non-match labels
-- Data source: Typically the output from `create_seeds()` or manually labeled data
-- Required columns: Must contain feature vectors and ground truth labels
-- Schema requirements: Must have the columns specified in feature_col and label_col parameters
-
-`feature_col`: Feature vector column identifier
-
-- What it is: String name of the column in labeled_data that contains the computed feature vectors
-- Expected content: Each row must contain an array/list of numeric similarity scores
-- Data source: These are the feature vectors computed by the `featurize()` function or by an outside system
-- Why it is needed: Tells the training algorithm which column contains the input features for learning
-
-`label_col`: Ground truth labels column identifier
-
-- What it is: String name of the column containing the correct match/non-match labels
-- Expected values: Typically 1.0 for matches, 0.0 for non-matches
-- Purpose: Provides the "answer key" that the model learns to predict
-- Critical requirement: Labels must be accurate for the model to learn correct patterns
-
-**Why you need it:** Once you have labeled examples, you need a model that can apply those patterns to new, unlabeled data.
-
-**Understanding Model Specifications:**  
-You can specify different types of models:
-
-1. **XGBoost** (recommended, often highest accuracy):
-
+1. **XGBoost** (recommended, often achieves high accuracy):
    ```python
    from MadLib import SKLearnModel
    from xgboost import XGBClassifier
@@ -391,7 +357,6 @@ You can specify different types of models:
    ```
 
 2. **Random Forest** (good performance, fewer parameters to tune than XGBoost):
-
    ```python
    from MadLib import SKLearnModel
    from sklearn.ensemble import RandomForestClassifier
@@ -406,7 +371,6 @@ You can specify different types of models:
    ```
 
 3. **Logistic Regression** (simple and interpretable):
-
    ```python
    from MadLib import SKLearnModel
    from sklearn.linear_model import LogisticRegression
@@ -420,7 +384,6 @@ You can specify different types of models:
    ```
 
 4. **Spark ML Models** (for distributed training):
-
    ```python
    from MadLib import SparkMLModel
    from pyspark.ml.classification import RandomForestClassifier
@@ -432,7 +395,6 @@ You can specify different types of models:
    ```
 
 5. **Additional Options** (for sklearn models):
-
    ```python
    from MadLib import SKLearnModel
    from sklearn.ensemble import RandomForestClassifier
@@ -443,12 +405,11 @@ You can specify different types of models:
          max_depth=10,            # How deep each tree can go (RandomForestClassifier model argument)
          random_state=42,         # For reproducible results (RandomForestClassifier model argument)
          nan_fill=0.0             # **REQUIRED**: Fill NaN values with 0.0 for sklearn models
-         use_floats=True             # Use float32 for memory efficiency (default: True)
+         use_floats=True          # Use float32 for memory efficiency (default: True)
    )
    ```
 
-**What your labeled_data should look like:**
-
+**Example of labeled_data:**
 ```python
 # Example labeled_data DataFrame
 labeled_data = pd.DataFrame({
@@ -466,8 +427,7 @@ labeled_data = pd.DataFrame({
 })
 ```
 
-**Example Training Process:**
-
+**Example of Calling the Function:**
 ```python
 # Train a model
 from sklearn.ensemble import RandomForestClassifier
@@ -486,7 +446,7 @@ trained_matcher = train_matcher(
     label_col='label'
 )
 
-# The model can learn patterns like:
+# The model can learn patterns such as the following:
 # "When name similarity > 0.8 AND address similarity > 0.7 → likely match"
 # "When all similarities < 0.3 → likely non-match"
 # "When name similarity > 0.9 but address similarity < 0.2 → uncertain"
