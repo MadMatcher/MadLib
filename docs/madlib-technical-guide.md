@@ -283,45 +283,22 @@ def create_seeds(
 ) -> pd.DataFrame
 ```
 This function selects 'nseeds' rows from a set of feature vectors 'fvs', then asks the user to label these rows as match/non-match, using a 'labeler' object. This function is typically used to provide a set of 'nseeds' labeled examples for the first iteration of active learning (which typically examines 'fvs' to find more rows to label, to create training data for the matcher). 
-* 
+* 'fvs' is a Pandas or Spark dataframe consisting of a set of feature vectors. This is typically the output of calling function featurize().
+    + This dataframe must have a column named in score_column, which contains a score for each feature vector. The higher the score, the more likely that the vector is a match. This score column is typically in the dataframe output by function featurize(). This score column will be used to select seeds, as we will see.
+    + Each row of the dataframe 'fvs' must also contain two columns named 'id1' and 'id2', which refer to the ID of a record in Table A and Table B, respectively. Thus, each row represents a record pair. 
+* 'nseeds' is the number of examples we will select for the user to label, to create seed examples. Usually a number between 20-50 is sufficient for starting the active learning process of creating more labeled examples.
+* 'labeler' is an object of the Labeler class. 'score_column' is a column in 'fvs' that contains a score per feature vector, as discuss earlier.
+
+**How It Works:** Roughly speaking, this function will sort the examples (that is, feature vectors) in 'fvs' in decreasing order of the score in 'score_column'. Next it selects a total of 'nseeds' examples, some of which come from the top of the sorted list and the rest from the bottom of the sorted list. The idea is to select some examples that are likely to be matches and some that are likely to be non-matches. Finally, the function will pass each example to the 'labeler' object, which asks the user to label the example as match/non-match. 
+
+Currently we provide three kinds of labeler: gold, command-line (CLI), and Web based. See [here](#built-in-labeler-classes) for detail. 
+* The gold labeler knows all the correct matches between Tables A and B. So given an example, that is, the IDs of two records, this labeler can consult the set of correct matches to see if the ID pair is in there. If yes, then it returns saying the two records match. Otherwise it returns non-match.
+* The CLI labeler takes as input an example, that is, the IDs of two records. It looks up Tables A and B with these IDs to retrieve the two records, then shows these two records to the user, so that the user can label match, non-match, or unsure.
+* The Web labeler is similar to the CLI labeler, but provides a Web-based labeling interface to the user (via a Web browser).
+
+**SAY SOMETHING ABOUT TERMINATION**
  
-
-
-**Parameter Explanations:**
-
-`fvs`: Your feature vectors dataset
-
-- What it is: A DataFrame containing feature vectors - can be pandas or Spark DataFrame
-- Required content: Must have columns with record IDs and a column with computed similarity scores
-- Data source: This is typically the same data you might pass to `down_sample()`, get back from `down_sample()` (if you want to work with a subset of your original data), or any dataset with feature vectors
-- Purpose: Provides the pool of unlabeled record pairs from which to select examples for labeling
-
-`nseeds`: Number of training examples to create
-
-- What it is: Integer specifying how many labeled examples you want the function to generate
-- Purpose: Controls the size of your initial training dataset
-- Trade-offs: More seeds provide better training data but require more labeling effort
-- Planning consideration: Consider how much time you have for manual labeling (if using human labeler), and if you are going to use Active Learning (with label_data) you will likely need fewer seeds
-
-`labeler`: Method for determining if record pairs match
-
-- What it is: A Labeler object that defines how to label record pairs
-- Purpose: Provides the "ground truth" labels needed to train your machine learning model
-- How it works: Takes two record IDs and returns a label indicating whether they represent the same entity
-
-_See [Built-in Labeler Classes](#built-in-labeler-classes) for available options and usage._
-
-`score_column`: Similarity score column identifier
-
-- What it is: String name of the column in your fvs DataFrame containing similarity scores
-- Data requirements: Column must contain numeric values representing similarity between record pairs
-- Purpose: Used to select high-scoring and low-scoring pairs for labeling
-- Strategy: The function uses these scores to pick high-confidence matches and high-confidence non-matches
-
-**Why you need seeds:** Machine learning models need examples of both matches and non-matches to learn patterns.
-
-**Example Process:**
-
+**Example:** The following example uses a gold labeler: 
 ```python
 from MadLib import GoldLabeler
 
