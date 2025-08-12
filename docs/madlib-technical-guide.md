@@ -575,6 +575,24 @@ def label_data(
 ) -> Union[pd.DataFrame, SparkDataFrame]
 ```
 
+#### label_pairs()
+```python
+def label_pairs(
+
+    labeler: Labeler,                # Labeler object
+    pairs: Union[pd.DataFrame, SparkDataFrame] # DataFrame with pairs of id's
+) -> Union[pd.DataFrame, SparkDataFrame]
+```
+This function takes a set of examples (each is a pair of IDs of records), then asks the user to label these examples as match/non-match, using a labeler. 
+* 'labeler' is a Labeler object. See [Built-in Labeler Classes](#built-in-labeler-classes) for available options and usage. Currently, label_pairs supports all of the built-in labeler types, except for the gold labeler.
+* 'pairs' is a Pandas or Spark dataframe that must have at least two columns: 
+  - `column 1`: Record IDs from table A
+  - `column 2`: Record IDs from table B
+The columns may be named anything, but the first column must have the records IDs from table A and the second column must have the record IDs from table B. Table A and Table B are specified as `a_df` and `b_df`, respectively, when you create your labeler object.
+If there are more than two columns, only the first two columns will be considered. The rest will be ignored.
+
+This function returns a Pandas or Spark dataframe with the columns `column 1`, `column 2`, `label`. `column 1` and `column 2` will be the names of the first and second columns from the `pairs` DataFrame. For example, if the `pairs` DataFrame had the columns `id1`, `id2`, then the returned DataFrame would have the columns `id1`, `id2`, `label`. The return type (Pandas or Spark DataFrame) will match the input type of `pairs`. 
+
 ### Saving and Loading Functions
 
 MadLib provides functions to help you save/load features (e.g., the output of create_features()) and dataframes (e.g., the output of featurize()).
@@ -725,9 +743,9 @@ feature_vectors_df = load_dataframe(path=str(Path(__file__).parent / 'feature_ve
 ```
 This will load in the feature vectors dataframe from the 'feature_vectors_df.parquet' file in the directory where your Python script lives (using spark-submit) on your master node.
 
-## Built-in Labeler Classes
+### Built-in Labeler Classes
 
-MadLib provides several built-in labeler classes for different labeling workflows. You can use these directly or extend them for custom logic. All labelers inherit from the public `Labeler` abstract class:
+MadLib provides several built-in labeler classes. You can use these directly or extend them. All labelers inherit from the public `Labeler` abstract class:
 
 ### GoldLabeler
 
