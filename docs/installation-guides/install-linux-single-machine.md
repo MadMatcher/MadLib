@@ -1,10 +1,6 @@
-**This guide can be used if you are using Pandas on a single Linux machine.**
-
-**This guide can be used if you are using Spark on a single Linux machine.**
-
 ## How to Install MadLib on a Linux Machine
 
-This is a step-by-step guide to install MadLib on a single Linux machine with Ubunutu 22.0.4 and Python 3.12. You can try to adapt this guide to other configurations.
+This is a step-by-step guide to install MadLib on a single Linux machine with Ubunutu 22.0.4 and Python 3.12. You can try to adapt this guide to other configurations. Once you have installed MadLib on a single Linux machine, you can run MadLib using Pandas or Spark. 
 
 ### Step 1: Installing Essential Packages
 
@@ -97,7 +93,7 @@ or
 ```
 python3 --version
 ```
-do not have the outputs listed above, continue to step 3A. 
+do not have the outputs listed above, continue to Step 3A. 
 
 #### Step 3A: Installing Python 3.12
 
@@ -185,9 +181,11 @@ Before installing MadLib, we should return to the root directory by running the 
     cd
 ```
 
-We can install MadLib using one of the following two options: 
+In the future you can install MadLib using one of the following two options. **As of now we do not yet enable Option 1 (Pip installing from PyPI). Thus you should use Option 2 (Pip installing from GitHub).**
 
 #### Option 1: Pip Installing from PyPI
+
+**Note that this option is not yet eabled. Please use Option 2.**
 
 You can install MadLib from PyPI using the following command:
 
