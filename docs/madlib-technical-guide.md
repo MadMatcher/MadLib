@@ -259,10 +259,10 @@ As discussed earlier, if the candidates set (the output of blocking) is large (e
 
 **How It Works:** This function works as follows: 
 1. Scans through all rows in 'fvs' and assigns the rows into a set of buckets, using a hash function on the values of 'search_id_column'. It ensures that the size of each bucket never exceeds 'bucket_size'.
-2. For each bucket of size *n*, the function first sorts the rows in that bucket in decreasing order of score in 'score_column', then takes the top *n.'percent'* rows in that order.
+2. For each bucket of size *n*, the function first sorts the rows in that bucket in decreasing order of score in 'score_column', then takes the top *n x 'percent'* rows in that order.
 3. The function returns the union of all the rows taken from the buckets to be the desired sample.
 
-Intuitively, the sample contains the top-scoring rows of all the buckets. The top-scoring rows are likely to contain matches, and so the sample is likely to contain a reasonable number of matches. The above function performs Steps 1-3 using Spark to save time. 
+Intuitively, the sample contains the top-scoring rows of each bucket. The top-scoring rows are likely to contain matches, and so the sample is likely to contain a reasonable number of matches. The above function performs Steps 1-3 using Spark to save time. 
 
 **Example:** The following code returns 10% of 'feature_vectors' as the sample:
    ```python
@@ -298,7 +298,7 @@ Currently we provide three kinds of labeler: gold, command-line (CLI), and Web b
 * The CLI labeler takes as input an example, that is, the IDs of two records. It looks up Tables A and B with these IDs to retrieve the two records, then shows these two records to the user, so that the user can label match, non-match, or unsure.
 * The Web labeler is similar to the CLI labeler, but provides a Web-based labeling interface to the user (via a Web browser).
 
-The function will terminate returning a set of 'nseeds' examples labeled as match or non-match. Note that if the user labels an example as 'unsure', then the function will ignore that example and select another replacement example. 
+The function will terminate returning a set of 'nseeds' examples labeled as match or non-match. Note that if the user labels an example as 'unsure', then the function will ignore that example and select another replacement example. Note also that there all 'nseeds' examples may be matches or non-matches. In other words, there is no guarantee that the output will contain both matches and non-matches. 
  
 **Example:** The following example uses a gold labeler: 
 ```python
@@ -411,7 +411,7 @@ This function trains a matcher, that is, a classification model, on a set of lab
    )
    ```
 
-**Example of labeled_data:**
+**Example of the DataFrame labeled_data:**
 ```python
 # Example labeled_data DataFrame
 labeled_data = pd.DataFrame({
@@ -468,7 +468,7 @@ def apply_matcher(
 This function applies a trained matcher to new examples to predict match/non-match. 
 * 'model' is a trained MLModel object. It is typically the output of train_matcher(), and is a trained SKLearn model or a SparkML Transformer.
 * 'df' is a Pandas or Spark dataframe of examples. This dataframe must contain a column named in 'feature_col', referring to a feature vector.
-* 'prediction_col' will be a new column added to 'df'. The function will store the predict match or non-match (usually 1.0 or 0.0) in this column.
+* 'prediction_col' will be a new column added to 'df'. The function will store the prediction match or non-match (usually 1.0 or 0.0) in this column.
 * 'confidence_col' will be a new column added to 'df'. The function will store a confidence score in the range [0.5, 1.0] in this column. If omitted, the function will not store any confidence score in the output dataframe. 
 
 For example, the output dataframe may look as follows (without a confidence score column): 
@@ -557,11 +557,13 @@ def label_data(
 ```
 
 **How the Continuous Mode Works:** Consider AL in the continuous mode. Here we no longer have the notion of iterations. Instead, the user will continously label examples, as discussed in Section "Preliminaries" at the start of this guide. 
-* In this mode, 'queue_size' is the **CLARIFY**
+* In this mode, 'queue_size' is the size of the queue where we store the examples that the user will label. When the user indicates that he or she is ready to label, we take the example at the front of this queue and give it to the user to label. As soon as the queue becomes somewhat empty (say less than 2/3 full), we find more informative examples to add to the queue. 
 * 'max_labeled' is the maximal number of examples that the user will label. AL will terminates after this. 
 * 'on_demand_stop': If this is True, then ignore 'max_labeled', let the user keep labeling, and stop only when the user hits a button on the labeler's UI indicating that the user wants to stop the labeling process.
 
-So if you use the gold labeler, then 'on_demand_stop' should be False. Otherwise, you can either set a value for 'max_labeled' and set 'on_demand_stop' to False, in order to label just a fixed number of examples. Or you can set 'on_demand_stop' to True, in order to label as many examples as you want. 
+So if you use the gold labeler, then 'on_demand_stop' should be False. Otherwise, 
+* you can either set a value for 'max_labeled' and set 'on_demand_stop' to False, in order to label just a fixed number of examples.
+* Or you can set 'on_demand_stop' to True, in order to label as many examples as you want. 
 
 Here is an example for the continuous mode:
 ```python
@@ -588,7 +590,7 @@ def label_pairs(
     pairs: Union[pd.DataFrame, SparkDataFrame] # DataFrame with pairs of id's
 ) -> Union[pd.DataFrame, SparkDataFrame]
 ```
-This function takes a set of examples (each is a pair of IDs of records), then asks the user to label these examples as match/non-match, using a labeler. 
+This function takes a set of examples (each is a pair of record IDs), then asks the user to label these examples as match/non-match, using a labeler. 
 * 'labeler' is a Labeler object. See [Built-in Labeler Classes](#built-in-labeler-classes) for available options and usage. Currently, label_pairs supports all of the built-in labeler types, except for the gold labeler.
 * 'pairs' is a Pandas or Spark dataframe that must have at least two columns: `column 1` is record IDs from table A, and `column 2` is record IDs from table B. The columns may be named anything, but the first column must have the records IDs from table A and the second column must have the record IDs from table B. Table A and Table B are specified as `a_df` and `b_df`, respectively, when you create your labeler object.
 If there are more than two columns, only the first two columns will be considered. The rest will be ignored.
@@ -597,7 +599,7 @@ This function returns a Pandas or Spark dataframe with the columns `column 1`, `
 
 ### Saving and Loading Functions
 
-MadLib provides functions to help you save/load features (e.g., the output of create_features()) and dataframes (e.g., the output of featurize()).
+MadLib provides functions to help you save/load features (e.g., the output of create_features()) and dataframes (e.g., the output of featurize()). Saving/loading features and dataframes is very important when you work in long EM sessions, when you need to take a break, or when it takes a long time to produce a dataframe, such as the set of feature vectors output by featurize(). 
 
 #### save_features(features, path)
 ```python
@@ -1024,7 +1026,7 @@ class PhoneNumberFeature(Featurizer):
 
 ### Best Practices
 
-We end ths guide by sharing some simple tips for starting a new mathing project: 
+We end the guide by sharing some simple tips for starting a new mathing project: 
 
 1. **Understand Your Data**
    ```python
