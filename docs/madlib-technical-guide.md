@@ -1,6 +1,6 @@
 ## MadLib Technical Guide
 
-This document provides a quick overview of the functions in MadLib: how they work and how to use them. After you have installed MadLib, we recommend that you read this document, then study the five sample Python scripts that implement various matching workflows. This should give you sufficient knowledge to implement your own matching workflows.
+This document provides a quick overview of the functions in MadLib: how they work and how to use them. After you have installed MadLib, we recommend that you read this document, then study the [sample Python scripts](https://github.com/MadMatcher/MadLib/blob/main/docs/workflow-examples.md) that implement various matching workflows. This should give you sufficient knowledge to implement your own matching workflows.
 
 ### Preliminaries
 
@@ -51,7 +51,7 @@ You can combine the MadLib functions (in a Python script) to create a variety of
 - A workflow in which the user has been given a set of labeled examples. The workflow trains a matcher M on these examples then apply it to the examples in C.
 - A workflow in which you just want to label a set of examples.
 
-Later we provide Python scripts for five such workflows. More workflows can be constructed using MadLib functions.
+We provide [Python scripts for several such workflows](https://github.com/MadMatcher/MadLib/blob/main/docs/workflow-examples.md). More workflows can be constructed using MadLib functions.
 
 ### The Core Functions of MadLib
 
