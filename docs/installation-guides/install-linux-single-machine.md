@@ -181,7 +181,7 @@ Before installing MadLib, we should return to the root directory by running the 
     cd
 ```
 
-In the future you can install MadLib using one of the following two options. **As of now we do not yet enable Option 1 (Pip installing from PyPI). Thus you should use Option 2 (Pip installing from GitHub).**
+In the future you can install MadLib using one of the following two options. **As of now, since MadLib is still in testing, we do not yet enable Option 1 (Pip installing from PyPI). Thus you should use Option 2 (Pip installing from GitHub).**
 
 #### Option 1: Pip Installing from PyPI
 
