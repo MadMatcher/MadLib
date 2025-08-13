@@ -1,7 +1,3 @@
-**This guide can be used if you are using Pandas on a single MacOS M1 machine.**
-
-**This guide can be used if you are using Spark on a single MacOS M1 machine.**
-
 ## How to Install MadLib on a MacOS M1 Machine
 
 This is a step-by-step guide to install MadLib on a single macOS machine with an M1 chip. If you are unsure whether your Mac has an M1 chip, click on the Apple in the top left corner of your screen > About This Mac. If it says Chip Apple M1, then you have an M1 chip. If it does not say Chip Apple M1, you do not have an M1 chip.
@@ -9,6 +5,8 @@ This is a step-by-step guide to install MadLib on a single macOS machine with an
 This guide has been tested on a 2020 MacBook Pro with an Apple M1 Chip, 8GB Memory, macOS version Sequoia 15.0.1, and a .zshrc profile, using Python 3.12. You can try to adapt this guide to other configurations.
 
 If your machine has an Intel chip, this installation guide will not work for you. If your machine has an M2, M3, or M4 chip, this installation guide may work for you, but we have not tested it.
+
+Once you have installed MadLib on a single macOS machine, you can run it using Pandas or Spark. 
 
 ### Step 1: Installing Python
 
@@ -40,7 +38,7 @@ Or
 
 python --version
 
-did not have the outputs listed above, do all substeps A-D.
+do not have the outputs listed above, do all substeps A-D.
 
 #### Step 1A: Installing Homebrew
 
@@ -109,9 +107,11 @@ If at any point during the installation you close your terminal, you will need t
 ```
 ### Step 2: Installing MadLib
 
-To install MadLib, use one of the following two options:
+In the future you can install MadLib using one of the following two options. **As of now, since MadLib is still in testing, we do not yet enable Option 1 (Pip installing from PyPI). Thus you should use Option 2 (Pip installing from GitHub).**
 
 #### Option 1: Pip Installing from PyPI
+
+**Note that this option is not yet eabled. Please use Option 2.**
 
 You can install MadLib from PyPI, using the following command:
 ```

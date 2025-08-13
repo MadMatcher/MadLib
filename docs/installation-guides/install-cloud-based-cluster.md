@@ -1,7 +1,6 @@
-**This guide can be used if you are using Spark on a cluster of machines.**
 ## How to Install MadLib on a Cluster of Machines
 
-Here we provide instructions for installing MadLib on a cluster of machines on the cloud, specifically on Amazon Web Services (AWS). You can adapt this guide to install MadLib on a cluster of local machines. We have tested these installation instructions only with Ubuntu 22.04, Java Temurin JDK 17, Python 3.12, and Spark 3.5.6.
+Here we provide instructions for installing MadLib on a cluster of machines on the cloud, specifically on Amazon Web Services (AWS). You can adapt this guide to install MadLib on a cluster of local machines. We have tested these installation instructions only with Ubuntu 22.04, Java Temurin JDK 17, Python 3.12, and Spark 3.5.6. Once MadLib has been installed, you can run it using Spark on a cluster of machines. 
 
 ### Creating EC2 Nodes
 
@@ -29,9 +28,9 @@ You will need to create at least two EC2 instances to serve as nodes in your clu
 
 ### Installing MadLib
 
-Next you need to install MadLib. You can find instructions for installing MadLib and its prerequisites (Python, Java, Flask, Joblib, mmh3, Numba, Numpy, Numpydoc, Pandas, Pyarrow, Py_Stringmatching, PySpark, Requests, Scikit-Learn, Scipy, Streamlit, Tabulate, Threadpoolctl, TQDM, Xgboost, Xxhash) here: [MadLib Linux Installation](https://github.com/MadMatcher/MadLib/blob/main/docs/installation-guides/install-linux-single-machine.md)
+Next you need to install MadLib on every node in your cluster. 
 
-You will have to install MadLib on every node in your cluster.
+You can find instructions for installing MadLib and its prerequisites (Python, Java, Flask, Joblib, mmh3, Numba, Numpy, Numpydoc, Pandas, Pyarrow, Py_Stringmatching, PySpark, Requests, Scikit-Learn, Scipy, Streamlit, Tabulate, Threadpoolctl, TQDM, Xgboost, Xxhash) here: [MadLib Linux Installation](https://github.com/MadMatcher/MadLib/blob/main/docs/installation-guides/install-linux-single-machine.md)
 
 ### Installing Spark
 
@@ -46,7 +45,7 @@ Running these commands will create a folder called ‘spark-3.5.6-bin-hadoop3’
 
     mv spark-3.5.6-bin-hadoop3 spark
 
-This guide will assume that you renamed the spark folder to ‘spark’, but you can use a different name if you wish.
+This guide will assume that you renamed the Spark folder to ‘spark’, but you can use a different name if you wish.
 
 ### Setting Up a Spark Cluster
 

@@ -1,6 +1,6 @@
 ## MadLib Technical Guide
 
-This document provides a quick overview of the functions in MadLib: how they work and how to use them. After you have installed MadLib, we recommend that you read this document, then study the five sample Python scripts that implement various matching workflows. This should give you sufficient knowledge to implement your own matching workflows.
+This document provides a quick overview of the functions in MadLib: how they work and how to use them. After you have installed MadLib, we recommend that you read this document, then study the [sample Python scripts](https://github.com/MadMatcher/MadLib/blob/main/docs/workflow-examples.md) that implement various matching workflows. This should give you sufficient knowledge to implement your own matching workflows.
 
 ### Preliminaries
 
@@ -8,7 +8,7 @@ We start by discussing the basic concepts underlying MadLib. You can skip this s
 
 #### The Matching Step
 
-Let A and B be two tables that we want to match, that is, find tuple pairs (x,y) where tuple x of A matches tuple y of B. We refer to such pair (x,y) as a <u>match</u>. We assume blocking has been performed on A and B, producing a set C of <u>candidate tuple pairs</u> (we call these pairs "candidates" because each may be a candidata for a match).
+Let A and B be two tables that we want to match, that is, find tuple pairs (x,y) where tuple x of A matches tuple y of B. We refer to such pair (x,y) as a *match*. We assume blocking has been performed on A and B, producing a set C of <u>candidate tuple pairs</u> (we call these pairs "candidates" because each may be a candidate for a match).
 
 Now we enter the matching step, in which we will apply a rule- or machine-learning (ML) based matcher to each pair (x,y) in C to predict match/non-match. Today ML-based matchers are most common, so in MadLib we provide support for these matchers. The overall matching workflow is as follows:
 
@@ -28,7 +28,7 @@ The above workflow is a very standard ML workflow for classification. For the EM
 - **How to scale?** If Tables A and B have millions of tuples (which is very commmon in practice), the candidate set C (obtained after blocking) can be huge, having 100M to 1B tuple pairs or more. This would create several serious problems:
 
   - Featurizing C, that is, converting each tuple pair in C into a feature vector can take hours or days. We provide a fast solution to this problem, using Spark on a cluster of machines.
-  - Using active learning to select a few hundreds "good" tuple pairs from the candiate set C for you to label is going to be very slow, because C is so large and conceptually we have to examine all tuple pairs in C to select the "good" ones. We provide a solution that takes a far smaller sample S from C (having say just 5M tuple pairs), then performs active learning on S (not on C) to select "good" examples for you to label. As mentioned earlier, S cannot be a random sample of C because in that case it is likely to contain very few true matches, and thus is not a good sample from which to select "good" examples to label.
+  - Using active learning to select a few hundreds "good" tuple pairs from the candiate set C for you to label is going to be very slow, because C is so large and we have to examine all tuple pairs in C to select the "good" ones. We provide a solution that takes a far smaller sample S from C (having say just 5M tuple pairs), then performs active learning on S (not on C) to select "good" examples for you to label. As mentioned earlier, S cannot be a random sample of C because in that case it is likely to contain very few true matches, and thus is not a good sample from which to select "good" examples to label.
   - The default way that we do active learning, say on S, is in the **batch mode**. That is, we examine all examples in S, select 10 "good" examples, ask you to label them as match/non-match, then re-examine the examples in S, select another 10 "good" examples, ask you to label those, and so on. This sometimes has a lag time: you label 10 examples, submit, then _must wait a few seconds before you are given the next 10 examples to label_. To avoid such lag time, we provide a solution that do active learning in the **continuous mode**. In this mode, you do not have to wait and can just label continuously. The downside is that you may have to label a bit more examples (compared to the batch mode) to reach the same matching accuracy.
 
 - **What are the runtime environments?** We provide three runtime environments:
@@ -38,8 +38,8 @@ The above workflow is a very standard ML workflow for classification. For the EM
   - **Pandas on a single machine**: Use this if you do not have a lot of data and you do not know Spark or do not want to run it.
 
 - **How to label examples?** We provide three labelers: gold, CLI, and Web-based.
-  - The gold labeler assumes you have the set of all true matches between Tables A and B. We call this set **the gold set**. Given a pair of tuples (x,y) to be labeled, the gold labeler just consults this set, and return 1.0 (that is, match) if (x,y) is in the gold set, and return 0.0 (that is, non-match) otherwise. The gold labeler is commonly used to test and debug code and for commputing matching accuracy.
-  - Given a pair (x,y) to be labeled, the CLI (command-line interface) labeler will display this pair on the CLI and ask you to label the pair as match, non-match, or unsure. If you run Spark on a cluster, then this labeler is likely to display the pair on a CLI on the master node (assuming that you submit the PySpark script on this node).
+  - The gold labeler assumes you have the set of all true matches between Tables A and B. We call this set **the gold set**. Given a pair of tuples (x,y) to be labeled, the gold labeler just consults this set, and return 1.0 (that is, match) if (x,y) is in the gold set, and return 0.0 (that is, non-match) otherwise. The gold labeler is commonly used to test and debug code and for computing matching accuracy.
+  - Given a pair (x,y) to be labeled, the CLI (command-line interface) labeler will display this pair on the CLI and ask you to label the pair as match, non-match, or unsure. This labeler only works if you run Pandas or Spark on a single machine. It will not work for Spark on a cluster (use the Web labeler below instead). 
   - The Web-baser labeler runs a browser and a Web server. When a MadLib function wants you to label a pair of tuples (x,y), it sends this pair to the Web server, which in turn sends it to the browser, where you can label the pair as match, non-match, or unsure. If you run on a local machine, then the Web server will run locally on that machine. If you run Spark on a cluster, then the Web server is likely to run on the master node (assuming that you submit the PySpark script on this node).
 
 #### Different EM Workflows
@@ -51,7 +51,7 @@ You can combine the MadLib functions (in a Python script) to create a variety of
 - A workflow in which the user has been given a set of labeled examples. The workflow trains a matcher M on these examples then apply it to the examples in C.
 - A workflow in which you just want to label a set of examples.
 
-Later we provide Python scripts for five such workflows. More workflows can be constructed using MadLib functions.
+We provide [Python scripts for several such workflows](https://github.com/MadMatcher/MadLib/blob/main/docs/workflow-examples.md). More workflows can be constructed using MadLib functions.
 
 ### The Core Functions of MadLib
 
@@ -60,8 +60,8 @@ We now describe the core functions that you can combine to create a variety of E
 ### create_features()
 ```python
 def create_features(
-    A: Union[pd.DataFrame, SparkDataFrame],                               # Your first dataset
-    B: Union[pd.DataFrame, SparkDataFrame],                               # Your second dataset
+    A: Union[pd.DataFrame, SparkDataFrame],        # Your first dataset
+    B: Union[pd.DataFrame, SparkDataFrame],        # Your second dataset
     a_cols: List[str],                             # Columns from A to compare
     b_cols: List[str],                             # Columns from B to compare
     sim_functions: Optional[List[Callable]] = None, # Extra similarity functions
@@ -98,7 +98,7 @@ In this case, we create the features as follows:
 
 * First, we detect and drop all columns with too many missing values (above null_threshold). Then we analyze the remaining columns to detect their types (e.g., numeric vs text). We also compute the average token count for each tokenizer-column combination.
 * Then we create the following features:
-    + *Exact Match Features*: Created for all columns that pass the null threshold.
+    + *Exact Match Features*: Created for all columns.
      ```python
      # Every column gets an exact match feature
      ExactMatchFeature(column_name, column_name)
@@ -128,7 +128,7 @@ In particular, we provide the following extra tokenizers that you can use:
    - `StrippedQGramTokenizer(3)`: Creates 3-grams with whitespace stripped
    - `StrippedQGramTokenizer(5)`: Creates 5-grams with whitespace stripped
 
-In this case, we create the features as follows: 
+In the case where the user specifies extra similarity functions and/or extra tokenizers, we create the features as follows: 
 * We still create the exact match features and the numeric features, as described in the default case.
 * We still create the token-based features, as in the default case. But now we do this for all tokenizers and similarity functions, including the extra ones.
 * Finally, we create the following special features if you have selected the AlphaNumeric tokenizer to be an extra tokenizer. 
@@ -182,7 +182,6 @@ This function converts each tuple pair in the candidates set into a feature vect
 * `candidates` is a Pandas or Spark dataframe that specifies a set of pairs of record IDs. This dataframe has two required columns:
   - `id2`: Record ID from table B (must appear in the `_id` column of dataframe B)
   - `id1_list`: Record IDs from table A (must appear in the `_id` column of dataframe A)
-  - **Data source: These record pairs are typically generated by external blocking systems (like Sparkly(link))**
 * `output_col` is the name of the column in the output dataframe that we will use to store feature vectors.
 * `fill_na` is the value for missing data. We will use this value to fill in when similarity computation fails due to missing data. The default value is 0.0 (no similarity). Other common values are -1.0 (unknown), numpy.nan, or other float values. This is because missing data is common, and the system needs a consistent way to handle it.
 
@@ -197,9 +196,10 @@ This function converts each tuple pair in the candidates set into a feature vect
 
    # This means candidates consists of four pairs of record IDs: (1,10), (1, 11), (2, 12), (2, 13)
    # where the first ID refers to a record in dataframe B and the second ID to a record in dataframe A
+   # We structure candidates this way to save space.
    ```
 
-**Example:** The following example illustrates featurizing:
+**Usage Example:** 
    ```python
    feature_vectors = featurize(
        features,              # Features from create_features() (or other program)
@@ -234,9 +234,11 @@ We can visualize the resulting dataframe as the following table:
 | 2 | 12 | [0.8, 0.7, 0.9, 0.75, 0.88] | manual_review | 4.03 | 2 |
 | 2 | 13 | [0.1, 0.05, 0.02, 0.08, 0.12] | manual_review | 0.37 | 3 |
 
-**Discussion:** You can see that the output dataframe has two columns 'score' and '_id'. Column 'score' contains a score for each feature vector, indicating how likely it is that this vector (that is, the record pair corresponding to this vector) is a match. The higher the score, the more likely that the vector is a match. Right now we compute this score by summing up the values of all features we know to be positively correlated with the likelihood of being a match. 
+**The Importance of Columns 'score' and '_id':** You can see that the output dataframe has two columns 'score' and '_id'. Column 'score' contains a score for each feature vector, indicating how likely it is that this vector (that is, the record pair corresponding to this vector) is a match. The higher the score, the more likely that the vector is a match. Right now we compute this score by summing up the values of all features we know to be positively correlated with the likelihood of being a match. This score is important for various downstream functions, such as down_sample() and create_seeds(). For example, if we need to select a few vectors that are likely to be matches, then we will select vectors with high scores. 
 
 The output dataframe also has a column '_id', which assigns an ID to each record pair. This column will be used by downstream functions, such as down_sample and others. 
+
+**Creating Features that Require Global Statistics:** Featurizing on a Spark cluster turns out to be non-trivial. For example, suppose we send a tuple pair (x,y) to a worker node and want to compute a TF/IDF feature. It turns out that this feature requires statistics that are global. So the worker node would need to "talk" to all other worker nodes to obtain all necessary numbers, to compute these "global" statistics. Our featurizing solution in featurize() avoids this problem. 
 
 ### down_sample()
 ```python
@@ -257,10 +259,10 @@ As discussed earlier, if the candidates set (the output of blocking) is large (e
 
 **How It Works:** This function works as follows: 
 1. Scans through all rows in 'fvs' and assigns the rows into a set of buckets, using a hash function on the values of 'search_id_column'. It ensures that the size of each bucket never exceeds 'bucket_size'.
-2. For each bucket of size *n*, the function first sorts the rows in that bucket in decreasing order of score in 'score_column', then takes the top *n.'percent'* rows in that order.
+2. For each bucket of size *n*, the function first sorts the rows in that bucket in decreasing order of score in 'score_column', then takes the top *n x 'percent'* rows in that order.
 3. The function returns the union of all the rows taken from the buckets to be the desired sample.
 
-Intuitively, the sample contains the top-scoring rows of all the buckets. The top-scoring rows are likely to contain matches, and so the sample is likely to contain a reasonable number of matches. The above function performs Steps 1-3 using Spark to save time. 
+Intuitively, the sample contains the top-scoring rows of each bucket. The top-scoring rows are likely to contain matches, and so the sample is likely to contain a reasonable number of matches. The above function performs Steps 1-3 using Spark to save time. 
 
 **Example:** The following code returns 10% of 'feature_vectors' as the sample:
    ```python
@@ -296,7 +298,7 @@ Currently we provide three kinds of labeler: gold, command-line (CLI), and Web b
 * The CLI labeler takes as input an example, that is, the IDs of two records. It looks up Tables A and B with these IDs to retrieve the two records, then shows these two records to the user, so that the user can label match, non-match, or unsure.
 * The Web labeler is similar to the CLI labeler, but provides a Web-based labeling interface to the user (via a Web browser).
 
-The function will terminate returning a set of 'nseeds' examples labeled as match or non-match. Note that if the user labels an example as 'unsure', then the function will ignore that example and select another replacement example. 
+The function will terminate returning a set of 'nseeds' examples labeled as match or non-match. Note that if the user labels an example as 'unsure', then the function will ignore that example and select another replacement example. Note also that there all 'nseeds' examples may be matches or non-matches. In other words, there is no guarantee that the output will contain both matches and non-matches. 
  
 **Example:** The following example uses a gold labeler: 
 ```python
@@ -409,7 +411,7 @@ This function trains a matcher, that is, a classification model, on a set of lab
    )
    ```
 
-**Example of labeled_data:**
+**Example of the DataFrame labeled_data:**
 ```python
 # Example labeled_data DataFrame
 labeled_data = pd.DataFrame({
@@ -466,7 +468,7 @@ def apply_matcher(
 This function applies a trained matcher to new examples to predict match/non-match. 
 * 'model' is a trained MLModel object. It is typically the output of train_matcher(), and is a trained SKLearn model or a SparkML Transformer.
 * 'df' is a Pandas or Spark dataframe of examples. This dataframe must contain a column named in 'feature_col', referring to a feature vector.
-* 'prediction_col' will be a new column added to 'df'. The function will store the predict match or non-match (usually 1.0 or 0.0) in this column.
+* 'prediction_col' will be a new column added to 'df'. The function will store the prediction match or non-match (usually 1.0 or 0.0) in this column.
 * 'confidence_col' will be a new column added to 'df'. The function will store a confidence score in the range [0.5, 1.0] in this column. If omitted, the function will not store any confidence score in the output dataframe. 
 
 For example, the output dataframe may look as follows (without a confidence score column): 
@@ -555,11 +557,13 @@ def label_data(
 ```
 
 **How the Continuous Mode Works:** Consider AL in the continuous mode. Here we no longer have the notion of iterations. Instead, the user will continously label examples, as discussed in Section "Preliminaries" at the start of this guide. 
-* In this mode, 'queue_size' is the **CLARIFY**
+* In this mode, 'queue_size' is the size of the queue where we store the examples that the user will label. When the user indicates that he or she is ready to label, we take the example at the front of this queue and give it to the user to label. As soon as the queue becomes somewhat empty (say less than 2/3 full), we find more informative examples to add to the queue. 
 * 'max_labeled' is the maximal number of examples that the user will label. AL will terminates after this. 
 * 'on_demand_stop': If this is True, then ignore 'max_labeled', let the user keep labeling, and stop only when the user hits a button on the labeler's UI indicating that the user wants to stop the labeling process.
 
-So if you use the gold labeler, then 'on_demand_stop' should be False. Otherwise, you can either set a value for 'max_labeled' and set 'on_demand_stop' to False, in order to label just a fixed number of examples. Or you can set 'on_demand_stop' to True, in order to label as many examples as you want. 
+So if you use the gold labeler, then 'on_demand_stop' should be False. Otherwise, 
+* you can either set a value for 'max_labeled' and set 'on_demand_stop' to False, in order to label just a fixed number of examples.
+* Or you can set 'on_demand_stop' to True, in order to label as many examples as you want. 
 
 Here is an example for the continuous mode:
 ```python
@@ -586,7 +590,7 @@ def label_pairs(
     pairs: Union[pd.DataFrame, SparkDataFrame] # DataFrame with pairs of id's
 ) -> Union[pd.DataFrame, SparkDataFrame]
 ```
-This function takes a set of examples (each is a pair of IDs of records), then asks the user to label these examples as match/non-match, using a labeler. 
+This function takes a set of examples (each is a pair of record IDs), then asks the user to label these examples as match/non-match, using a labeler. 
 * 'labeler' is a Labeler object. See [Built-in Labeler Classes](#built-in-labeler-classes) for available options and usage. Currently, label_pairs supports all of the built-in labeler types, except for the gold labeler.
 * 'pairs' is a Pandas or Spark dataframe that must have at least two columns: `column 1` is record IDs from table A, and `column 2` is record IDs from table B. The columns may be named anything, but the first column must have the records IDs from table A and the second column must have the record IDs from table B. Table A and Table B are specified as `a_df` and `b_df`, respectively, when you create your labeler object.
 If there are more than two columns, only the first two columns will be considered. The rest will be ignored.
@@ -595,7 +599,7 @@ This function returns a Pandas or Spark dataframe with the columns `column 1`, `
 
 ### Saving and Loading Functions
 
-MadLib provides functions to help you save/load features (e.g., the output of create_features()) and dataframes (e.g., the output of featurize()).
+MadLib provides functions to help you save/load features (e.g., the output of create_features()) and dataframes (e.g., the output of featurize()). Saving/loading features and dataframes is very important when you work in long EM sessions, when you need to take a break, or when it takes a long time to produce a dataframe, such as the set of feature vectors output by featurize(). 
 
 #### save_features(features, path)
 ```python
@@ -745,40 +749,17 @@ This will load in the feature vectors dataframe from the 'feature_vectors_df.par
 
 ### Built-in Labeler Classes
 
-MadLib provides several built-in labeler classes. You can use these directly or extend them. All labelers inherit from the public `Labeler` abstract class:
+MadLib provides several built-in labeler classes. You can use these directly or extend them. All labelers inherit from the public `Labeler` abstract class.
 
-### GoldLabeler
+#### GoldLabeler
 
-**This labeler can be used in the single machine mode with Pandas.**
+Given a pair of record IDs, this labeler consults the set of gold matches. If the pair of IDs exist in the set, then the labeler returns 1.0 (match), otherwise it returns 0.0 (non-match). This labeler can be used during the development and debugging process, or to compute the matching accuracy. 
 
-**This labeler can be used in the single machine mode with Spark.**
+This labeler can be used in all three settings: running Python on a single machine, running Spark on a single machine, or running Spark on a cluster. 
 
-**This labeler can be used in the cluster mode with Spark.**
-
-**Purpose**: Automated labeling using a gold set of known matches.
-
-**Usage**: `GoldLabeler(gold)`
-
-**Parameters**:
-
-- `gold` (DataFrame): A pandas DataFrame containing known matches with columns `id1` and `id2`
-  - `id1`: Record IDs from dataset A
-  - `id2`: Record IDs from dataset B that match the corresponding `id1` records
-
-**When to use**:
-
-- You have a ground truth dataset of known matches
-- You want to automate the labeling process completely
-- You're testing or validating your matching pipeline
-
-**How it works**:
-
-- Returns `1.0` for record pairs that exist in the gold standard DataFrame
-- Returns `0.0` for all other pairs
-- No human interaction required
-
-**Example**:
-
+To create a labeler of this type, use `GoldLabeler(gold)`, where 'gold' is a Pandas dataframe containing all gold matches with two columns: `id1` refers to the record IDs from Table A, and `id2` refer to the record IDs from Table B that match the corresponding `id1` records.
+ 
+**Usage Example**:
 ```python
 # Create gold standard data
 gold_matches = pd.DataFrame({
@@ -798,41 +779,15 @@ labeled_data = label_data(
 )
 ```
 
-### CLILabeler
+#### CLILabeler
 
-**This labeler can be used in the single machine mode with Pandas. For interactive labeleing, you may also refer to the WebUILabeler, if you choose.**
+Given a pair of record IDs, this labeler retrieves the corresponding tuples, displays them to the command-line interface, asks the user if the tuples match. The labeler returns 1.0, 0.0, 2.0, and -1.0 if the user clicks the "yes" button, "no" button, "unsure" button, and "stop" button, respectively.
 
-**This labeler can be used in the single machine mode with Spark. For interactive labeleing, you may also refer to the WebUILabeler, if you choose.**
+This labeler can be used for running Python or Spark on a single machine. It cannot be used for running Spark on a cluster (for that setting, you need to use the Web labeler, discussed below). 
 
-**This labeler can NOT be used in the cluster mode with Spark. For interactive labeling, you must use the WebUILabeler.**
+ To create a labeler object of this type, use `CLILabeler(a_df, b_df, id_col='_id')`. Here 'a_df' and 'b_df' are two Pandas or Spark dataframes that store the tuples of Tables A and B, respetively. Both dataframes must have ID columns with the name specified in 'id_col' (the default is '_id'). 
 
-**Purpose**: Interactive command-line labeling for human review.
-
-**Usage**: `CLILabeler(a_df, b_df, id_col='_id')`
-
-**Parameters**:
-
-- `a_df` (DataFrame): Your first dataset (pandas or Spark DataFrame)
-- `b_df` (DataFrame): Your second dataset (pandas or Spark DataFrame)
-- `id_col` (str, default='\_id'): Column name containing unique record identifiers
-  - **When to change**: If your datasets use a different column name for unique IDs
-  - **Example**: Use `id_col='customer_id'` if your ID column is named 'customer_id'
-
-**When to use**:
-
-- You need human judgment for labeling decisions
-- You want to review record pairs interactively
-- You don't have access to a web browser or you prefer command-line tools
-
-**How it works**:
-
-- Displays record pairs side-by-side in the terminal
-- Prompts for user input: `yes` (match), `no` (non-match), `unsure` (skip), or `stop` (end labeling)
-- Shows all available fields by default
-- Returns the appropriate label (1.0, 0.0, or skips the pair)
-
-**Example**:
-
+**Usage Example:**
 ```python
 # Create CLI labeler with custom ID column
 cli_labeler = CLILabeler(
@@ -849,46 +804,26 @@ seeds = create_seeds(
 )
 ```
 
-### WebUILabeler
+#### WebUILabeler
+As discussed at the start of this guide, the Web-baser labeler runs a browser and a Web server. When a MadLib function wants you to label a pair of tuples (x,y), it sends this pair to the Web server, which in turn sends it to the browser, where you can label the pair as match, non-match, or unsure. Currently we use a Flask-based Web server and a Streamlit interface to implement this labeler. 
 
-**This labeler can be used in the single machine mode with Pandas.**
+This labeler can be used in all three modes: Python on a single machine, Spark on a single machine, and Spark on a cluster. If you run on a local machine, then the Web server will run locally on that machine. If you run Spark on a cluster, then the Web server is likely to run on the master node (assuming that you submit the PySpark script on this node).
 
-**This labeler can be used in the single machine mode with Spark.**
-
-**This labeler can be used in the cluster mode with Spark.**
-
-**Purpose**: Interactive web-based labeling with a modern Streamlit interface.
-
-**Usage**: `WebUILabeler(a_df, b_df, id_col='_id', flask_port=5005, streamlit_port=8501, flask_host='127.0.0.1')`
-
-**Parameters**:
-
-- `a_df` (DataFrame): Your first dataset (pandas or Spark DataFrame)
-- `b_df` (DataFrame): Your second dataset (pandas or Spark DataFrame)
-- `id_col` (str, default='\_id'): Column name containing unique record identifiers
-  - **When to change**: If your datasets use a different column name for unique IDs
-- `flask_port` (int, default=5005): Port for the Flask backend API
-  - **When to change**: If port 5005 is already in use by another application
-  - **Example**: Use `flask_port=5006` if 5005 is occupied
+To create a labeler object of this type, use `WebUILabeler(a_df, b_df, id_col='_id', flask_port=5005, streamlit_port=8501, flask_host='127.0.0.1')`:
+- `a_df` (DataFrame): a Pandas or Spark dataframe storing the tuples of Table A. 
+- `b_df` (DataFrame): a Pandas or Spark dataframe storing the tuples of Table B. 
+- `id_col` (str, default='\_id'): Both a_df and b_df must have a column with this name, and this column refers to the tuple IDs. 
+- `flask_port` (int, default=5005): Port for the Flask backend API. 
+  - When to change: If port 5005 is already in use by another application
+  - Example: Use `flask_port=5006` if 5005 is occupied
 - `streamlit_port` (int, default=8501): Port for the Streamlit frontend
-  - **When to change**: If port 8501 is already in use by another application
-  - **Example**: Use `streamlit_port=8502` if 8501 is occupied
+  - When to change: If port 8501 is already in use by another application
+  - Example: Use `streamlit_port=8502` if 8501 is occupied
 - `flask_host` (str, default='127.0.0.1'): Host address for the Flask server
-  - **When to change**: If you need to access the interface from other machines on the network
-  - **Example**: Use `flask_host='0.0.0.0'` to allow external access
+  - When to change: If you need to access the interface from other machines on the network
+  - Example: Use `flask_host='0.0.0.0'` to allow external access
 
-**When to use**:
-
-- You prefer a graphical interface over command-line
-- You're working in a Python notebook or web-based environment
-
-**How it works**:
-
-- Automatically starts a Flask backend server and Streamlit frontend
-- Provides side-by-side record comparison with field selection
-
-**Case 1: Using with Pandas on a single machine**:
-
+**Example for Running Python on a Single Machine:**
 ```python
 # Create web labeler with custom configuration
 web_labeler = WebUILabeler(
@@ -909,12 +844,9 @@ labeled_data = label_data(
     parquet_file_path='./web-labeling-data.parquet'
 )
 ```
+To access the WebUI labeler, you will visit: 127.0.0.1:8502 on your local machine. We are also saving the labeled data to 'web-labeling-data.parquet'. This file will be saved in the directory where your Python script lives on your local machine.
 
-To access the WebUI labeler, you will visit: 127.0.0.1:8502 on your local machine.
-
-We are also saving the labeled data to 'web-labeling-data.parquet'. This file will be saved in the directory where your Python script lives on your local machine.
-**Case 2: Using with Spark on a single machine**:
-
+**Example for Running Spark on a Single Machine:**
 ```python
 # Create web labeler with custom configuration
 web_labeler = WebUILabeler(
@@ -936,12 +868,9 @@ labeled_data = label_data(
 )
 ```
 
-To access the WebUI labeler, you will visit: 127.0.0.1:8502 on your local machine.
+To access the WebUI labeler, you will visit: 127.0.0.1:8502 on your local machine. We are also saving the labeled data to 'web-labeling-data.parquet'. This file will be saved in the directory where your Python script lives on your local machine.
 
-We are also saving the labeled data to 'web-labeling-data.parquet'. This file will be saved in the directory where your Python script lives on your local machine.
-
-**Case 3: Using with Spark on a cluster**:
-
+**Example for Running Spark on a Cluster:**
 ```python
 from pathlib import Path
 # Create web labeler with custom configuration
@@ -965,36 +894,15 @@ labeled_data = label_data(
 )
 ```
 
-To access the WebUI labeler, you will visit: {public ip address of your master node}:8502 from your local machine.
+To access the WebUI labeler, you will visit: {public ip address of your master node}:8502 from your local machine. We are also saving the labeled data to 'web-labeling-data.parquet'. This file will be saved in the directory where your Python script lives (using spark-submit) on your master node.
 
-We are also saving the labeled data to 'web-labeling-data.parquet'. This file will be saved in the directory where your Python script lives (using spark-submit) on your master node.
+#### CustomLabeler
 
-### CustomLabeler
+You can implement your own labeler by subclassing `CustomLabeler` and implementing the `label_pair(row1, row2)` method. This method must return 1.0, 0.0, 2.0, and -1.0 for the cases where the user clicks the button match, non-match, unsure, and stop, respectively. 
 
-**Purpose**: Advanced users who want to implement their own labeling logic.
+The constructor should use a_df, b_df, and id_col, as described for the built-in labelers. 
 
-**Usage**: Subclass `CustomLabeler` and implement the `label_pair(row1, row2)` method.
-
-**Parameters** (constructor):
-
-- `a_df` (DataFrame): Your first dataset
-- `b_df` (DataFrame): Your second dataset
-- `id_col` (str, default='\_id'): Column name containing unique record identifiers
-
-**When to use**:
-
-- You have domain-specific labeling rules
-- You need access to full record data for complex decision making
-- You want to integrate external data sources or APIs
-
-**How it works**:
-
-- Allows implementation of complex matching logic
-- Can integrate with external systems or databases
-- Returns custom labels (typically 1.0 for match, 0.0 for non-match)
-
-**Example**:
-
+**Example:**
 ```python
 from MadLib import CustomLabeler
 
@@ -1038,23 +946,21 @@ seeds = create_seeds(
 
 ### Training Data Persistence
 
-MadLib automatically saves and loads training data during active learning and seed creation processes to ensure you don't lose your labeling progress. This is especially important for long labeling sessions or when working with large datasets.
+MadLib automatically saves and loads training data during active learning and seed creation processes to ensure that you don't lose your labeling progress. This is especially important for long labeling sessions or when working with large datasets.
 
 #### Automatic Training Data Saving
 
 When using `label_data()` or `create_seeds()`, MadLib automatically:
 
-1. **Saves Progress**: The system saves the training data after a batch (for batch active learning), or after an example is labeled (for continuous active learning) to a Parquet file (default: `active-matcher-training-data.parquet`)
+1. **Saves Progress**: The system saves the training data after a batch (for batch active learning), or after an example is labeled (for continuous active learning) to a Parquet file (default: `active-matcher-training-data.parquet`).
 
-2. **Resumes from Previous Session**: If you restart the labeling process, MadLib automatically detects and loads previously labeled data
+2. **Resumes from Previous Session**: If you restart the labeling process, MadLib automatically detects and loads previously labeled data.
 
-3. **Incremental Updates**: New labeled pairs are appended to existing training data without overwriting previous work
+3. **Incremental Updates**: New labeled pairs are appended to existing training data without overwriting previous work.
 
 #### Configuration Options
-
 You can customize where the training data is saved:
-
-````python
+```python
 # Custom file path for training data
 label_data(
     model=model_object,
@@ -1063,20 +969,19 @@ label_data(
     fvs=feature_vectors,
     parquet_file_path='my-custom-training-data.parquet'  # Custom path
 )
+```
 
 #### File Format
-
 Training data is saved in Parquet format with the following schema:
-
 - `_id`: Unique identifier for each record pair
-- `id1`: Record ID from dataset A
-- `id2`: Record ID from dataset B
+- `id1`: Record ID from Table A
+- `id2`: Record ID from Table B
 - `features`: Feature vector (array of floats)
 - `label`: Ground truth label (1.0 for match, 0.0 for non-match)
 
-## Custom Feature Development
+### Custom Feature Development
 
-If the built-in features aren't enough for your use case, you can create your own:
+If the built-in features are not adequate for your use case, you can create your own feature, as illustrated by the following example: 
 
 ```python
 class PhoneNumberFeature(Featurizer):
@@ -1119,12 +1024,11 @@ class PhoneNumberFeature(Featurizer):
             return 0.0  # Different numbers
 ````
 
-## Best Practices
+### Best Practices
 
-### Starting a New Matching Project
+We end the guide by sharing some simple tips for starting a new mathing project: 
 
 1. **Understand Your Data**
-
    ```python
    # Always start by exploring your data
    print("Dataset A shape:", df_a.shape)
@@ -1142,7 +1046,6 @@ class PhoneNumberFeature(Featurizer):
    ```
 
 2. **Start Small**
-
    ```python
    # Use a small sample first to test your pipeline
    sample_a = df_a.sample(1000)
@@ -1153,7 +1056,6 @@ class PhoneNumberFeature(Featurizer):
    ```
 
 3. **Validate Each Step**
-
    ```python
    # Check your feature creation
    features = create_features(...)
