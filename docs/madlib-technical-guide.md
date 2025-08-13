@@ -60,8 +60,8 @@ We now describe the core functions that you can combine to create a variety of E
 ### create_features()
 ```python
 def create_features(
-    A: Union[pd.DataFrame, SparkDataFrame],                               # Your first dataset
-    B: Union[pd.DataFrame, SparkDataFrame],                               # Your second dataset
+    A: Union[pd.DataFrame, SparkDataFrame],        # Your first dataset
+    B: Union[pd.DataFrame, SparkDataFrame],        # Your second dataset
     a_cols: List[str],                             # Columns from A to compare
     b_cols: List[str],                             # Columns from B to compare
     sim_functions: Optional[List[Callable]] = None, # Extra similarity functions
@@ -98,7 +98,7 @@ In this case, we create the features as follows:
 
 * First, we detect and drop all columns with too many missing values (above null_threshold). Then we analyze the remaining columns to detect their types (e.g., numeric vs text). We also compute the average token count for each tokenizer-column combination.
 * Then we create the following features:
-    + *Exact Match Features*: Created for all columns that pass the null threshold.
+    + *Exact Match Features*: Created for all columns.
      ```python
      # Every column gets an exact match feature
      ExactMatchFeature(column_name, column_name)
@@ -128,7 +128,7 @@ In particular, we provide the following extra tokenizers that you can use:
    - `StrippedQGramTokenizer(3)`: Creates 3-grams with whitespace stripped
    - `StrippedQGramTokenizer(5)`: Creates 5-grams with whitespace stripped
 
-In this case, we create the features as follows: 
+In the case where the user specifies extra similarity functions and/or extra tokenizers, we create the features as follows: 
 * We still create the exact match features and the numeric features, as described in the default case.
 * We still create the token-based features, as in the default case. But now we do this for all tokenizers and similarity functions, including the extra ones.
 * Finally, we create the following special features if you have selected the AlphaNumeric tokenizer to be an extra tokenizer. 
