@@ -3,7 +3,7 @@ This example shows how to use MadLib with pandas DataFrames.
 Passive learning workflow using dblp_acm dataset with gold labeler.
 
 The schema for the labeled pairs should be 'id2', 'id1_list', 'label'. 
-We provide an example of how to create this format using labeled_pairs if your current schema is 'id2', 'id1', 'label'.
+'label' is a list of labels for each id1 in the id1_list.
 """
 
 import pandas as pd
@@ -26,24 +26,7 @@ table_b = pd.read_parquet('../data/dblp_acm/table_b.parquet')
 candidates = pd.read_parquet('../data/dblp_acm/cand.parquet')
 candidates = candidates.rename(columns={'_id': 'id2', 'ids': 'id1_list'})
 candidates = candidates[['id2', 'id1_list']]
-
-# Load and format labeled pairs
-labeled_pairs = pd.read_parquet('../data/dblp_acm/gold.parquet')
-# In this example, our gold data only contains matches. So, labeled pairs are all matches. 
-# We need to add a negative example pair to the labeled pairs, or else the model will not learn to predict 0.0. 
-# In a real-world setting, you would have labeled data that contains both matches and non-matches.
-new_pair = pd.DataFrame({'id2': [0], 'id1': [1], 'label': [0.0]})
-labeled_pairs = pd.concat([labeled_pairs, new_pair])
-# Our labeled pairs are all matches , so we set the label to 1.0 for the original pairs
-# (but preserve the 0.0 we just added for the new pair)
-labeled_pairs.loc[labeled_pairs['label'] != 0, 'label'] = 1.0
-
-# Our current schema is 'id2', 'id1', 'label'. We need to convert it to 'id2', 'id1_list', 'label' for featurization.
-labeled_pairs = labeled_pairs.groupby('id2', as_index=False).agg({
-    'id1': list,
-    'label': list
-})
-labeled_pairs = labeled_pairs.rename(columns={'id1': 'id1_list'})
+labeled_pairs = pd.read_parquet('../data/dblp_acm/labeled_pairs.parquet')
 
 
 # Create features

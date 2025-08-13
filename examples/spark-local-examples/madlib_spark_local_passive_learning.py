@@ -3,11 +3,10 @@ This example shows how to use MadLib with Spark DataFrames on a local machine.
 Passive learning workflow using dblp_acm dataset with gold labeler.
 
 The schema for the labeled pairs should be 'id2', 'id1_list', 'label'. 
-We provide an example of how to create this format using labeled_pairs if your current schema is 'id2', 'id1', 'label'.
+'label' is a list of labels for each id1 in the id1_list.
 """
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import collect_list, lit
 from xgboost import XGBClassifier
 import warnings
 warnings.filterwarnings('ignore')
@@ -33,26 +32,7 @@ candidates = spark.read.parquet('../data/dblp_acm/cand.parquet')
 candidates = candidates.withColumnRenamed('_id', 'id2') \
     .withColumnRenamed('ids', 'id1_list') \
     .select('id2', 'id1_list')
-
-# Load and format labeled pairs
-labeled_pairs = spark.read.parquet('../data/dblp_acm/gold.parquet')
-
-# Select only the columns we need (id1 and id2) and add label column.
-# In this example, our gold data only contains matches. So, labeled pairs are all matches (label = 1.0) 
-labeled_pairs = labeled_pairs.select('id1', 'id2').withColumn('label', lit(1.0))
-
-# We need to add a negative example pair to the labeled pairs, or else the model will not learn to predict 0.0. 
-# In a real-world setting, you would have labeled data that contains both matches and non-matches.
-# Add a negative example pair
-new_pair = spark.createDataFrame([(1, 0, 0.0)], ['id1', 'id2', 'label'])
-labeled_pairs = labeled_pairs.union(new_pair)
-
-# Our current schema is 'id2', 'id1', 'label'. We need to convert it to 
-# 'id2', 'id1_list', 'label' for featurization.
-labeled_pairs = labeled_pairs.groupBy('id2').agg(
-    collect_list('id1').alias('id1_list'),
-    collect_list('label').alias('label')
-)
+labeled_pairs = spark.read.parquet('../data/dblp_acm/labeled_pairs.parquet')
 
 # Create features
 features = create_features(
