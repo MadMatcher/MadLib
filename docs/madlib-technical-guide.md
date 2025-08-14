@@ -1,6 +1,6 @@
 ## MadLib Technical Guide
 
-This document provides a quick overview of the functions in MadLib: how they work and how to use them. After you have installed MadLib, we recommend that you read this document, then study the [sample Python scripts](https://github.com/MadMatcher/MadLib/blob/main/docs/workflow-examples.md) that implement various matching workflows. This should give you sufficient knowledge to implement your own matching workflows.
+This document provides a comprehensive overview of the functions in MadLib: how they work and how to use them. After you have installed MadLib, we recommend that you read this document, then study the [sample Python scripts](https://github.com/MadMatcher/MadLib/blob/main/docs/workflow-examples.md) that implement various matching workflows. This should give you sufficient knowledge to implement your own matching workflows.
 
 ### Preliminaries
 
@@ -24,7 +24,7 @@ The above workflow is a very standard ML workflow for classification. For the EM
 - **How to create the features?** We do this by using a set of heuristics that analyze the columns of Tables A and B, and use a set of well-known similarity functions and tokenizers. We discuss more below.
 - **How to create training data?** There are two scenarios:
   - You may already have a set of labeled tuple pairs (perhaps obtained from a related project). In that case you can just use that data. We call this **passive learning**.
-  - But a more common scenario is that you do not have anything yet, and you don't know where to start. In general, you cannot just take a random sample of tuple pairs from the candidate set C then label them, because it is very likely that this sample will contain very few true matches, and thus is not a very good sample for training matcher M. We provide a solution to this problem that examines the tuple pairs in the set C to select a few hundreds "good" examples (that is, tuple pairs) for you to label. This is called **active learning** in the ML literature.
+  - But a more common scenario is that you do not have anything yet, and you don't know where to start. In general, you cannot just take a random sample of tuple pairs from the candidate set C then label them, because it is very likely that this sample will contain very few true matches, and thus is not a very good sample for training matcher M. We provide a solution to this problem that examines the tuple pairs in the set C to select a relatively small set of "good" examples (that is, tuple pairs) for you to label. This is called **active learning** in the ML literature.
 - **How to scale?** If Tables A and B have millions of tuples (which is very commmon in practice), the candidate set C (obtained after blocking) can be huge, having 100M to 1B tuple pairs or more. This would create several serious problems:
 
   - Featurizing C, that is, converting each tuple pair in C into a feature vector can take hours or days. We provide a fast solution to this problem, using Spark on a cluster of machines.
@@ -34,13 +34,13 @@ The above workflow is a very standard ML workflow for classification. For the EM
 - **What are the runtime environments?** We provide three runtime environments:
 
   - **Spark on a cluster of machines**: This is well suited for when you have a lot of data.
-  - **Spark on a single machine**: Use this if you do not have a lot of data, or if you want to test your PySpark script before you run it on a cluster of machines.
+  - **Spark on a single machine**: Use this if you do not have a lot of data, or if you want to test your Python script before you run it on a cluster of machines.
   - **Pandas on a single machine**: Use this if you do not have a lot of data and you do not know Spark or do not want to run it.
 
 - **How to label examples?** We provide three labelers: gold, CLI, and Web-based.
   - The gold labeler assumes you have the set of all true matches between Tables A and B. We call this set **the gold set**. Given a pair of tuples (x,y) to be labeled, the gold labeler just consults this set, and return 1.0 (that is, match) if (x,y) is in the gold set, and return 0.0 (that is, non-match) otherwise. The gold labeler is commonly used to test and debug code and for computing matching accuracy.
   - Given a pair (x,y) to be labeled, the CLI (command-line interface) labeler will display this pair on the CLI and ask you to label the pair as match, non-match, or unsure. This labeler only works if you run Pandas or Spark on a single machine. It will not work for Spark on a cluster (use the Web labeler below instead). 
-  - The Web-baser labeler runs a browser and a Web server. When a MadLib function wants you to label a pair of tuples (x,y), it sends this pair to the Web server, which in turn sends it to the browser, where you can label the pair as match, non-match, or unsure. If you run on a local machine, then the Web server will run locally on that machine. If you run Spark on a cluster, then the Web server is likely to run on the master node (assuming that you submit the PySpark script on this node).
+  - The Web-baser labeler runs a browser and a Web server. When a MadLib function wants you to label a pair of tuples (x,y), it sends this pair to the Web server, which in turn sends it to the browser, where you can label the pair as match, non-match, or unsure. If you run on a local machine, then the Web server will run locally on that machine. If you run Spark on a cluster, then the Web server is likely to run on the master node (assuming that you submit the Python script on this node).
 
 #### Different EM Workflows
 
@@ -251,7 +251,7 @@ def down_sample(
 ) -> Union[pd.DataFrame, SparkDataFrame]
 ```
 As discussed earlier, if the candidates set (the output of blocking) is large (e.g., having 50M+ examples), then performing certain operations, such as active learning, on it takes a long time. In such cases, we may want to perform these operations on a sample of the candidates set instead. This function returns such a sample. This is not a random sample because a random sample is likely to contain very few true matches, making it unsuitable for training a matcher. 
-* 'fvs' is a Pandas or Spark dataframe where each row contains a feature vector. This dataframe must contain a column named in score_column and a column named in search_id_column. We will use these two columns to sample (see below). Typically fvs is the dataframe output by the featurize() function. 
+* 'fvs' is a Pandas or Spark dataframe where each row contains a feature vector. This dataframe must contain the column named in score_column and the column named in search_id_column. We will use these two columns to sample (see below). Typically fvs is the dataframe output by the featurize() function. 
 * 'percent' is a number in [0,1] indicating the size of the sample as a fraction of the size of 'fvs'. For example 'percent = 0.1' means we want the sample's size to be 10% of the size of 'fvs'. The smaller the sample size, the faster downstream operations that use the sample will run, but we may also lose important patterns in 'fvs'.
 * 'search_id_column' is the ID column in 'fvs'. Its values uniquely identify the rows of 'fvs'. Note that if you use featurize() to create 'fvs', then featurize() automatically adds an ID column called '_id' to 'fvs'.
 * 'score_column' is a column in 'fvs' that contains a numeric score for each row. This score must be such that the higher the score, the more likely that the row is a match (recall that each row of 'fvs' refers to a pair of records from A and B). If you use featurize() to create 'fvs', then featurize() automatically add such a column called 'score'.
@@ -262,7 +262,7 @@ As discussed earlier, if the candidates set (the output of blocking) is large (e
 2. For each bucket of size *n*, the function first sorts the rows in that bucket in decreasing order of score in 'score_column', then takes the top *n x 'percent'* rows in that order.
 3. The function returns the union of all the rows taken from the buckets to be the desired sample.
 
-Intuitively, the sample contains the top-scoring rows of each bucket. The top-scoring rows are likely to contain matches, and so the sample is likely to contain a reasonable number of matches. The above function performs Steps 1-3 using Spark to save time. 
+Intuitively, the sample contains the top-scoring rows of each bucket. The top-scoring rows are likely to contain matches, and so the sample is likely to contain a reasonable number of matches. The above function may perform Steps 1-3 using Spark to save time. 
 
 **Example:** The following code returns 10% of 'feature_vectors' as the sample:
    ```python
@@ -286,10 +286,11 @@ def create_seeds(
 ```
 This function selects 'nseeds' rows from a set of feature vectors 'fvs', then asks the user to label these rows as match/non-match, using a 'labeler' object. This function is typically used to provide a set of 'nseeds' labeled examples for the first iteration of active learning (which typically examines 'fvs' to find more rows to label, to create training data for the matcher). 
 * 'fvs' is a Pandas or Spark dataframe consisting of a set of feature vectors. This is typically the output of calling function featurize().
-    + This dataframe must have a column named in score_column, which contains a score for each feature vector. The higher the score, the more likely that the vector is a match. This score column is typically in the dataframe output by function featurize(). This score column will be used to select seeds, as we will see.
+    + This dataframe must have the column named in score_column, which contains a score for each feature vector. The higher the score, the more likely that the vector is a match. This score column is typically in the dataframe output by function featurize(). This score column will be used to select seeds, as we will see.
     + Each row of the dataframe 'fvs' must also contain two columns named 'id1' and 'id2', which refer to the ID of a record in Table A and Table B, respectively. Thus, each row represents a record pair. 
 * 'nseeds' is the number of examples we will select for the user to label, to create seed examples. Usually a number between 20-50 is sufficient for starting the active learning process of creating more labeled examples.
-* 'labeler' is an object of the Labeler class. 'score_column' is a column in 'fvs' that contains a score per feature vector, as discuss earlier.
+* 'labeler' is an object of the Labeler class.
+* 'score_column' is a column in 'fvs' that contains a score per feature vector, as discuss earlier.
 
 **How It Works:** Roughly speaking, this function will sort the examples (that is, feature vectors) in 'fvs' in decreasing order of the score in 'score_column'. Next it selects a total of 'nseeds' examples, some of which come from the top of the sorted list and the rest from the bottom of the sorted list. The idea is to select some examples that are likely to be matches and some that are likely to be non-matches. Finally, the function will pass each example to the 'labeler' object, which asks the user to label the example as match/non-match. 
 
@@ -298,7 +299,7 @@ Currently we provide three kinds of labeler: gold, command-line (CLI), and Web b
 * The CLI labeler takes as input an example, that is, the IDs of two records. It looks up Tables A and B with these IDs to retrieve the two records, then shows these two records to the user, so that the user can label match, non-match, or unsure.
 * The Web labeler is similar to the CLI labeler, but provides a Web-based labeling interface to the user (via a Web browser).
 
-The function will terminate returning a set of 'nseeds' examples labeled as match or non-match. Note that if the user labels an example as 'unsure', then the function will ignore that example and select another replacement example. Note also that there all 'nseeds' examples may be matches or non-matches. In other words, there is no guarantee that the output will contain both matches and non-matches. 
+The function will terminate returning a set of 'nseeds' examples labeled as match or non-match. Note that if the user labels an example as 'unsure', then the function will ignore that example and select another replacement example. Note also that all 'nseeds' examples may be matches or non-matches. In other words, there is no guarantee that the output will contain both matches and non-matches. 
  
 **Example:** The following example uses a gold labeler: 
 ```python
@@ -467,7 +468,7 @@ def apply_matcher(
 
 This function applies a trained matcher to new examples to predict match/non-match. 
 * 'model' is a trained MLModel object. It is typically the output of train_matcher(), and is a trained SKLearn model or a SparkML Transformer.
-* 'df' is a Pandas or Spark dataframe of examples. This dataframe must contain a column named in 'feature_col', referring to a feature vector.
+* 'df' is a Pandas or Spark dataframe of examples (feature vectors). This dataframe must contain the column named in 'feature_col', referring to a feature vector.
 * 'prediction_col' will be a new column added to 'df'. The function will store the prediction match or non-match (usually 1.0 or 0.0) in this column.
 * 'confidence_col' will be a new column added to 'df'. The function will store a confidence score in the range [0.5, 1.0] in this column. If omitted, the function will not store any confidence score in the output dataframe. 
 
@@ -636,7 +637,7 @@ features = create_features(
 
 save_features(features=features, path=str(Path(__file__).parent / 'features.pkl'))
 ```
-This will create a file called 'features.pkl' in the directory where your Python script lives (using spark-submit) on your master node.
+This will create a file called 'features.pkl' in the directory where your Python script lives on your master node.
 
 #### load_features(path)
 ```python
@@ -661,7 +662,7 @@ from pathlib import Path
 
 features = load(path=str(Path(__file__).parent / 'features.pkl'))
 ```
-This will load in the features list from the 'features.pkl' file in the directory where your Python script lives (using spark-submit) on your master node.
+This will load in the features list from the 'features.pkl' file in the directory where your Python script lives on your master node.
 
 #### save_dataframe(dataframe, path)
 ```python
@@ -703,7 +704,7 @@ feature_vectors_df = featurize(
 
 save_dataframe(dataframe=feature_vectors_df,  path=str(Path(__file__).parent / 'feature_vectors_df.parquet'))
 ```
-This will create a file called 'feature_vectors_df.parquet' in the directory where your Python script lives (using spark-submit) on your master node.
+This will create a file called 'feature_vectors_df.parquet' in the directory where your Python script lives on your master node.
 
 #### load_dataframe(path, df_type)
 ```python
@@ -736,7 +737,7 @@ from MadLib import load_dataframe
 
 feature_vectors_df = load_dataframe(path=str(Path(__file__).parent / 'feature_vectors_df.parquet'), df_type='sparkdf')
 ```
-This will load in the feature vectors dataframe from the 'feature_vectors_df.parquet' file in the directory where your Python script lives (using spark-submit) on your master node.
+This will load in the feature vectors dataframe from the 'feature_vectors_df.parquet' file in the directory where your Python script lives on your master node.
 
 ### Built-in Labeler Classes
 
@@ -748,7 +749,7 @@ Given a pair of record IDs, this labeler consults the set of gold matches. If th
 
 This labeler can be used in all three settings: running Python on a single machine, running Spark on a single machine, or running Spark on a cluster. 
 
-To create a labeler of this type, use `GoldLabeler(gold)`, where 'gold' is a Pandas dataframe containing all gold matches with two columns: `id1` refers to the record IDs from Table A, and `id2` refer to the record IDs from Table B that match the corresponding `id1` records.
+To create a labeler of this type, use `GoldLabeler(gold)`, where 'gold' is a DataFrame containing all gold matches with two columns: `id1` refers to the record IDs from Table A, and `id2` refer to the record IDs from Table B that match the corresponding `id1` records.
  
 **Usage Example**:
 ```python
@@ -798,7 +799,7 @@ seeds = create_seeds(
 #### WebUILabeler
 As discussed at the start of this guide, the Web-baser labeler runs a browser and a Web server. When a MadLib function wants you to label a pair of tuples (x,y), it sends this pair to the Web server, which in turn sends it to the browser, where you can label the pair as match, non-match, or unsure. Currently we use a Flask-based Web server and a Streamlit interface to implement this labeler. 
 
-This labeler can be used in all three modes: Python on a single machine, Spark on a single machine, and Spark on a cluster. If you run on a local machine, then the Web server will run locally on that machine. If you run Spark on a cluster, then the Web server is likely to run on the master node (assuming that you submit the PySpark script on this node).
+This labeler can be used in all three modes: Python on a single machine, Spark on a single machine, and Spark on a cluster. If you run on a local machine, then the Web server will run locally on that machine. If you run Spark on a cluster, then the Web server is likely to run on the master node (assuming that you submit the Python script on this node).
 
 To create a labeler object of this type, use `WebUILabeler(a_df, b_df, id_col='_id', flask_port=5005, streamlit_port=8501, flask_host='127.0.0.1')`:
 - `a_df` (DataFrame): a Pandas or Spark dataframe storing the tuples of Table A. 
@@ -885,7 +886,7 @@ labeled_data = label_data(
 )
 ```
 
-To access the WebUI labeler, you will visit: {public ip address of your master node}:8502 from your local machine. We are also saving the labeled data to 'web-labeling-data.parquet'. This file will be saved in the directory where your Python script lives (using spark-submit) on your master node.
+To access the WebUI labeler, you will visit: {public ip address of your master node}:8502 from your local machine. We are also saving the labeled data to 'web-labeling-data.parquet'. This file will be saved in the directory where your Python script lives on your master node.
 
 #### CustomLabeler
 
