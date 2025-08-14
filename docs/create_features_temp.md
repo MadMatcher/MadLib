@@ -62,7 +62,7 @@ In this case, we create the features as follows:
 
 **Creating Features for Other Cases:** You can override the similarity functions using the parameter sim_functions and override the tokenizers using the parameter tokenizers.
 
-In particular, we provide the following extra tokenizers that you can use: 
+In particular, we have implemented the following non-default tokenizers that you can use: 
 
    - `AlphaNumericTokenizer()`: Extracts alphanumeric sequences
    - `QGramTokenizer(5)`: Creates 5-character sequences (5-grams)
