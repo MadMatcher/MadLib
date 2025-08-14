@@ -1,6 +1,23 @@
-# MadLib
+## MadLib: A Library of EM Functions
 
-A comprehensive Python library for entity matching and record linkage, providing flexible and scalable solutions for matching and linking records across datasets using machine learning and active learning techniques.
+When performing entity matching (EM), users often experiment and use a variety of EM workflows. Users also often want to run these workflows in a variety of runtime environments. MadLib is designed to help with these needs. It is an open-source library of EM functions that can be combined to create a variety of EM workflows. Currently MadLib only focuses on the workflows in the matching step (but in the future we will extend MadLib to also help create workflows for the blocking step). Examples of workflows that MadLib can help create for the matching step: 
+* A workflow that create features then use them to convert all tuple pairs in the candidate set (which is the output of the blocking step) to a set of feature vectors.
+* A workflow to label a set of tuple pairs as match/non-match.
+* A workflow to examine a very large set of tuple pairs to select a small set of tuple pairs that are "informative", then helps the user label this set. This workflow uses a well-known machine learning technique called active learning.
+* An end-to-end workflow that reads two tables A and B, a candidate set C of tuple pairs (obtained from running a blocking solution for A and B), a set of labeled tuple pairs P, then featurize C and P, trains a matcher M on P, then applies M to predict each pair in C as match/non-match. This is a *passive learning* workflow.
+* An end-to-end workflow that reads two tables A and B, a candidate set C of tuple pairs (obtained from running a blocking solution for A and B), takes a sample S of C, performs active learning on S to label a set of tuple pairs, uses this set to train a matcher M, and applies M to predict match/non-match for each tuple pair in C.
+* And many more possible workflows.
+
+The above workflows are created by stitching together MadLib functions and Python code in Python scripts. You can run these scripts in three runtime environments: 
+* *Pandas on a single machine:* Use this if you have a relatively small amount of data, or just want to experiment with MadLib.
+* *Spark on a single machine:* Use this if you have a relatively small amount of data, or just want to experiment with MadLib, or if you want to test your Spark scripts before running them on a cluster.
+*  *Spark on a cluster of machines:* Use this if you have a large amount of data. 
+
+
+
+
+
+ 
 
 ## Features
 
