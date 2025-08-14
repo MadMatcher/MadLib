@@ -16,7 +16,7 @@ This function uses heuristics that analyzes the columns of Tables A and B to cre
 * Parameters A and B are Pandas or Spark dataframes (depending on whether your runtime environment is Pandas on a single machine, Spark on a single machine, or Spark on a cluster of machines). They are the two tables to match. Both dataframes must contain an `_id` column.
 * a_cols and b_cols are lists of column names from A and B. We use these columns to create features. As of now, a_cols and b_cols must be the same list. But in the future we will modify the function create_features to handle the case where these two lists can be different.
 * sim_functions is a list of sim_functions (if provided, this will override the default sim functions used by MadLib, see below).
-* tokenizers is the list of tokenizers (if provided, this will override the default tokenizers used by MadLib, see below).
+* tokenizers is a list of tokenizers (if provided, this will override the default tokenizers used by MadLib, see below).
 * null_threshold is a number in [0,1] specifying the maximal fraction of missing values allowed in a column. MadLib automatically excludes columns with too much missing data from feature generation (see below).
 
 The above function returns a list of features. Each feature is an executable object (as indicated by the `Callable` keyword). 
