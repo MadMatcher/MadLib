@@ -1,6 +1,8 @@
 """
-This example shows how to use MadLib with Spark DataFrames on a cluster.
-Complete workflow using dblp_acm dataset with gold labeler.
+This workflows runs Spark on a cluster. It implements the entire matching step for matching DBLP and ACM tables, 
+using active learning. It loads the data, creates features, featurizes the candidate set, 
+takes a sample, creates seeds, does active learning on the sample in batch mode 
+to label more examples, trains a matcher, and applies the matcher. Here we use the gold labeler.
 """
 
 
