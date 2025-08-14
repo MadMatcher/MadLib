@@ -79,7 +79,7 @@ In the case where the user specifies similarity functions and/or tokenizers, we 
    EditDistanceFeature(column_name, column_name)
    SmithWatermanFeature(column_name, column_name)
    ```
-**Example:** The following is a simple example of creating features:
+**Example:** The following is a simple example of creating features using the default similarity functions and tokenizers:
 
    ```python
    features = create_features(
