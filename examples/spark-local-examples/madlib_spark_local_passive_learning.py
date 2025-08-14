@@ -1,8 +1,10 @@
 """
-This example shows how to use MadLib with Spark DataFrames on a local machine.
-Passive learning workflow using dblp_acm dataset with gold labeler.
-
-The schema for the labeled pairs should be 'id2', 'id1_list', 'label'. 
+This workflow runs Spark on a single machine. It implements the entire matching step, *using passive learning*. 
+It reads in Table A, Table B, the candidate set C (which is a set of tuple pairs output by the blocker), 
+and a set of labeled tuple pairs P. It then featurizes C and P, trains a matcher M on P, 
+then applies M to match the pairs in C. 
+ 
+The schema for the labeled pairs (that is, set P) should be 'id2', 'id1_list', 'label'. 
 'label' is a list of labels for each id1 in the id1_list.
 """
 
@@ -32,6 +34,7 @@ candidates = spark.read.parquet('../data/dblp_acm/cand.parquet')
 candidates = candidates.withColumnRenamed('_id', 'id2') \
     .withColumnRenamed('ids', 'id1_list') \
     .select('id2', 'id1_list')
+# Read in the set P of labeled tuple pairs
 labeled_pairs = spark.read.parquet('../data/dblp_acm/labeled_pairs.parquet')
 
 # Create features
