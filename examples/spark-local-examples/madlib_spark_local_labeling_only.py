@@ -1,6 +1,9 @@
 """
-This example shows how to use MadLib with Spark DataFrames on a local machine.
-Labeling only with the dblp_acm dataset.
+This workflow runs Spark on a single machine. It shows how you can use MadLib functions, 
+especially labeled_pairs() to label a set of tuple pairs.  It loads the data, then asks 
+the user to label the tuple pairs in the candidate set, using the CLI labeler (or the Web labeler). 
+Note that it is straightforward to modify this script to take a sample from the candidate set 
+using down_sample(), then asks the user to label only the pairs in the sample. 
 """
 
 import warnings
