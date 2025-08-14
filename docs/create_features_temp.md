@@ -114,7 +114,7 @@ get_base_tokenizers() # returns the default tokenizer classes used in MadLib: St
 get_extra_tokenizers() # returns the extra tokenizer classes that are implemented, but not used in MadLib: AlphaNumeric, 5gram, Stripped3gram, Stripped5gram
 ```
 
-If you wanted to use all of the default and extra tokenizers, your script would include the following:
+**Example**: If you wanted to use all of the default and extra tokenizers, your script would include the following:
 ```python3
 from MadLib import get_base_tokenizers, get_extra_tokenizers
 
