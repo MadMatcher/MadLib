@@ -71,7 +71,7 @@ In particular, we provide the following extra tokenizers that you can use:
 
 In the case where the user specifies similarity functions and/or tokenizers, we create the features as follows: 
 * We still create the exact match features and the numeric features, as described in the default case.
-* We will create features for each similarity function and tokenizer combination. Each feature will be applied to columns where the average number of tokens produced by the particular tokenizer is at least 3. 
+* We will create features for each similarity function and tokenizer combination provided. If only a list of similarity functions are provided, the features will be created by combinations of the provided similarity functions with the default tokenizers. Similarly, if only a list of tokenizers are provided, the features will be created by combinations of the default similarity functions with the provided tokenizers. If both similarity functions and tokenizers are provied, the features will be created by combinations of the provided similarity functions and the provided tokenizers. Each of the generated features will be applied to columns where the average number of tokens produced by the feature's tokenizer is at least 3. 
 * Finally, we create the following special features if you have included the AlphaNumeric tokenizer. 
    ```python
    # Only for AlphaNumericTokenizer with avg_count <= 10:
