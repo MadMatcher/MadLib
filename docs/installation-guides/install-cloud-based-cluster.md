@@ -101,18 +101,20 @@ If this runs successfully, it will appear as a finished job in the master and wo
 
 ### Running a MadLib Program on a Spark Cluster
 
-If you have followed our instructions for installing MadLib on a single Linux machine (and completed this on each machine in your cluster), then you would have installed MadLib within a Python virtual environment (on each machine in your cluster). Since MadLib was installed in a Python virtual environment, we need to tell Spark to use the Python interpreter within the Python virtual environment. Otherwise, by default, Spark will use the Python interpreter installed on each node that is found in the systems default PATH variable. This can be an issue because if you don’t explicitly tell Spark to use your Python virtual environment’s Python interpreter, it will not be able to access the MadLib package or any of the other Python libraries you installed in your Python virtual environment. To ensure both the driver (the process that submits your job) and the executors (the worker processes) use the same Python interpreter with MadLib installed, you need to point Spark at your Python virtual environment’s Python interpreter. 
+If you have followed our instructions for installing MadLib on a single Linux machine (and completed this on each machine in your cluster), then you would have installed MadLib within a Python virtual environment (on each machine in your cluster). 
 
-The following commands only need to be run on the master node. They do not need to be run on the worker nodes. Spark will only use the configurations from the node where you are submitting the Spark job, which will be the master node..
+Since MadLib was installed in a Python virtual environment, we need to tell Spark to use the Python interpreter within that Python virtual environment. Otherwise, by default, Spark will use the Python interpreter installed on each node that is found in the systems default PATH variable. This can be an issue because if you don’t explicitly tell Spark to use your Python virtual environment’s Python interpreter, it will not be able to access the MadLib package or any of the other Python libraries you installed in your Python virtual environment. 
 
-In order to point Spark to the correct location, run these two commands on the master node before you submit your job using spark-submit:
+To ensure both the driver (the process that submits your job) and the executors (the worker processes) use the same Python interpreter of the MadLib installation, you need to point Spark at the MadLib's Python virtual environment’s Python interpreter. 
+
+To do so, run these two commands on the master node before you submit your job using spark-submit:
 ```
 export PYSPARK_DRIVER_PYTHON=/home/ubuntu/madlib-venv/bin/python3
 export PYSPARK_PYTHON=/home/ubuntu/madlib-venv/bin/python3
 ```
+Here PYSPARK_DRIVER_PYTHON tells the driver which Python interpreter to launch your application with, and PYSPARK_PYTHON tells each executor which Python interpreter to run tasks under.
 
-- PYSPARK_DRIVER_PYTHON tells the driver which Python interpreter to launch your application with.
-- PYSPARK_PYTHON tells each executor which Python interpreter to run tasks under.
+The above two commands only need to be run on the master node. They do not need to be run on the worker nodes. (Spark will only use the configurations from the node where you are submitting the Spark job, which will be the master node.)
 
 If you use the above method, you will need to run those two commands every time you start a new terminal session. If you would prefer to avoid this and always have Spark use the Python virtual environment's Python interpreter, run these two commands on the master node:
 
@@ -122,7 +124,7 @@ echo "export PYSPARK_PYTHON=/home/ubuntu/madlib-venv/bin/python3" >> /home/ubunt
 ```
 Since these two commands write the configuration to the file "spark-env.sh", you do not need to run these commands every time you start a new terminal session. You only need to run them one time on the master node. 
 
-If you installed virtual environment or spark in different paths than those above, you will need to modify your instructions like so:
+If you installed virtual environment or Spark in different paths than those above, you will need to modify your instructions like so:
 ```
 echo "export PYSPARK_DRIVER_PYTHON={path-to-virtual-env}/bin/python3" >> {path-to-spark}/conf/spark-env.sh
 echo "export PYSPARK_PYTHON={path-to-virtual-env}/bin/python3" >> {path-to-spark}/conf/spark-env.sh
