@@ -60,7 +60,7 @@ In this case, we create the features as follows:
    CosineFeature(column_name, column_name, tokenizer=tokenizer)
    ```
 
-**Creating Features for Other Cases:** You can add more similarity functions using the parameter sim_functions and more tokenizers using the parameter tokenizers.
+**Creating Features for Other Cases:** You can override the similarity functions using the parameter sim_functions and override the tokenizers using the parameter tokenizers.
 
 In particular, we provide the following extra tokenizers that you can use: 
 
