@@ -1,6 +1,10 @@
 ## MadLib: A Library of EM Functions
 
-When performing entity matching (EM), users often experiment and use a variety of EM workflows. Users also often want to run these workflows in a variety of runtime environments. MadLib is designed to help with these needs. It is an open-source library of EM functions that can be combined to create a variety of EM workflows. Currently MadLib only focuses on the workflows in the matching step (but in the future we will extend MadLib to also help create workflows for the blocking step). Examples of workflows that MadLib can help create for the matching step: 
+When performing entity matching (EM), users often experiment and use a variety of EM workflows. Users also often want to run these workflows in a variety of runtime environments. MadLib is designed to help with these needs. It is an open-source library of EM functions that can be combined to create a variety of EM workflows. Currently MadLib only focuses on the workflows in the matching step (but in the future we will extend MadLib to also help create workflows for the blocking step). 
+
+### Example Workflows
+
+Examples of workflows that MadLib can help create for the matching step: 
 * A workflow that create features then use them to convert all tuple pairs in the candidate set (which is the output of the blocking step) to a set of feature vectors.
 * A workflow to label a set of tuple pairs as match/non-match.
 * A workflow to examine a very large set of tuple pairs to select a small set of tuple pairs that are "informative", then helps the user label this set. This workflow uses a well-known machine learning technique called active learning.
@@ -8,10 +12,24 @@ When performing entity matching (EM), users often experiment and use a variety o
 * An end-to-end workflow that reads two tables A and B, a candidate set C of tuple pairs (obtained from running a blocking solution for A and B), takes a sample S of C, performs active learning on S to label a set of tuple pairs, uses this set to train a matcher M, and applies M to predict match/non-match for each tuple pair in C.
 * And many more possible workflows.
 
+For example, MadLib functions can be combined to create a matching workflow that is equivalent to the workflow used by [ActiveMatcher](https://github.com/anhaidgroup/active_matcher). See the Python script for this workflow [here](https://github.com/MadMatcher/MadLib/blob/main/examples/spark-cluster-examples/madlib_spark_cluster.py). 
+
+### Runtime Environments
+
 The above workflows are created by stitching together MadLib functions and Python code in Python scripts. You can run these scripts in three runtime environments: 
 * *Pandas on a single machine:* Use this if you have a relatively small amount of data, or just want to experiment with MadLib.
 * *Spark on a single machine:* Use this if you have a relatively small amount of data, or just want to experiment with MadLib, or if you want to test your Spark scripts before running them on a cluster.
-*  *Spark on a cluster of machines:* Use this if you have a large amount of data. 
+*  *Spark on a cluster of machines:* Use this if you have a large amount of data.
+
+### Solving Matching Challenges
+
+Today the matching step of EM often uses machine learning: train a matcher M on a set of labeled tuple pairs, then apply M to new pairs to predict match/non-match. In the EM context this raises a set of challenges, as described below. MadLib provides solutions to these challenges, and these solutions distinguish MadLib from other existing EM packages: 
+* *How to create the features?* MadLib analyzes the schema and data of the two tables A and B to be matched, to create a comprehensive set of features that involve similarity functions and tokenizers.
+* *How to create the training data?* If a set of labeled tuple pairs for training is not available (a very common scenario), MadLib can help the user create such a set, using active learning.
+* *How to scale?* When the tables A and B to be matched are large (e.g., 10M+ tuples), scaling is difficult. MadLib provides Spark-based solutions to these problems.
+* *How to label examples?* MadLib provides a variety of labelers that the user can use, and ways to extend or customize these labelers.
+
+=======================================
 
 
 
