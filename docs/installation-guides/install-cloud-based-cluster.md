@@ -114,7 +114,7 @@ export PYSPARK_PYTHON=/home/ubuntu/madlib-venv/bin/python3
 - PYSPARK_DRIVER_PYTHON tells the driver which Python interpreter to launch your application with.
 - PYSPARK_PYTHON tells each executor which Python interpreter to run tasks under.
 
-If you use the above command, you will need to run those two commands every time you start a new terminal session. If you would prefer to avoid this and always have Spark use the Python virtual environment's Python interpreter, run these two commands on the master node:
+If you use the above method, you will need to run those two commands every time you start a new terminal session. If you would prefer to avoid this and always have Spark use the Python virtual environment's Python interpreter, run these two commands on the master node:
 
 ```  
 echo "export PYSPARK_DRIVER_PYTHON=/home/ubuntu/madlib-venv/bin/python3" >> /home/ubuntu/spark/conf/spark-env.sh
