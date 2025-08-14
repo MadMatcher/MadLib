@@ -592,10 +592,9 @@ def label_pairs(
 ```
 This function takes a set of examples (each is a pair of record IDs), then asks the user to label these examples as match/non-match, using a labeler. 
 * 'labeler' is a Labeler object. See [Built-in Labeler Classes](#built-in-labeler-classes) for available options and usage. Currently, label_pairs supports all of the built-in labeler types, except for the gold labeler.
-* 'pairs' is a Pandas or Spark dataframe that must have at least two columns: `column 1` is record IDs from table A, and `column 2` is record IDs from table B. The columns may be named anything, but the first column must have the records IDs from table A and the second column must have the record IDs from table B. Table A and Table B are specified as `a_df` and `b_df`, respectively, when you create your labeler object.
-If there are more than two columns, only the first two columns will be considered. The rest will be ignored.
-
-This function returns a Pandas or Spark dataframe with the columns `column 1`, `column 2`, `label`. `column 1` and `column 2` will be the names of the first and second columns from the `pairs` DataFrame. For example, if the `pairs` DataFrame had the columns `id1`, `id2`, then the returned DataFrame would have the columns `id1`, `id2`, `label`. The return type (Pandas or Spark DataFrame) will match the input type of `pairs`. 
+* 'pairs' is a Pandas or Spark dataframe that must have at least two columns: a column 'x' that refers to the record ID from Table A and a column 'y' that refers to the record ID from Table B (these two columns can be named anything). Note that when you create the labeler object, you set the field a_df to point to a dataframe storing Table A and set the field b_df to point to a dataframe storing Table B. 
+ 
+This function returns a Pandas or Spark dataframe with the columns 'x', 'y' (described above), 'label'. For example, if the `pairs` DataFrame had the columns 'x' being `id1` and 'y' being `id2`, then the returned DataFrame would have the columns `id1`, `id2`, `label`. The return type (Pandas or Spark DataFrame) will match the input type of `pairs`. 
 
 ### Saving and Loading Functions
 
