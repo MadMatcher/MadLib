@@ -603,12 +603,10 @@ MadLib provides functions to help you save/load features (e.g., the output of cr
 
 #### save_features(features, path)
 ```python
-from MadLib import save_features
-
-features: List[Callable]   # List of feature objects to save
-path: str                  # Path where to save the features file
-
-Returns: None
+def save_features(
+    features: List[Callable]   # List of feature objects to save
+    path: str                  # Path where to save the features file
+) -> None
 ```
 This function saves a list of feature objects to disk using pickle serialization.
 
@@ -643,11 +641,9 @@ This will create a file called 'features.pkl' in the directory where your Python
 
 #### load_features(path)
 ```python
-from MadLib import load_features
-
-path: str                  # Path to the saved features file
-
-Returns: List[Callable]    # List of feature objects
+def load_features(
+    path: str                  # Path to the saved features file
+) -> List[Callable]
 ```
 This function loads a list of feature objects from disk using pickle deserialization. 
 
@@ -670,12 +666,10 @@ This will load in the features list from the 'features.pkl' file in the director
 
 #### save_dataframe(dataframe, path)
 ```python
-from MadLib import save_dataframe
-
-dataframe: Union[pd.DataFrame, pyspark.sql.DataFrame]   # DataFrame to save
-path: str                                              # Path where to save the DataFrame
-
-Returns: None
+def save_dataframe(
+    dataframe: Union[pd.DataFrame, pyspark.sql.DataFrame]   # DataFrame to save
+    path: str                                               # Path where to save the DataFrame
+) -> None
 ```
 Save a dataframe to disk as a parquet file. Automatically detecting if it is a Pandas or Spark dataframe. 
 
@@ -714,12 +708,10 @@ This will create a file called 'feature_vectors_df.parquet' in the directory whe
 
 #### load_dataframe(path, df_type)
 ```python
-from MadLib import load_dataframe
-
-path: str                  # Path to the saved DataFrame parquet file
-df_type: str               # Type of DataFrame to load ('pandas' or 'sparkdf')
-
-Returns:    Union[pd.DataFrame, pyspark.sql.DataFrame]  # Loaded Dataframe
+def load_dataframe(
+    path: str                  # Path to the saved DataFrame parquet file
+    df_type: str               # Type of DataFrame to load ('pandas' or 'sparkdf')
+) -> Union[pd.DataFrame, pyspark.sql.DataFrame]
 ```
 This function loads a dataframe from disk. 
 
