@@ -116,7 +116,7 @@ get_extra_tokenizers() # returns the extra tokenizer classes that are implemente
 
 **Example**: If you wanted to use all of the default and extra tokenizers, your script would include the following:
 ```python3
-from MadLib import get_base_tokenizers, get_extra_tokenizers
+from MadLib import get_base_tokenizers, get_extra_tokenizers, create_featuress
 
 default_tokenizers = get_base_tokenizers()
 extra_tokenizers = get_extra_tokenizers()
