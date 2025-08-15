@@ -1,13 +1,14 @@
 ## MadLib: A Library of EM Functions
 
-*When performing entity matching (EM), users often experiment with a variety of EM workflows, and run these workflows in a variety of runtime environments.* MadLib addresses these needs. It is an open-source library of EM functions that can be combined to create a variety of EM workflows. These workflows can be run in a variety of runtime environments. Currently MadLib focuses on the workflows in the matching step (but will also support workflows in the blocking step in the future). 
+When performing entity matching (EM), *users often want to experiment with a variety of EM workflows and run these workflows in a variety of runtime environments.* MadLib addresses these needs. It is an open-source library of EM functions that can be combined to create a variety of EM workflows, to be run in a variety of runtime environments. MadLib focuses on the workflows in the matching step (but will also support workflows in the blocking step in the future). 
 
 ### Example Workflows
 
 Examples of workflows that MadLib can help create for the matching step: 
 * A *featurizing workflow* that creates features then uses them to convert all tuple pairs in the candidate set (which is the output of the blocking step) to a set of feature vectors.
 * A *labeling workflow* to label a set of tuple pairs as match/non-match.
-* A *sampling workflow* that examines a very large set of tuple pairs to select a small set of tuple pairs that are "informative", then helps the user label this set. This workflow uses a well-known machine learning technique called active learning.
+* A *training-data-creation workflow* that examines a very large set of tuple pairs to select a small set of tuple pairs that are "informative", then helps the user label this set. This workflow uses a well-known machine learning technique called active learning.
+* A *sampling workflow* that outputs a sample of tuple pairs from a large set of tuple pairs. The sample is likely to contain both matches and non-matches.  
 * A *matching-using-passive-learning workflow* that reads two tables A and B, a candidate set C of tuple pairs (obtained from running a blocking solution for A and B), a set of labeled tuple pairs P, featurizes C and P, trains a matcher M on P, then applies M to predict each pair in C as match/non-match.
 * A *matching-using-active-learning* workflow that reads two tables A and B, a candidate set C of tuple pairs (obtained from running a blocking solution for A and B), takes a sample S of C, performs active learning on S to label a set of tuple pairs, uses this set to train a matcher M, and applies M to predict match/non-match for each tuple pair in C.
 * And many more possible workflows.
