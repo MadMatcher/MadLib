@@ -44,7 +44,7 @@ We have used the functions in MadLib or earlier variants in many real-world appl
 
 ### Installation
 
-See instructions to install MadLib on a single machine or a cloud-based cluster. 
+See instructions to install MadLib on a [single machine](https://github.com/MadMatcher/MadLib/blob/main/docs/installation-guides/install-single-machine.md) or a [cloud-based cluster](https://github.com/MadMatcher/MadLib/blob/main/docs/installation-guides/install-cloud-based-cluster.md). 
 
 ### How to Use
 
