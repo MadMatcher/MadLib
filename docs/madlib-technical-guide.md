@@ -60,13 +60,13 @@ We now describe the core functions that you can combine to create a variety of E
 ### create_features()
 ```python
 def create_features(
-    A: Union[pd.DataFrame, SparkDataFrame],        # Your first dataset
-    B: Union[pd.DataFrame, SparkDataFrame],        # Your second dataset
-    a_cols: List[str],                             # Columns from A to compare
-    b_cols: List[str],                             # Columns from B to compare
-    sim_functions: Optional[List[Callable]] = None, # Extra similarity functions
-    tokenizers: Optional[List[Tokenizer]] = None,  # Extra tokenizers
-    null_threshold: float = 0.5                    # Max null percentage allowed
+    A: Union[pd.DataFrame, SparkDataFrame],         # Your first dataset
+    B: Union[pd.DataFrame, SparkDataFrame],         # Your second dataset
+    a_cols: List[str],                              # Columns from A to compare
+    b_cols: List[str],                              # Columns from B to compare
+    sim_functions: Optional[List[Callable]] = None, # List of similarity functions
+    tokenizers: Optional[List[Tokenizer]] = None,   # List of tokenizers
+    null_threshold: float = 0.5                     # Max null percentage allowed
 ) -> List[Callable]
 ```
 
@@ -74,8 +74,8 @@ This function uses heuristics that analyzes the columns of Tables A and B to cre
 
 * Parameters A and B are Pandas or Spark dataframes (depending on whether your runtime environment is Pandas on a single machine, Spark on a single machine, or Spark on a cluster of machines). They are the two tables to match. Both dataframes must contain an `_id` column.
 * a_cols and b_cols are lists of column names from A and B. We use these columns to create features. As of now, a_cols and b_cols must be the same list. But in the future we will modify the function create_features to handle the case where these two lists can be different.
-* sim_functions is a list of extra sim_functions (in addition to the default sim functions used by MadLib, see below).
-* tokenizers is the list of extra tokenizers (in addition to the default tokenizers used by MadLib, see below).
+* sim_functions is a list of sim_functions (if provided, this will override the default sim functions used by MadLib, see below).
+* tokenizers is a list of tokenizers (if provided, this will override the default tokenizers used by MadLib, see below).
 * null_threshold is a number in [0,1] specifying the maximal fraction of missing values allowed in a column. MadLib automatically excludes columns with too much missing data from feature generation (see below).
 
 The above function returns a list of features. Each feature is an executable object (as indicated by the `Callable` keyword). 
@@ -119,30 +119,31 @@ In this case, we create the features as follows:
    CosineFeature(column_name, column_name, tokenizer=tokenizer)
    ```
 
-**Creating Features for Other Cases:** You can add more similarity functions using the parameter sim_functions and more tokenizers using the parameter tokenizers.
+**Creating Features for Other Cases:** You can override the similarity functions using the parameter sim_functions and override the tokenizers using the parameter tokenizers.
 
-In particular, we provide the following extra tokenizers that you can use: 
+In particular, we have implemented the following non-default tokenizers that you can use: 
 
    - `AlphaNumericTokenizer()`: Extracts alphanumeric sequences
    - `QGramTokenizer(5)`: Creates 5-character sequences (5-grams)
    - `StrippedQGramTokenizer(3)`: Creates 3-grams with whitespace stripped
    - `StrippedQGramTokenizer(5)`: Creates 5-grams with whitespace stripped
 
-In the case where the user specifies extra similarity functions and/or extra tokenizers, we create the features as follows: 
+In the case where the user specifies similarity functions and/or tokenizers, we create the features as follows: 
 * We still create the exact match features and the numeric features, as described in the default case.
-* We still create the token-based features, as in the default case. But now we do this for all tokenizers and similarity functions, including the extra ones.
-* Finally, we create the following special features if you have selected the AlphaNumeric tokenizer to be an extra tokenizer. 
+* We will create features for each similarity function and tokenizer combination provided. If only a list of similarity functions are provided, the features will be created by combinations of the provided similarity functions with the default tokenizers. Similarly, if only a list of tokenizers are provided, the features will be created by combinations of the default similarity functions with the provided tokenizers. If both similarity functions and tokenizers are provied, the features will be created by combinations of the provided similarity functions and the provided tokenizers. Each of the generated features will be applied to columns where the average number of tokens produced by the feature's tokenizer is at least 3. 
+* Finally, we create the following special features if you have included the AlphaNumeric tokenizer. 
    ```python
    # Only for AlphaNumericTokenizer with avg_count <= 10:
    MongeElkanFeature(column_name, column_name, tokenizer=tokenizer)
    EditDistanceFeature(column_name, column_name)
    SmithWatermanFeature(column_name, column_name)
    ```
-**Example:** The following is a simple example of creating features:
+**Example:** The following is a simple example of creating features using the default similarity functions and tokenizers:
 
    ```python
    features = create_features(
-       customers_df, prospects_df,
+       customers_df,
+       prospects_df,
        ['name', 'address', 'revenue'],
        ['name', 'address', 'revenue']
    )
@@ -151,11 +152,8 @@ In the case where the user specifies extra similarity functions and/or extra tok
    # 1. All columns get ExactMatchFeature
    # 2. If 'revenue' is numeric, it gets RelDiffFeature
    # 3. For each tokenizer (Defaults: StrippedWhiteSpace, Numeric, QGram):
-   #    - If average token count >= 3 over the column, creates features for all 5 similarity functions
-   #    - If using AlphaNumericTokenizer and the average token count <= 10 over the column, it adds 3 extra features:
-   #      * MongeElkanFeature: String similarity using Jaro-Winkler
-   #      * EditDistanceFeature: Levenshtein edit distance
-   #      * SmithWatermanFeature: Smith-Waterman sequence alignment
+   #    - If average token count >= 3 over the column, creates features for all 5 default similarity functions
+
 
    # Typical output might include:
    # - ExactMatchFeature for name, address, revenue
@@ -163,6 +161,37 @@ In the case where the user specifies extra similarity functions and/or extra tok
    # - TFIDFFeature, JaccardFeature, SIFFeature, OverlapCoeffFeature, CosineFeature
    #   for each tokenizer-column combination with sufficient tokens
    ```
+
+If you want to use some set of our default similarity functions, default tokenizers, or extra tokenizers, we provide the following helper methods:
+```
+get_base_sim_functions() # returns the default similarity function classes used in MadLib: TFIDF, Jaccard, SIF, OverlapCoeffecient, Cosine
+```
+```
+get_base_tokenizers() # returns the default tokenizer classes used in MadLib: StrippedWhiteSpace, Numeric, 3gram
+```
+```
+get_extra_tokenizers() # returns the extra tokenizer classes that are implemented, but not used in MadLib: AlphaNumeric, 5gram, Stripped3gram, Stripped5gram
+```
+
+**Example**: If you wanted to use all of the default and extra tokenizers, your script would include the following:
+```python3
+from MadLib import get_base_tokenizers, get_extra_tokenizers, create_featuress
+
+default_tokenizers = get_base_tokenizers()
+extra_tokenizers = get_extra_tokenizers()
+
+all_tokenizers = default_tokenizers + extra_tokenizers
+
+features = create_features(
+   customers_df,
+   prospects_df,
+   ['name', 'address', 'revenue'],
+   ['name', 'address', 'revenue'],
+   tokenizers=all_tokenizers
+)
+
+```
+
 
 ### featurize()
 ```python
