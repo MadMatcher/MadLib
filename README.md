@@ -1,10 +1,10 @@
 ## MadLib: A Library of EM Functions
 
+### Introduction
+
 When performing entity matching (EM), *users often want to experiment with a variety of EM workflows and run these workflows in a variety of runtime environments.* MadLib addresses these needs. It is an open-source library of EM functions that can be combined to create a variety of EM workflows, for a variety of runtime environments. MadLib focuses on the workflows in the matching step (but will also support workflows in the blocking step in the future). 
 
-### Example Workflows
-
-Examples of workflows that MadLib can help create for the matching step: 
+**Example Workflows:** Examples that MadLib can help create for the matching step: 
 * A *featurizing workflow* that creates features then uses them to convert all tuple pairs in the candidate set (which is the output of the blocking step) to a set of feature vectors.
 * A *labeling workflow* to label a set of tuple pairs as match/non-match.
 * A *training-data-creation workflow* that examines a very large set of tuple pairs to select a small set of tuple pairs that are "informative", then helps the user label this set. This workflow uses a well-known machine learning technique called active learning.
