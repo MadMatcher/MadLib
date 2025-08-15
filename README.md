@@ -44,7 +44,7 @@ See the [MadLib technical guide](https://github.com/MadMatcher/MadLib/blob/main/
 
 ### Further Pointers
 
-See API documentation. For questions / comments, contact [our research group](mailto:entitymatchinginfo@gmail.com).
+See [API documentation](https://madmatcher.github.io/MadLib). For questions / comments, contact [our research group](mailto:entitymatchinginfo@gmail.com).
 
 =======================================
 
