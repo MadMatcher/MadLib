@@ -1,10 +1,8 @@
 ## MadLib: A Library of EM Functions
 
-### Introduction
-
 When performing entity matching (EM), *users often want to experiment with a variety of EM workflows and run these workflows in a variety of runtime environments.* MadLib addresses these needs. It is an open-source library of EM functions that can be combined to create a variety of EM workflows, for a variety of runtime environments. MadLib focuses on the workflows in the matching step (but will also support workflows in the blocking step in the future). 
 
-#### Example Workflows
+### Example Workflows
 
 Examples that MadLib can help create for the matching step: 
 * A *featurizing workflow* that creates features then uses them to convert all tuple pairs in the candidate set (which is the output of the blocking step) to a set of feature vectors.
@@ -31,6 +29,22 @@ Today the matching step of EM often uses machine learning: train a matcher M on 
 * *How to create the training data?* If a set of labeled tuple pairs for training is not available (a very common scenario), MadLib can help the user create such a set, using active learning.
 * *How to scale?* When the tables A and B to be matched are large (e.g., 5M+ tuples), scaling is difficult. MadLib provides Spark-based solutions to these problems.
 * *How to label examples?* MadLib provides a variety of labelers that the user can use (to label data in the command-line interface, using a Web browser, etc.), and ways to extend or customize these labelers.
+
+### Case Studies and Performance Statistics
+
+We have used the functions in MadLib or earlier variants in many real-world applications in domain science and industry. We will report more details here in the near future. 
+
+### Installation
+
+See instructions to install MadLib on a single machine or a cloud-based cluster. 
+
+### How to Use
+
+See the [MadLib technical guide](https://github.com/MadMatcher/MadLib/blob/main/docs/madlib-technical-guide.md) for an in-depth look into the format, working, and usage of MadLib functions. See this page for the [Python scripts of examples of EM workflows](https://github.com/MadMatcher/MadLib/blob/main/docs/workflow-examples.md) created with MadLib. We recommend reading the technical guide before examining the Python scripts. 
+
+### Further Pointers
+
+See API documentation. For questions / comments, contact [our research group](mailto:entitymatchinginfo@gmail.com).
 
 =======================================
 
