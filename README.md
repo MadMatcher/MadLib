@@ -48,7 +48,7 @@ See instructions to install MadLib on a single machine or a cloud-based cluster.
 
 ### How to Use
 
-See the [MadLib technical guide](https://github.com/MadMatcher/MadLib/blob/main/docs/madlib-technical-guide.md) for an in-depth look into the format, working, and usage of MadLib functions. See this page for the [Python scripts of examples of EM workflows](https://github.com/MadMatcher/MadLib/blob/main/docs/workflow-examples.md) created with MadLib. We recommend reading the technical guide before examining the Python scripts. 
+See the [MadLib technical guide](https://github.com/MadMatcher/MadLib/blob/main/docs/madlib-technical-guide.md) for an in-depth look into the format, working, and usage of MadLib functions. See this page for the [Python scripts of examples of EM workflows](https://github.com/MadMatcher/MadLib/blob/main/docs/workflow-examples.md) created with MadLib. We recommend reading the technical guide before examining the Python scripts. You may also want to take a quick look at [this brief note about Spark](https://github.com/MadMatcher/MadLib/blob/main/docs/spark-note.md).
 
 ### Further Pointers
 
