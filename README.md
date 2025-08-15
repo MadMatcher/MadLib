@@ -30,6 +30,14 @@ Today the matching step of EM often uses machine learning: train a matcher M on 
 * *How to scale?* When the tables A and B to be matched are large (e.g., 5M+ tuples), scaling is difficult. MadLib provides Spark-based solutions to these problems.
 * *How to label examples?* MadLib provides a variety of labelers that the user can use (to label data in the command-line interface, using a Web browser, etc.), and ways to extend or customize these labelers.
 
+### Additional Details
+
+* The core functions of MadLib include create_features, featurize, down_sample, create_seeds, label_data, label_pairs, train_matcher, apply_matcher.
+* Features use well-known similarity measures such as TF/IDF, Jaccard, Overlap, Cosine, etc., and well-known tokenizers such as word-level tokenization and qgrams.
+* Labelers are objects that allow users to label using command-line interface and Web browser. If all matches are known, you can use them to simulate labeling (using the Gold Labeler). This facilitates development, debugging, and computing matching accuracy.
+* Matchers can use classification models from Scikit Learn and PySpark MLlib.
+* Features, labelers, and matchers can be customized and new types can be easily added. 
+
 ### Case Studies and Performance Statistics
 
 We have used the functions in MadLib or earlier variants in many real-world applications in domain science and industry. We will report more details here in the near future. 
@@ -46,21 +54,7 @@ See the [MadLib technical guide](https://github.com/MadMatcher/MadLib/blob/main/
 
 See [API documentation](https://madmatcher.github.io/MadLib). For questions / comments, contact [our research group](mailto:entitymatchinginfo@gmail.com).
 
-=======================================
 
-
-
-
-
- 
-
-## Features
-
-- **Machine Learning Models**: Support for both Scikit-Learn and PySpark ML models
-- **Active Learning**: Efficient labeling with batch and continuous modes
-- **Similarity Functions**: TF-IDF, Jaccard, Overlap, SIF embeddings, and Cosine Similarity
-- **Flexible Labeling**: CLI-based, Web-based, and Gold-based labeling interfaces
-- **Scalable Processing**: Can leverage PySpark for handling large datasets
 
 ## Installation
 
