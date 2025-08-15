@@ -53,18 +53,3 @@ See the [MadLib technical guide](https://github.com/MadMatcher/MadLib/blob/main/
 ### Further Pointers
 
 See [API documentation](https://madmatcher.github.io/MadLib). For questions / comments, contact [our research group](mailto:entitymatchinginfo@gmail.com).
-
-
-
-
-
-
-
-
-
-
-
-
-
-1. Check the documentation and examples
-2. Email us at entitymatchinginfo@gmail.com
