@@ -1,6 +1,6 @@
 ## MadLib: A Library of EM Functions
 
-When performing entity matching (EM), *users often want to experiment with a variety of EM workflows and run these workflows in a variety of runtime environments.* MadLib addresses these needs. It is an open-source library of EM functions that can be combined to create a variety of EM workflows, to be run in a variety of runtime environments. MadLib focuses on the workflows in the matching step (but will also support workflows in the blocking step in the future). 
+When performing entity matching (EM), *users often want to experiment with a variety of EM workflows and run these workflows in a variety of runtime environments.* MadLib addresses these needs. It is an open-source library of EM functions that can be combined to create a variety of EM workflows, for a variety of runtime environments. MadLib focuses on the workflows in the matching step (but will also support workflows in the blocking step in the future). 
 
 ### Example Workflows
 
