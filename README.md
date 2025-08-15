@@ -20,15 +20,15 @@ For example, MadLib functions can be combined to create a matching-using-active-
 The above workflows are created by stitching together MadLib functions and Python code in Python scripts. You can run these scripts in three runtime environments: 
 * *Pandas on a single machine:* Use this if you have a relatively small amount of data, or just want to experiment with MadLib.
 * *Spark on a single machine:* Use this if you have a relatively small amount of data, or just want to experiment with MadLib, or if you want to test your Spark scripts before running them on a cluster.
-*  *Spark on a cluster of machines:* Use this if you have a large amount of data.
+*  *Spark on a cluster of machines:* Use this if you have a large amount of data, such as 5M+ tuples or more in Tables A and B. 
 
 ### Solving Matching Challenges
 
-Today the matching step of EM often uses machine learning: train a matcher M on a set of labeled tuple pairs, then apply M to new pairs to predict match/non-match. In the EM context this raises a set of challenges, as described below. MadLib provides solutions to these challenges, and these solutions distinguish MadLib from other existing EM packages: 
+Today the matching step of EM often uses machine learning: train a matcher M on a set of labeled tuple pairs, then apply M to new pairs to predict match/non-match. In the EM context this raises a set of challenges, as described below. MadLib functions address these challenges, and distinguish MadLib from other existing EM packages: 
 * *How to create the features?* MadLib analyzes the schema and data of the two tables A and B to be matched, to create a comprehensive set of features that involve similarity functions and tokenizers.
 * *How to create the training data?* If a set of labeled tuple pairs for training is not available (a very common scenario), MadLib can help the user create such a set, using active learning.
-* *How to scale?* When the tables A and B to be matched are large (e.g., 10M+ tuples), scaling is difficult. MadLib provides Spark-based solutions to these problems.
-* *How to label examples?* MadLib provides a variety of labelers that the user can use, and ways to extend or customize these labelers.
+* *How to scale?* When the tables A and B to be matched are large (e.g., 5M+ tuples), scaling is difficult. MadLib provides Spark-based solutions to these problems.
+* *How to label examples?* MadLib provides a variety of labelers that the user can use (to label data in the command-line interface, using a Web browser, etc.), and ways to extend or customize these labelers.
 
 =======================================
 
