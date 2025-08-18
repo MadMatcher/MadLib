@@ -185,7 +185,7 @@ In the future you can install MadLib using one of the following two options. **A
 
 #### Option 1: Pip Installing from PyPI
 
-**Note that this option is not yet enabled. Please use Option 2.**
+<ul>Note that this option is not yet enabled. Please use Option 2.</ul>
 
 You can install MadLib from PyPI using the following command:
 
