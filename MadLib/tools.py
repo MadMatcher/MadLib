@@ -281,8 +281,6 @@ def train_matcher(
     # the users choices for models: they should either give us a pre-trained model, their own custom MLModel
     # or, they should specify the necessary params. We should be returning to them the trained_model. 
     # on apply, we should expect to get a trained model. 
-    if isinstance(labeled_data, SparkDataFrame):
-        labeled_data = labeled_data.toPandas()
     return model.train(labeled_data, feature_col, label_col)
 
 
