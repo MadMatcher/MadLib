@@ -681,7 +681,7 @@ This function loads a list of feature objects from disk using pickle deserializa
 ```python
 from MadLib import load_features
 
-features = load(path='./features.pkl')
+features = load_features(path='./features.pkl')
 ```
 This will load in the features list from the 'features.pkl' file in the directory where your Python script lives on your local machine.
 
@@ -690,7 +690,7 @@ If you use Spark on a cluster to load the features:
 from MadLib import load_features
 from pathlib import Path
 
-features = load(path=str(Path(__file__).parent / 'features.pkl'))
+features = load_features(path=str(Path(__file__).parent / 'features.pkl'))
 ```
 This will load in the features list from the 'features.pkl' file in the directory where your Python script lives on your master node.
 
