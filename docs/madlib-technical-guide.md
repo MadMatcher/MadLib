@@ -606,6 +606,7 @@ def label_data(
     parquet_file_path = 'active-matcher-training-data.parquet'
     queue_size = 100    # allow the queue to have 100 unlabeled examples
     max_labeled = 1500    # continue the active learning process until 1500 examples are labeled
+    on_demand_stop = False   # since we want to use the max_labeled value, we will set on_demand_stop to False
 ) -> Union[pd.DataFrame, SparkDataFrame]
 ```
 
