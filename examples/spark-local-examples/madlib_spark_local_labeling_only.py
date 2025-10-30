@@ -25,7 +25,7 @@ table_b = spark.read.parquet('../data/dblp_acm/table_b.parquet')
 candidates = spark.read.parquet('../data/dblp_acm/cand.parquet')
 candidates = candidates.withColumnRenamed('_id', 'id2').withColumnRenamed('ids', 'id1_list')
 # explode the id1_list column to get id2, id1 pairs
-candidates = candidates.select('id2', F.explode('id1_list').alias('id1'))
+candidates = candidates.select(F.explode('id1_list').alias('id1'), 'id2')
 
 # Create CLI labeler
 labeler = CLILabeler(
