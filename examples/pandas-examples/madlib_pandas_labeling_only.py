@@ -20,7 +20,7 @@ candidates = candidates.rename(columns={'_id': 'id2', 'ids': 'id1_list'})
 
 # Convert from id2: id1_list to id2: id1 pairs
 candidates = candidates.explode('id1_list').rename(columns={'id1_list': 'id1'})
-candidates = candidates[['id2', 'id1']]
+candidates = candidates[['id1', 'id2']]
 
 # Create CLI labeler
 labeler = CLILabeler(
