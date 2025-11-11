@@ -130,7 +130,7 @@ def _tokenize_and_count(df_itr, token_col_map):
     for df in df_itr:
         yield pd.DataFrame({
                 col : df[t[1]].apply(t[0].tokenize) for col, t in token_col_map.items()
-                }).applymap(lambda x : len(x) if x is not None else None)
+                }).map(lambda x : len(x) if x is not None else None)
 
 
 def _drop_nulls(df, threshold):
