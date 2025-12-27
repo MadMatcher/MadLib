@@ -1,194 +1,168 @@
-"""
-Pytest configuration and shared fixtures for MadLib tests.
-"""
-
-import pytest
-import pandas as pd
-import numpy as np
-from pyspark.sql import SparkSession
-import tempfile
+"""Pytest configuration and shared fixtures (mirroring delex style)."""
 import shutil
+import sys
+import tempfile
 from pathlib import Path
+from typing import Generator
+
+import numpy as np
+import pandas as pd
+import pytest
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+PACKAGE_ROOT = REPO_ROOT / "MadLib"
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+try:
+    import MadLib
+    if Path(getattr(MadLib, "__file__", "")).resolve() == (REPO_ROOT / "__init__.py").resolve():
+        raise ImportError("Repo-level __init__.py shadowing package")
+except Exception:
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "MadLib",
+        PACKAGE_ROOT / "__init__.py",
+        submodule_search_locations=[str(PACKAGE_ROOT)],
+    )
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["MadLib"] = module
+    if spec and spec.loader:
+        spec.loader.exec_module(module)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
+def temp_dir() -> Generator[Path, None, None]:
+    """Create a temporary directory for test files."""
+    path = Path(tempfile.mkdtemp())
+    try:
+        yield path
+    finally:
+        shutil.rmtree(path, ignore_errors=True)
+
+
+@pytest.fixture
+def temp_file(temp_dir: Path) -> Generator[Path, None, None]:
+    """Create a temporary file within temp_dir."""
+    file_path = temp_dir / "test.tmp"
+    file_path.write_text("")
+    try:
+        yield file_path
+    finally:
+        if file_path.exists():
+            file_path.unlink()
+
+
+@pytest.fixture
+def sample_dataframe() -> pd.DataFrame:
+    """Return a small deterministic pandas DataFrame."""
+    return pd.DataFrame({"_id": [1, 2, 3], "value": [0.1, 0.2, 0.3]})
+
+
+@pytest.fixture
+def sample_feature_vectors() -> np.ndarray:
+    """Return a small numpy array of feature vectors."""
+    return np.array([[0.1, 0.2], [0.3, 0.4]], dtype=np.float32)
+
+
+@pytest.fixture
 def spark_session():
-    """Create a Spark session for testing."""
-    spark = SparkSession.builder \
-        .appName("MadLibTests") \
-        .master("local[2]") \
-        .config("spark.sql.warehouse.dir", tempfile.mkdtemp()) \
-        .config("spark.sql.shuffle.partitions", "2") \
-        .getOrCreate()
-    
-    # Set log level to reduce noise during testing
-    spark.sparkContext.setLogLevel("WARN")
-    
-    yield spark
-    spark.stop()
+    """Provide a SparkSession if pyspark is installed."""
+    try:
+        from pyspark.sql import SparkSession
+
+        spark = SparkSession.builder.appName("madlib_tests").getOrCreate()
+        yield spark
+        spark.stop()
+    except ImportError:
+        pytest.skip("pyspark not installed")
 
 
 @pytest.fixture
-def sample_dataframe_a():
-    """Sample DataFrame A for testing."""
-    return pd.DataFrame({
-        '_id': [1, 2, 3, 4, 5],
-        'name': ['Alice Smith', 'Bob Jones', 'Carol Davis', 'David Wilson', 'Eve Brown'],
-        'age': [25, 30, 28, 35, 22],
-        'email': ['alice@email.com', 'bob@email.com', 'carol@email.com', 'david@email.com', None],
-        'phone': ['123-456-7890', '987-654-3210', '555-123-4567', None, '111-222-3333'],
-        'address': ['123 Main St', '456 Oak Ave', '789 Pine Rd', '321 Elm St', '555 Park Ave']
-    })
+def default_model():
+    """Return a default SKLearnModel for active learning tests."""
+    from MadLib._internal.ml_model import SKLearnModel
+    from xgboost import XGBClassifier
 
-
-@pytest.fixture
-def sample_dataframe_b():
-    """Sample DataFrame B for testing."""
-    return pd.DataFrame({
-        '_id': [101, 102, 103, 104, 105],
-        'name': ['Alicia Smith', 'Robert Jones', 'Caroline Davis', 'Dave Wilson', 'Eva Brown'],
-        'age': [26, 29, 28, 36, 23],
-        'email': ['alicia@email.com', 'robert@gmail.com', 'caroline@email.com', None, 'eva@email.com'],
-        'phone': ['123-456-7891', '987-654-3211', None, '555-999-8888', '111-222-3334'],
-        'address': ['124 Main St', '457 Oak Ave', '790 Pine Rd', '322 Elm St', '556 Park Ave']
-    })
-
-
-@pytest.fixture
-def sample_candidates():
-    """Sample candidate pairs for testing."""
-    return pd.DataFrame({
-        'id1_list': [[1], [2], [3], [4], [5]],
-        'id2': [101, 102, 103, 104, 105]
-    })
-
-
-@pytest.fixture
-def sample_blocked_candidates():
-    """Sample blocked candidate pairs for testing."""
-    return pd.DataFrame({
-        'id1_list': [[1, 2], [3], [4, 5]],
-        'id2': [101, 103, 104]
-    })
-
-
-@pytest.fixture
-def gold_labels():
-    """Sample gold standard labels for testing."""
-    return pd.DataFrame({
-        'id1': [1, 3, 5],
-        'id2': [101, 103, 105]
-    })
-
-
-@pytest.fixture
-def sample_feature_vectors():
-    """Sample feature vectors for testing."""
-    np.random.seed(42)
-    return pd.DataFrame({
-        'id1': [1, 2, 3, 4, 5],
-        'id2': [101, 102, 103, 104, 105],
-        'feature_vectors': [np.random.random(10).tolist() for _ in range(5)],
-        'score': np.random.beta(2, 5, 5),
-        '_id': range(5)
-    })
-
-
-@pytest.fixture
-def temp_dir():
-    """Create a temporary directory for testing."""
-    temp_path = Path(tempfile.mkdtemp())
-    yield temp_path
-    shutil.rmtree(temp_path)
-
-
-@pytest.fixture
-def mock_labeled_data(sample_feature_vectors, gold_labels):
-    """Create mock labeled data for testing."""
-    labeled = sample_feature_vectors.copy()
-    # Add labels based on gold standard
-    labeled['label'] = 0.0
-    for _, row in gold_labels.iterrows():
-        mask = (labeled['id1'] == row['id1']) & (labeled['id2'] == row['id2'])
-        labeled.loc[mask, 'label'] = 1.0
-    return labeled
-
-
-# Test data generation utilities
-class TestDataGenerator:
-    """Utility class for generating test data."""
-    
-    @staticmethod
-    def create_large_dataframe(n_rows=1000, missing_rate=0.1):
-        """Create a large DataFrame for performance testing."""
-        np.random.seed(42)
-        names = [f"Person_{i}" for i in range(n_rows)]
-        ages = np.random.randint(18, 80, n_rows)
-        emails = [f"person{i}@email.com" if np.random.random() > missing_rate 
-                 else None for i in range(n_rows)]
-        
-        return pd.DataFrame({
-            '_id': range(1, n_rows + 1),
-            'name': names,
-            'age': ages,
-            'email': emails
-        })
-    
-    @staticmethod
-    def create_feature_vector_with_nans(length=10, nan_rate=0.2):
-        """Create a feature vector with some NaN values."""
-        np.random.seed(42)
-        vector = np.random.random(length)
-        nan_mask = np.random.random(length) < nan_rate
-        vector[nan_mask] = np.nan
-        return vector.tolist()
-
-
-@pytest.fixture
-def test_data_generator():
-    """Provide access to test data generator."""
-    return TestDataGenerator()
-
-
-# Performance testing utilities
-@pytest.fixture
-def performance_timer():
-    """Timer fixture for performance testing."""
-    import time
-    
-    class Timer:
-        def __init__(self):
-            self.start_time = None
-            self.end_time = None
-        
-        def start(self):
-            self.start_time = time.time()
-        
-        def stop(self):
-            self.end_time = time.time()
-            return self.end_time - self.start_time
-        
-        @property
-        def elapsed(self):
-            if self.end_time and self.start_time:
-                return self.end_time - self.start_time
-            return None
-    
-    return Timer()
-
-
-# Test configuration
-def pytest_configure(config):
-    """Configure pytest with custom markers."""
-    config.addinivalue_line(
-        "markers", "unit: mark test as a unit test"
+    return SKLearnModel(
+        XGBClassifier, max_depth=3, n_estimators=10, random_state=42
     )
-    config.addinivalue_line(
-        "markers", "integration: mark test as an integration test"
+
+
+@pytest.fixture
+def seed_df() -> pd.DataFrame:
+    """Return a default seed DataFrame for active learning tests."""
+    return pd.DataFrame(
+        {
+            "_id": [0, 2],
+            "id1": [10, 12],
+            "id2": [20, 22],
+            "feature_vectors": [[0.1, 0.2], [0.3, 0.4]],
+            "label": [1.0, 0.0],
+        }
     )
-    config.addinivalue_line(
-        "markers", "performance: mark test as a performance test"
-    )
-    config.addinivalue_line(
-        "markers", "slow: mark test as slow running"
-    ) 
+
+
+@pytest.fixture
+def fvs_rows():
+    """Return a default list of feature vector rows for Spark DataFrames."""
+    return [
+        {"_id": 0, "id1": 10, "id2": 20, "feature_vectors": [0.1, 0.1], "score": 0.2},
+        {"_id": 1, "id1": 11, "id2": 21, "feature_vectors": [0.2, 0.1], "score": 0.3},
+        {"_id": 2, "id1": 12, "id2": 22, "feature_vectors": [0.3, 0.4], "score": 0.7},
+        {"_id": 3, "id1": 13, "id2": 23, "feature_vectors": [0.4, 0.5], "score": 0.9},
+        {"_id": 4, "id1": 14, "id2": 24, "feature_vectors": [0.5, 0.6], "score": 1.1},
+        {"_id": 5, "id1": 15, "id2": 25, "feature_vectors": [0.6, 0.6], "score": 1.2},
+    ]
+
+
+@pytest.fixture
+def fvs_df(spark_session, fvs_rows):
+    """Return a Spark DataFrame of feature vectors."""
+    return spark_session.createDataFrame(fvs_rows)
+
+
+@pytest.fixture
+def a_df(spark_session):
+    """Return a Spark DataFrame of table A."""
+    return spark_session.createDataFrame([
+        {"_id": 10, "a_attr": "a", "a_num": 1.0},
+        {"_id": 11, "a_attr": "b", "a_num": 2.0},
+        {"_id": 12, "a_attr": "c", "a_num": 3.0},
+    ])
+
+
+@pytest.fixture
+def b_df(spark_session):
+    """Return a Spark DataFrame of table B."""
+    return spark_session.createDataFrame([
+        {"_id": 20, "a_attr": "a", "a_num": 1.0},
+        {"_id": 21, "a_attr": "b", "a_num": 2.0},
+        {"_id": 22, "a_attr": "c", "a_num": 3.0},
+    ])
+
+
+@pytest.fixture
+def id_df_factory(spark_session):
+    """Factory for creating _id-only Spark DataFrames."""
+    def _factory(ids):
+        rows = [{"_id": int(_id)} for _id in ids]
+        return spark_session.createDataFrame(rows)
+
+    return _factory
+
+
+@pytest.fixture
+def tokenizer():
+    """Return a default tokenizer for token-based features."""
+    from MadLib._internal.tokenizer.tokenizer import StrippedWhiteSpaceTokenizer
+    return StrippedWhiteSpaceTokenizer()
+
+
+@pytest.fixture
+def labeler(spark_session):
+    """Return a default labeler for active learning tests."""
+    from MadLib._internal.labeler import GoldLabeler
+    gold_df = spark_session.createDataFrame([{"id1": 13, "id2": 23}, {"id1": 14, "id2": 24}, {"id1": 15, "id2": 25}])
+    return GoldLabeler(gold_df)

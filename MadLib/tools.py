@@ -157,14 +157,23 @@ def create_seeds(
     """
     if nseeds == 0:
         raise ValueError("no seeds would be created")
-    existing_training_data = load_training_data_streaming(parquet_file_path, logger)
     
+    return_pandas = isinstance(fvs, pd.DataFrame)
+    spark = None if return_pandas else SparkSession.builder.getOrCreate()
+    
+    existing_training_data = load_training_data_streaming(parquet_file_path, logger)
+
     if existing_training_data is not None:
         logger.info(f'Found {len(existing_training_data)} existing labeled examples')
         # Check if we already have enough seeds
         if len(existing_training_data) >= nseeds:
             logger.info(f'Already have {len(existing_training_data)} labeled examples, returning existing data')
-            return existing_training_data.head(nseeds)
+            result_df = existing_training_data.head(nseeds)
+            # Convert to Spark DataFrame if input was Spark DataFrame
+            if not return_pandas:
+                result_df = convert_arrays_for_spark(result_df)
+                return spark.createDataFrame(result_df)
+            return result_df
         else:
             logger.info(f'Using {len(existing_training_data)} existing examples, need {nseeds - len(existing_training_data)} more')
             seeds = existing_training_data.to_dict('records')
@@ -176,9 +185,7 @@ def create_seeds(
         pos_count = 0
         neg_count = 0
 
-    return_pandas = isinstance(fvs, pd.DataFrame)
-    # Initialize spark session if needed for SparkDataFrame operations
-    spark = None if return_pandas else SparkSession.builder.getOrCreate()
+    existing_ids = set(existing_training_data['_id'].tolist()) if existing_training_data is not None else set()
     # gold labeler overrides the score column with 1.0 for gold pairs and 0.0 for non-gold pairs
     if isinstance(labeler, GoldLabeler):
         gold_pairs = labeler._gold
@@ -214,14 +221,15 @@ def create_seeds(
                         .limit(fvs_length//2)\
                         .toPandas()\
                         .iterrows()
-
-    pos_count = 0
-    neg_count = 0
-    seeds = []
     i = 0
     while pos_count + neg_count < nseeds and i < fvs_length:
         try:
             _, ex = next(maybe_pos) if pos_count <= neg_count else next(maybe_neg)
+            # Skip if this _id already exists in seeds
+            if ex['_id'] in existing_ids:
+                logger.debug(f'Skipping _id={ex["_id"]}, already exists in seeds')
+                i += 1
+                continue
             label = float(labeler(ex['id1'], ex['id2']))
             if label == -1.0:  # User requested to stop
                 break
@@ -236,6 +244,7 @@ def create_seeds(
             seeds.append(ex)
             new_seed_df = pd.DataFrame([ex])
             save_training_data_streaming(new_seed_df, parquet_file_path, logger)
+            existing_ids.add(ex['_id'])
         except StopIteration:
             print("Ran out of examples before reaching nseeds")
             break
@@ -360,13 +369,13 @@ def label_data(
         fvs = spark.createDataFrame(fvs)
 
     if seeds is None:
-        seeds = create_seeds(fvs=fvs, nseeds=min(10, fvs.count()), labeler=labeler, score_column='score')
+        seeds = create_seeds(fvs=fvs, nseeds=min(10, fvs.count()), labeler=labeler, score_column='score', parquet_file_path=parquet_file_path if mode == "batch" else None)
     if isinstance(seeds, SparkDataFrame):
         seeds = seeds.toPandas()
     if mode == "batch":
-        learner = EntropyActiveLearner(model, labeler, **learner_kwargs)
+        learner = EntropyActiveLearner(model, labeler, parquet_file_path=parquet_file_path, **learner_kwargs)
     elif mode == "continuous":
-        learner = ContinuousEntropyActiveLearner(model, labeler, **learner_kwargs)
+        learner = ContinuousEntropyActiveLearner(model, labeler, parquet_file_path=parquet_file_path, **learner_kwargs)
     else:
         raise ValueError(f"mode must be either 'batch' or 'continuous', not {mode}")
     labeled_data = learner.train(fvs, seeds)
