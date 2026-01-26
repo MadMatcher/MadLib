@@ -1,7 +1,7 @@
-MadLib Tools Documentation
+MatchFlow Tools Documentation
 ==============================
 
-Welcome to the MadLib Tools documentation.
+Welcome to the MatchFlow Tools documentation.
 
 .. toctree::
    :maxdepth: 2

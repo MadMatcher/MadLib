@@ -1,74 +1,113 @@
-
-
-<!DOCTYPE html>
+<!doctype html>
 <html class="writer-html5" lang="en" data-content_root="../../../">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MadLib._internal.ml_model &mdash; MadLib 0.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      MatchFlow._internal.ml_model &mdash; MatchFlow 0.1 documentation
+    </title>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="../../../_static/pygments.css?v=b86133f3"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="../../../_static/css/theme.css?v=e59714d7"
+    />
 
-  
-      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
-      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=2709fde1"></script>
-      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+    <script src="../../../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../search.html" /> 
-</head>
+    <link rel="search" title="Search" href="../../../search.html" />
+  </head>
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-
-          
-          
-          <a href="../../../index.html" class="icon icon-home">
-            MadLib
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../module.html">Module Index</a></li>
-</ul>
-
+  <body class="wy-body-for-nav">
+    <div class="wy-grid-for-nav">
+      <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+        <div class="wy-side-scroll">
+          <div class="wy-side-nav-search">
+            <a href="../../../index.html" class="icon icon-home"> MatchFlow </a>
+            <div role="search">
+              <form
+                id="rtd-search-form"
+                class="wy-form"
+                action="../../../search.html"
+                method="get"
+              >
+                <input
+                  type="text"
+                  name="q"
+                  placeholder="Search docs"
+                  aria-label="Search docs"
+                />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+            </div>
+          </div>
+          <div
+            class="wy-menu wy-menu-vertical"
+            data-spy="affix"
+            role="navigation"
+            aria-label="Navigation menu"
+          >
+            <p class="caption" role="heading">
+              <span class="caption-text">Contents:</span>
+            </p>
+            <ul>
+              <li class="toctree-l1">
+                <a class="reference internal" href="../../../module.html"
+                  >Module Index</a
+                >
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../index.html">MadLib</a>
       </nav>
 
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">MadLib._internal.ml_model</li>
-      <li class="wy-breadcrumbs-aside">
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
-  <h1>Source code for MadLib._internal.ml_model</h1><div class="highlight"><pre>
+      <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+        <nav class="wy-nav-top" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">MatchFlow</a>
+        </nav>
+
+        <div class="wy-nav-content">
+          <div class="rst-content">
+            <div role="navigation" aria-label="Page navigation">
+              <ul class="wy-breadcrumbs">
+                <li>
+                  <a
+                    href="../../../index.html"
+                    class="icon icon-home"
+                    aria-label="Home"
+                  ></a>
+                </li>
+                <li class="breadcrumb-item">
+                  <a href="../../index.html">Module code</a>
+                </li>
+                <li class="breadcrumb-item active">
+                  MatchFlow._internal.ml_model
+                </li>
+                <li class="wy-breadcrumbs-aside"></li>
+              </ul>
+              <hr />
+            </div>
+            <div
+              role="main"
+              class="document"
+              itemscope="itemscope"
+              itemtype="http://schema.org/Article"
+            >
+              <div itemprop="articleBody">
+                <h1>Source code for MatchFlow._internal.ml_model</h1>
+                <div class="highlight">
+                  <pre>
 <span></span><span class="sd">&quot;&quot;&quot;Machine Learning Model base classes and implementations.</span>
 
 <span class="sd">This module provides base classes and implementations for machine learning models,</span>
@@ -99,7 +138,7 @@
 <span class="n">log</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <div class="viewcode-block" id="MLModel">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.MLModel">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.MLModel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MLModel</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for machine learning models.</span>
 <span class="sd">    </span>
@@ -161,7 +200,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="MLModel.predict">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.MLModel.predict">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.MLModel.predict">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span> <span class="n">vector_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Make predictions using the trained model.</span>
@@ -184,7 +223,7 @@
 
 
 <div class="viewcode-block" id="MLModel.predict_with_confidence">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.MLModel.predict_with_confidence">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.MLModel.predict_with_confidence">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">predict_with_confidence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span> <span class="n">vector_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prediction_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">confidence_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Make predictions and confidence scores using the trained model.</span>
@@ -212,7 +251,7 @@
 
 
 <div class="viewcode-block" id="MLModel.prediction_conf">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.MLModel.prediction_conf">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.MLModel.prediction_conf">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">prediction_conf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span> <span class="n">vector_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label_column</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate prediction confidence scores.</span>
@@ -235,7 +274,7 @@
 
 
 <div class="viewcode-block" id="MLModel.entropy">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.MLModel.entropy">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.MLModel.entropy">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span> <span class="n">vector_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate entropy of predictions.</span>
@@ -258,7 +297,7 @@
 
 
 <div class="viewcode-block" id="MLModel.train">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.MLModel.train">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.MLModel.train">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span> <span class="n">vector_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label_column</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Train the model on the given data.</span>
@@ -281,7 +320,7 @@
 
 
 <div class="viewcode-block" id="MLModel.params_dict">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.MLModel.params_dict">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.MLModel.params_dict">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a dictionary of model parameters.</span>
@@ -295,7 +334,7 @@
 
 
 <div class="viewcode-block" id="MLModel.prep_fvs">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.MLModel.prep_fvs">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.MLModel.prep_fvs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">prep_fvs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fvs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span> <span class="n">feature_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;feature_vectors&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare feature vectors for model input.</span>
 <span class="sd">        </span>
@@ -410,7 +449,7 @@
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported DataFrame type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SKLearnModel">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.SKLearnModel">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.SKLearnModel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SKLearnModel</span><span class="p">(</span><span class="n">MLModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Scikit-learn model wrapper.</span>
 <span class="sd">    </span>
@@ -446,7 +485,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_vector_buffer</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="SKLearnModel.params_dict">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.SKLearnModel.params_dict">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.SKLearnModel.params_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span>
                 <span class="s1">&#39;model&#39;</span> <span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">),</span>
@@ -478,7 +517,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trained_model</span>
 
 <div class="viewcode-block" id="SKLearnModel.get_model">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.SKLearnModel.get_model">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.SKLearnModel.get_model">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_args</span><span class="p">)</span></div>
 
@@ -507,7 +546,7 @@
             <span class="k">yield</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trained_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
 
 <div class="viewcode-block" id="SKLearnModel.predict">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.SKLearnModel.predict">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.SKLearnModel.predict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span> <span class="n">vector_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">]:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trained_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Model must be trained to predict&#39;</span><span class="p">)</span>
@@ -534,7 +573,7 @@
             <span class="p">})</span>
 
 <div class="viewcode-block" id="SKLearnModel.predict_with_confidence">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.SKLearnModel.predict_with_confidence">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.SKLearnModel.predict_with_confidence">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">predict_with_confidence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span> <span class="n">vector_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prediction_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">confidence_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">]:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trained_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Model must be trained to predict&#39;</span><span class="p">)</span>
@@ -568,7 +607,7 @@
             <span class="k">yield</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">probs</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
 
 <div class="viewcode-block" id="SKLearnModel.prediction_conf">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.SKLearnModel.prediction_conf">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.SKLearnModel.prediction_conf">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">prediction_conf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">vector_col</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_col</span> <span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trained_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Model must be trained to predict&#39;</span><span class="p">)</span>
@@ -586,7 +625,7 @@
             <span class="k">yield</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">((</span><span class="o">-</span><span class="n">probs</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">probs</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)))</span>
     
 <div class="viewcode-block" id="SKLearnModel.entropy">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.SKLearnModel.entropy">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.SKLearnModel.entropy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">vector_col</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_col</span> <span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trained_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Model must be trained to predict&#39;</span><span class="p">)</span>
@@ -596,7 +635,7 @@
 
 
 <div class="viewcode-block" id="SKLearnModel.train">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.SKLearnModel.train">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.SKLearnModel.train">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">vector_col</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label_column</span> <span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">):</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">convert_to_array</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">vector_col</span><span class="p">)</span>
@@ -609,7 +648,7 @@
 
     
 <div class="viewcode-block" id="SKLearnModel.cross_val_scores">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.SKLearnModel.cross_val_scores">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.SKLearnModel.cross_val_scores">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">cross_val_scores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">vector_col</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label_column</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cv</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">convert_to_array</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">vector_col</span><span class="p">)</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>
@@ -622,7 +661,7 @@
 
 
 <div class="viewcode-block" id="SparkMLModel">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.SparkMLModel">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.SparkMLModel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SparkMLModel</span><span class="p">(</span><span class="n">MLModel</span><span class="p">):</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">nan_fill</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">**</span><span class="n">model_args</span><span class="p">):</span>
@@ -653,13 +692,13 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trained_model</span>
 
 <div class="viewcode-block" id="SparkMLModel.get_model">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.SparkMLModel.get_model">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.SparkMLModel.get_model">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_args</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SparkMLModel.params_dict">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.SparkMLModel.params_dict">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.SparkMLModel.params_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span>
                 <span class="s1">&#39;model&#39;</span> <span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">),</span>
@@ -668,7 +707,7 @@
 
 
 <div class="viewcode-block" id="SparkMLModel.prediction_conf">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.SparkMLModel.prediction_conf">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.SparkMLModel.prediction_conf">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">prediction_conf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">vector_col</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_col</span> <span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trained_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Model must be trained to predict&#39;</span><span class="p">)</span>
@@ -683,7 +722,7 @@
 
 
 <div class="viewcode-block" id="SparkMLModel.predict">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.SparkMLModel.predict">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.SparkMLModel.predict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span> <span class="n">vector_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">]:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trained_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Model must be trained to predict&#39;</span><span class="p">)</span>
@@ -707,7 +746,7 @@
 
     
 <div class="viewcode-block" id="SparkMLModel.predict_with_confidence">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.SparkMLModel.predict_with_confidence">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.SparkMLModel.predict_with_confidence">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">predict_with_confidence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">],</span> <span class="n">vector_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prediction_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">confidence_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">SparkDataFrame</span><span class="p">]:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trained_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Model must be trained to predict&#39;</span><span class="p">)</span>
@@ -745,7 +784,7 @@
 
 
 <div class="viewcode-block" id="SparkMLModel.entropy">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.SparkMLModel.entropy">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.SparkMLModel.entropy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">vector_col</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_col</span> <span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trained_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Model must be trained to compute entropy&#39;</span><span class="p">)</span>
@@ -761,7 +800,7 @@
 
         
 <div class="viewcode-block" id="SparkMLModel.train">
-<a class="viewcode-back" href="../../../module_stubs/MadLib.html#MadLib.SparkMLModel.train">[docs]</a>
+<a class="viewcode-back" href="../../../module_stubs/MatchFlow.html#MatchFlow.SparkMLModel.train">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">vector_col</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label_column</span> <span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
             <span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
@@ -777,33 +816,32 @@
         <span class="k">return</span> <span class="bp">self</span></div>
 </div>
 
-</pre></div>
+</pre>
+                </div>
+              </div>
+            </div>
+            <footer>
+              <hr />
 
-           </div>
+              <div role="contentinfo">
+                <p>&#169; Copyright 2025, Dev Ahluwalia, Derek Paulsen.</p>
+              </div>
+
+              Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using
+              a
+              <a href="https://github.com/readthedocs/sphinx_rtd_theme"
+                >theme</a
+              >
+              provided by <a href="https://readthedocs.org">Read the Docs</a>.
+            </footer>
           </div>
-          <footer>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2025, Dev Ahluwalia, Derek Paulsen.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
         </div>
-      </div>
-    </section>
-  </div>
-  <script>
+      </section>
+    </div>
+    <script>
       jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
+        SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
-
-</body>
+    </script>
+  </body>
 </html>

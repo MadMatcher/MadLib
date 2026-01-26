@@ -5,4 +5,4 @@ Module Index
    :toctree: module_stubs
    :nosignatures:
 
-   MadLib
+   MatchFlow
