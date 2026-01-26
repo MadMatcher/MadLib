@@ -72,7 +72,7 @@ def spark_session():
     try:
         from pyspark.sql import SparkSession
 
-        spark = SparkSession.builder.appName("madlib_tests").getOrCreate()
+        spark = SparkSession.builder.appName("matchflow_tests").getOrCreate()
         yield spark
         spark.stop()
     except ImportError:

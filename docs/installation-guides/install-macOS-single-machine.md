@@ -78,13 +78,13 @@ To download Python environments, we will use Homebrew. Run the following in the 
 Now we will create a Python environment with Python 3.12. This step is necessary to make sure we use the correct version of Python with the correct dependencies. In your terminal, run:
 
 ```
-	python -m venv ~/madlib-venv
+	python -m venv ~/matchflow-venv
 ```
 
-This will create a virtual environment named madlib-venv. To activate this environment, run the following:
+This will create a virtual environment named matchflow-venv. To activate this environment, run the following:
 
 ```
-	source ~/madlib-venv/bin/activate
+	source ~/matchflow-venv/bin/activate
 ```
 
 To make sure everything is correct, run:
@@ -104,7 +104,7 @@ where x ≥ 0, then the Python environment setup is successful.
 Before installing these packages, make sure you are in the virtual environment. If you have just finished Step 1C, you are in the virtual environment. Otherwise, to make sure your virtual environment is active, you can run:
 
 ```
-	source ~/madlib-venv/bin/activate
+	source ~/matchflow-venv/bin/activate
 ```
 
 To install setuptools, run:
@@ -122,7 +122,7 @@ To install build, run:
 If at any point during the installation you close your terminal, you will need to reactivate your virtual environment by running:
 
 ```
-	source ~/madlib-venv/bin/activate
+	source ~/matchflow-venv/bin/activate
 ```
 
 ### Step 2: Installing Java

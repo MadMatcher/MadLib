@@ -18,7 +18,7 @@ class TestAlgorithms:
     def test_select_seeds_sequence(self, fvs_df, labeler, temp_dir: Path):
         """Test create_seeds sequence: initial, enough existing, not enough."""
         parquet_path = str(
-            temp_dir / "test-madlib-training-data.parquet"
+            temp_dir / "test-matchflow-training-data.parquet"
         )
 
         seeds = create_seeds(fvs_df, 4, labeler, 'score', parquet_path)

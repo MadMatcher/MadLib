@@ -109,8 +109,8 @@ To ensure both the driver (the process that submits your job) and the executors 
 To do so, run these two commands on the master node before you submit your job using spark-submit:
 
 ```
-export PYSPARK_DRIVER_PYTHON=/home/ubuntu/madlib-venv/bin/python3
-export PYSPARK_PYTHON=/home/ubuntu/madlib-venv/bin/python3
+export PYSPARK_DRIVER_PYTHON=/home/ubuntu/matchflow-venv/bin/python3
+export PYSPARK_PYTHON=/home/ubuntu/matchflow-venv/bin/python3
 ```
 
 Here PYSPARK_DRIVER_PYTHON tells the driver which Python interpreter to launch your application with, and PYSPARK_PYTHON tells each executor which Python interpreter to run tasks under.
@@ -120,8 +120,8 @@ The above two commands only need to be run on the master node. They do not need 
 If you use the above method, you will need to run those two commands every time you start a new terminal session. If you would prefer to avoid this and always have Spark use the Python virtual environment's Python interpreter, run these two commands on the master node:
 
 ```
-echo "export PYSPARK_DRIVER_PYTHON=/home/ubuntu/madlib-venv/bin/python3" >> /home/ubuntu/spark/conf/spark-env.sh
-echo "export PYSPARK_PYTHON=/home/ubuntu/madlib-venv/bin/python3" >> /home/ubuntu/spark/conf/spark-env.sh
+echo "export PYSPARK_DRIVER_PYTHON=/home/ubuntu/matchflow-venv/bin/python3" >> /home/ubuntu/spark/conf/spark-env.sh
+echo "export PYSPARK_PYTHON=/home/ubuntu/matchflow-venv/bin/python3" >> /home/ubuntu/spark/conf/spark-env.sh
 ```
 
 Since these two commands write the configuration to the file "spark-env.sh", you do not need to run these commands every time you start a new terminal session. You only need to run them one time on the master node.
