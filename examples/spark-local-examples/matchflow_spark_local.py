@@ -113,7 +113,7 @@ trained_model = train_matcher(
 # Apply matcher
 predictions = apply_matcher(
     model=trained_model,
-    df=downsampled_fvs,
+    df=feature_vectors,
     feature_col='feature_vectors',
     prediction_col='prediction',
     confidence_col='confidence'
