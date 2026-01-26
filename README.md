@@ -63,7 +63,7 @@ See instructions to install MatchFlow on a [single machine](https://github.com/M
 
 ### How to Use
 
-See the [MatchFlow technical guide](https://github.com/MadMatcher/MatchFlow/blob/main/docs/madlib-technical-guide.md) for an in-depth look into the format, working, and usage of MatchFlow functions. See this page for the [Python scripts of examples of EM workflows](https://github.com/MadMatcher/MatchFlow/blob/main/docs/workflow-examples.md) created with MatchFlow. We recommend reading the technical guide before examining the Python scripts. You may also want to take a quick look at [this brief note about Spark](https://github.com/MadMatcher/MatchFlow/blob/main/docs/spark-note.md).
+See the [MatchFlow technical guide](https://github.com/MadMatcher/MatchFlow/blob/main/docs/matchflow-technical-guide.md) for an in-depth look into the format, working, and usage of MatchFlow functions. See this page for the [Python scripts of examples of EM workflows](https://github.com/MadMatcher/MatchFlow/blob/main/docs/workflow-examples.md) created with MatchFlow. We recommend reading the technical guide before examining the Python scripts. You may also want to take a quick look at [this brief note about Spark](https://github.com/MadMatcher/MatchFlow/blob/main/docs/spark-note.md).
 
 ### Further Pointers
 
