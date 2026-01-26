@@ -1,10 +1,10 @@
-"""Tests for MadLib algorithms module.
+"""Tests for MatchFlow algorithms module.
 
 This module exposes helper functions for active learning selection.
 """
 from pathlib import Path
 
-from MadLib.tools import down_sample, create_seeds
+from MatchFlow.tools import down_sample, create_seeds
 
 
 class TestAlgorithms:

@@ -15,12 +15,12 @@ from sklearn.metrics import precision_score, recall_score, f1_score
 import warnings
 warnings.filterwarnings('ignore')
 
-# Import MadLib functions
-from MadLib import (
+# Import MatchFlow functions
+from MatchFlow import (
     create_features, featurize, 
     train_matcher, apply_matcher, 
 )
-from MadLib import SKLearnModel
+from MatchFlow import SKLearnModel
 
 # Load data
 table_a = pd.read_parquet('../data/dblp_acm/table_a.parquet')

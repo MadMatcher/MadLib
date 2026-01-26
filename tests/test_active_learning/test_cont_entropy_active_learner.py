@@ -1,4 +1,4 @@
-"""Tests for MadLib._internal.active_learning.cont_entropy_active_learner module.
+"""Tests for MatchFlow._internal.active_learning.cont_entropy_active_learner module.
 
 This module provides ContinuousEntropyActiveLearner and helpers.
 """
@@ -9,12 +9,12 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from MadLib._internal.active_learning.cont_entropy_active_learner import (
+from MatchFlow._internal.active_learning.cont_entropy_active_learner import (
     ContinuousEntropyActiveLearner,
     PQueueItem,
 )
-from MadLib._internal.labeler import CustomLabeler, GoldLabeler
-from MadLib._internal.utils import save_training_data_streaming
+from MatchFlow._internal.labeler import CustomLabeler, GoldLabeler
+from MatchFlow._internal.utils import save_training_data_streaming
 
 
 class StopLabeler(CustomLabeler):

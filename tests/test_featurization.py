@@ -1,14 +1,14 @@
-"""Tests for MadLib._internal.featurization module.
+"""Tests for MatchFlow._internal.featurization module.
 
 This module provides tests for feature creation and featurization functions.
 """
 import pandas as pd
 import numpy as np
 
-from MadLib._internal import featurization
-from MadLib._internal.feature.feature import ExactMatchFeature, RelDiffFeature
-from MadLib._internal.feature.token_feature import JaccardFeature
-from MadLib._internal.tokenizer.tokenizer import StrippedWhiteSpaceTokenizer
+from MatchFlow._internal import featurization
+from MatchFlow._internal.feature.feature import ExactMatchFeature, RelDiffFeature
+from MatchFlow._internal.feature.token_feature import JaccardFeature
+from MatchFlow._internal.tokenizer.tokenizer import StrippedWhiteSpaceTokenizer
 
 
 class TestGetFunctions:

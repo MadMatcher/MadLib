@@ -13,18 +13,18 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-# Import MadLib functions
-from MadLib import (
+# Import MatchFlow functions
+from MatchFlow import (
    create_features, featurize, down_sample, create_seeds,
    train_matcher, apply_matcher, label_data
 )
-from MadLib import GoldLabeler, SKLearnModel
+from MatchFlow import GoldLabeler, SKLearnModel
 
 
 # Initialize Spark session
 spark = SparkSession.builder \
    .master("local[*]") \
-   .appName("MadLib Spark Example") \
+   .appName("MatchFlow Spark Example") \
    .config('spark.sql.execution.arrow.pyspark.enabled', 'true')\
    .getOrCreate()
 

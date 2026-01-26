@@ -1,4 +1,4 @@
-"""Tests for MadLib._internal.storage module.
+"""Tests for MatchFlow._internal.storage module.
 
 This module provides memmap and sqlite-backed storage utilities.
 """
@@ -6,7 +6,7 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from MadLib._internal.storage import (
+from MatchFlow._internal.storage import (
     MemmapArray,
     MemmapDataFrame,
     SqliteDataFrame,

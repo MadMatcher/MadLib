@@ -1,4 +1,4 @@
-"""Tests for MadLib.tools module.
+"""Tests for MatchFlow.tools module.
 
 This module provides tests for the public API functions in tools.py.
 """
@@ -6,9 +6,9 @@ import pytest
 import pandas as pd
 from pathlib import Path
 
-from MadLib import tools
-from MadLib._internal.ml_model import SKLearnModel
-from MadLib._internal.labeler import GoldLabeler
+from MatchFlow import tools
+from MatchFlow._internal.ml_model import SKLearnModel
+from MatchFlow._internal.labeler import GoldLabeler
 from xgboost import XGBClassifier
 from pyspark.sql import DataFrame as SparkDataFrame
 
@@ -280,7 +280,7 @@ class TestSaveLoadFeatures:
 
     def test_save_load_features(self, temp_dir, a_df, b_df):
         """Test saving and loading features."""
-        from MadLib import create_features
+        from MatchFlow import create_features
         features = create_features(a_df, b_df, ['a_attr', 'a_num'], ['a_attr', 'a_num'])
 
         features_path = temp_dir / 'test_features.pkl'

@@ -1,6 +1,6 @@
-## How to Install MadLib on a Cluster of Machines
+## How to Install MatchFlow on a Cluster of Machines
 
-Here we provide instructions for installing MadLib on a cluster of machines on the cloud, specifically on Amazon Web Services (AWS). You can adapt this guide to install MadLib on a cluster of local machines. We have tested these installation instructions only with Ubuntu 22.04, Java Temurin JDK 17, Python 3.12, and Spark 3.5.6. Once MadLib has been installed, you can run it using Spark on a cluster of machines. 
+Here we provide instructions for installing MatchFlow on a cluster of machines on the cloud, specifically on Amazon Web Services (AWS). You can adapt this guide to install MatchFlow on a cluster of local machines. We have tested these installation instructions only with Ubuntu 22.04, Java Temurin JDK 17, Python 3.12, and Spark 3.5.6. Once MatchFlow has been installed, you can run it using Spark on a cluster of machines.
 
 ### Creating EC2 Nodes
 
@@ -13,24 +13,24 @@ You will need to create at least two EC2 instances to serve as nodes in your clu
 5. Under ‘Application and OS image’, ‘Amazon Machine Image’ should be set to Ubuntu 22.04 and ‘Architecture’ should be set to 64-bit (x86).
 6. Select whichever instance type suits your purposes. If you do not know where to begin, m-type instances are general purpose instances well suited for a variety of tasks. Make sure that your instance has enough memory for whatever task you run it on. We recommend at least 5-10GB if you are running blocking tasks on lists involving a million tuples each; larger lists will require more memory.
 7. You will have to create a key pair to securely access each instance. You can set your key pair to whatever you wish, but unless you have unusually high security concerns we recommend that all your instances share the same key pair. You will need this key pair to connect to instances and having one key pair for all instances is much easier to manage than having one key pair per instance.
-9. Under ‘Network Settings’ if you are creating a new security group make sure that the ‘Allow SSH traffic from’ option is not set to ‘Anywhere’, as this will allow anyone who can get ahold of your key pair to connect to the instance and constitutes a security risk. We recommend setting it to ‘My IP’ instead. Keep note of what your security group name is as new instances should be set to the same security group instead of new ones. This is not a mandatory step but configuring your cluster will be much easier if all of your EC2 instances share the same security group, as that will allow them to share connection rules, so it is recommended.
-10. You can set your harddisk space (that is, EBS volume) under ‘Configure Storage’ to whatever you feel is necessary. We recommend at least 20 gigabytes.
-11. You can now click on ‘Launch Instance’ at the bottom. Do not touch any other settings.
-12. You should navigate to ‘Instances’ from the navigation panel on the left; you can view and manage all your created instances from this page.
-13. When you create a new instance, it should start automatically. If you want to start or stop it manually, there is a button labeled ‘Instance state’ at the top of the page. Clicking on that will show a dropdown menu with ‘start instance’ and ‘stop instance’ buttons.
-14. You can select an instance from the list of instances by clicking on the checkbox to the left of its name. When you select an instance on the instance page, an informational panel will appear at the bottom of the page. Switch to the ‘details’ tab and record the private and public IPv4 addresses of any instance you create, as these will be necessary for connecting to instances through networks. Note that while the private address is fixed, the public address is different every time you restart an instance. You will need to re-record it each time. Instances that have been stopped do not have a public IPv4 address.
-15. You will also need to configure the instance’s security group to accept connections from your local machine and other instances. It is possible that this was set automatically when creating the security group, but check to make sure. If you have assigned all of your instances to a single security group, you will only need to do this once.
+8. Under ‘Network Settings’ if you are creating a new security group make sure that the ‘Allow SSH traffic from’ option is not set to ‘Anywhere’, as this will allow anyone who can get ahold of your key pair to connect to the instance and constitutes a security risk. We recommend setting it to ‘My IP’ instead. Keep note of what your security group name is as new instances should be set to the same security group instead of new ones. This is not a mandatory step but configuring your cluster will be much easier if all of your EC2 instances share the same security group, as that will allow them to share connection rules, so it is recommended.
+9. You can set your harddisk space (that is, EBS volume) under ‘Configure Storage’ to whatever you feel is necessary. We recommend at least 20 gigabytes.
+10. You can now click on ‘Launch Instance’ at the bottom. Do not touch any other settings.
+11. You should navigate to ‘Instances’ from the navigation panel on the left; you can view and manage all your created instances from this page.
+12. When you create a new instance, it should start automatically. If you want to start or stop it manually, there is a button labeled ‘Instance state’ at the top of the page. Clicking on that will show a dropdown menu with ‘start instance’ and ‘stop instance’ buttons.
+13. You can select an instance from the list of instances by clicking on the checkbox to the left of its name. When you select an instance on the instance page, an informational panel will appear at the bottom of the page. Switch to the ‘details’ tab and record the private and public IPv4 addresses of any instance you create, as these will be necessary for connecting to instances through networks. Note that while the private address is fixed, the public address is different every time you restart an instance. You will need to re-record it each time. Instances that have been stopped do not have a public IPv4 address.
+14. You will also need to configure the instance’s security group to accept connections from your local machine and other instances. It is possible that this was set automatically when creating the security group, but check to make sure. If you have assigned all of your instances to a single security group, you will only need to do this once.
     - Switch to the ‘security’ tab in the informational panel and click on the security group link in the ‘security details’ section. This will open up the instance’s security group page.
     - Click on ‘edit inbound rules’ in the ‘inbound rules’ section.
     - Click on ‘add rule’ in the bottom left corner. This will create a new blank rule. Set the ‘type’ column to SSH and put your ip address in the box to the right of the ‘source’ column. Optionally, you may also give your rule a description.
     - Once you have added this rule, you can click on ‘save rules’ in the lower right to finalize and save your changes.
     - You can now connect to your instance. This will allow you to execute terminal commands on it. The exact method of connection will depend on your personal machine’s OS, but regardless of which method you use you will need to tell it to connect to ‘ubuntu@{the instance’s public IP address}’. You should wait for an instance to pass all checks under the ‘Status check’ column before connecting to it. Note that you may need to reload the AWS page in order for this column to update.
 
-### Installing MadLib
+### Installing MatchFlow
 
-Next you need to install MadLib on every node in your cluster. 
+Next you need to install MatchFlow on every node in your cluster.
 
-You can find instructions for installing MadLib and its prerequisites (Python, Java, Flask, Joblib, mmh3, Numba, Numpy, Numpydoc, Pandas, Pyarrow, Py_Stringmatching, PySpark, Requests, Scikit-Learn, Scipy, Streamlit, Tabulate, Threadpoolctl, TQDM, Xgboost, Xxhash) here: [MadLib Linux Installation](https://github.com/MadMatcher/MadLib/blob/main/docs/installation-guides/install-linux-single-machine.md)
+You can find instructions for installing MatchFlow and its prerequisites (Python, Java, Flask, Joblib, mmh3, Numba, Numpy, Numpydoc, Pandas, Pyarrow, Py_Stringmatching, PySpark, Requests, Scikit-Learn, Scipy, Streamlit, Tabulate, Threadpoolctl, TQDM, Xgboost, Xxhash) here: [MatchFlow Linux Installation](https://github.com/MadMatcher/MatchFlow/blob/main/docs/installation-guides/install-linux-single-machine.md)
 
 ### Installing Spark
 
@@ -98,35 +98,37 @@ If you want to test the functionality of your Spark cluster, a number of example
 
 If this runs successfully, it will appear as a finished job in the master and worker UIs.
 
+### Running a MatchFlow Program on a Spark Cluster
 
-### Running a MadLib Program on a Spark Cluster
+If you have followed our instructions for installing MatchFlow on a single Linux machine (and completed this on each machine in your cluster), then you would have installed MatchFlow within a Python virtual environment (on each machine in your cluster).
 
-If you have followed our instructions for installing MadLib on a single Linux machine (and completed this on each machine in your cluster), then you would have installed MadLib within a Python virtual environment (on each machine in your cluster). 
+Since MatchFlow was installed in a Python virtual environment, we need to tell Spark to use the Python interpreter within that Python virtual environment. Otherwise, by default, Spark will use the Python interpreter installed on each node that is found in the systems default PATH variable. This can be an issue because if you don’t explicitly tell Spark to use your Python virtual environment’s Python interpreter, it will not be able to access the MatchFlow package or any of the other Python libraries you installed in your Python virtual environment.
 
-Since MadLib was installed in a Python virtual environment, we need to tell Spark to use the Python interpreter within that Python virtual environment. Otherwise, by default, Spark will use the Python interpreter installed on each node that is found in the systems default PATH variable. This can be an issue because if you don’t explicitly tell Spark to use your Python virtual environment’s Python interpreter, it will not be able to access the MadLib package or any of the other Python libraries you installed in your Python virtual environment. 
-
-To ensure both the driver (the process that submits your job) and the executors (the worker processes) use the same Python interpreter of the MadLib installation, you need to point Spark at the MadLib's Python virtual environment’s Python interpreter. 
+To ensure both the driver (the process that submits your job) and the executors (the worker processes) use the same Python interpreter of the MatchFlow installation, you need to point Spark at the MatchFlow's Python virtual environment’s Python interpreter.
 
 To do so, run these two commands on the master node before you submit your job using spark-submit:
+
 ```
 export PYSPARK_DRIVER_PYTHON=/home/ubuntu/madlib-venv/bin/python3
 export PYSPARK_PYTHON=/home/ubuntu/madlib-venv/bin/python3
 ```
+
 Here PYSPARK_DRIVER_PYTHON tells the driver which Python interpreter to launch your application with, and PYSPARK_PYTHON tells each executor which Python interpreter to run tasks under.
 
 The above two commands only need to be run on the master node. They do not need to be run on the worker nodes. (Spark will only use the configurations from the node where you are submitting the Spark job, which will be the master node.)
 
 If you use the above method, you will need to run those two commands every time you start a new terminal session. If you would prefer to avoid this and always have Spark use the Python virtual environment's Python interpreter, run these two commands on the master node:
 
-```  
+```
 echo "export PYSPARK_DRIVER_PYTHON=/home/ubuntu/madlib-venv/bin/python3" >> /home/ubuntu/spark/conf/spark-env.sh
 echo "export PYSPARK_PYTHON=/home/ubuntu/madlib-venv/bin/python3" >> /home/ubuntu/spark/conf/spark-env.sh
 ```
-Since these two commands write the configuration to the file "spark-env.sh", you do not need to run these commands every time you start a new terminal session. You only need to run them one time on the master node. 
+
+Since these two commands write the configuration to the file "spark-env.sh", you do not need to run these commands every time you start a new terminal session. You only need to run them one time on the master node.
 
 If you installed virtual environment or Spark in different paths than those above, you will need to modify your instructions like so:
+
 ```
 echo "export PYSPARK_DRIVER_PYTHON={path-to-virtual-env}/bin/python3" >> {path-to-spark}/conf/spark-env.sh
 echo "export PYSPARK_PYTHON={path-to-virtual-env}/bin/python3" >> {path-to-spark}/conf/spark-env.sh
 ```
-

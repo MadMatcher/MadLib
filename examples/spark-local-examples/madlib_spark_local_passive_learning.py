@@ -13,17 +13,17 @@ from xgboost import XGBClassifier
 import warnings
 warnings.filterwarnings('ignore')
 
-# Import MadLib functions
-from MadLib import (
+# Import MatchFlow functions
+from MatchFlow import (
     create_features, featurize, 
     train_matcher, apply_matcher, 
 )
-from MadLib import SKLearnModel
+from MatchFlow import SKLearnModel
 
 # Initialize Spark session
 spark = SparkSession.builder \
     .master("local[*]") \
-    .appName("MadLib Spark Passive Learning Example") \
+    .appName("MatchFlow Spark Passive Learning Example") \
     .config('spark.sql.execution.arrow.pyspark.enabled', 'true') \
     .getOrCreate()
 

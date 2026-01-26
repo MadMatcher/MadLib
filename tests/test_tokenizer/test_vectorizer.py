@@ -1,11 +1,11 @@
-"""Tests for MadLib._internal.tokenizer.vectorizer module.
+"""Tests for MatchFlow._internal.tokenizer.vectorizer module.
 
 This module converts token hashes to dense vector representations.
 """
 import numpy as np
 import pytest
 
-from MadLib._internal.tokenizer.vectorizer import (
+from MatchFlow._internal.tokenizer.vectorizer import (
     TFIDFVectorizer,
     SIFVectorizer,
     _doc_freq_to_idf,
@@ -13,8 +13,8 @@ from MadLib._internal.tokenizer.vectorizer import (
     _vectorize_tfidf,
     _vectorize_sif,
 )
-from MadLib._internal.feature.vector_feature import DocFreqBuilder
-from MadLib._internal.tokenizer.tokenizer import StrippedWhiteSpaceTokenizer
+from MatchFlow._internal.feature.vector_feature import DocFreqBuilder
+from MatchFlow._internal.tokenizer.tokenizer import StrippedWhiteSpaceTokenizer
 
 
 class TestTFIDFVectorizer:

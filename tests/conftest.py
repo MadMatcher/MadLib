@@ -10,24 +10,24 @@ import pandas as pd
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-PACKAGE_ROOT = REPO_ROOT / "MadLib"
+PACKAGE_ROOT = REPO_ROOT / "MatchFlow"
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 try:
-    import MadLib
-    if Path(getattr(MadLib, "__file__", "")).resolve() == (REPO_ROOT / "__init__.py").resolve():
+    import MatchFlow
+    if Path(getattr(MatchFlow, "__file__", "")).resolve() == (REPO_ROOT / "__init__.py").resolve():
         raise ImportError("Repo-level __init__.py shadowing package")
 except Exception:
     import importlib.util
 
     spec = importlib.util.spec_from_file_location(
-        "MadLib",
+        "MatchFlow",
         PACKAGE_ROOT / "__init__.py",
         submodule_search_locations=[str(PACKAGE_ROOT)],
     )
     module = importlib.util.module_from_spec(spec)
-    sys.modules["MadLib"] = module
+    sys.modules["MatchFlow"] = module
     if spec and spec.loader:
         spec.loader.exec_module(module)
 
@@ -82,7 +82,7 @@ def spark_session():
 @pytest.fixture
 def default_model():
     """Return a default SKLearnModel for active learning tests."""
-    from MadLib._internal.ml_model import SKLearnModel
+    from MatchFlow._internal.ml_model import SKLearnModel
     from xgboost import XGBClassifier
 
     return SKLearnModel(
@@ -156,13 +156,13 @@ def id_df_factory(spark_session):
 @pytest.fixture
 def tokenizer():
     """Return a default tokenizer for token-based features."""
-    from MadLib._internal.tokenizer.tokenizer import StrippedWhiteSpaceTokenizer
+    from MatchFlow._internal.tokenizer.tokenizer import StrippedWhiteSpaceTokenizer
     return StrippedWhiteSpaceTokenizer()
 
 
 @pytest.fixture
 def labeler(spark_session):
     """Return a default labeler for active learning tests."""
-    from MadLib._internal.labeler import GoldLabeler
+    from MatchFlow._internal.labeler import GoldLabeler
     gold_df = spark_session.createDataFrame([{"id1": 13, "id2": 23}, {"id1": 14, "id2": 24}, {"id1": 15, "id2": 25}])
     return GoldLabeler(gold_df)

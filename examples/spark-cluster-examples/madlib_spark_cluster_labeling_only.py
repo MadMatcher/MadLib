@@ -1,5 +1,5 @@
 """
-This workflow runs Spark on a cluster. It shows how you can use MadLib functions, 
+This workflow runs Spark on a cluster. It shows how you can use MatchFlow functions, 
 especially labeled_pairs() to label a set of tuple pairs.  It loads the data, then asks 
 the user to label the tuple pairs in the candidate set, using the CLI labeler (or the Web labeler). 
 Note that it is straightforward to modify this script to take a sample from the candidate set 
@@ -10,13 +10,13 @@ import warnings
 from pyspark.sql import SparkSession
 from pathlib import Path
 import pyspark.sql.functions as F
-# Import MadLib functions
-from MadLib import WebUILabeler, save_dataframe, load_dataframe, label_pairs
+# Import MatchFlow functions
+from MatchFlow import WebUILabeler, save_dataframe, load_dataframe, label_pairs
 warnings.filterwarnings('ignore')
 
 spark = SparkSession.builder \
    .master("{url of spark master node}") \
-   .appName("MadLib Spark Labeling Only") \
+   .appName("MatchFlow Spark Labeling Only") \
    .config('spark.sql.execution.arrow.pyspark.enabled', 'true')\
    .getOrCreate()
 

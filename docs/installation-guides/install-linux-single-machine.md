@@ -1,6 +1,6 @@
-## How to Install MadLib on a Linux Machine
+## How to Install MatchFlow on a Linux Machine
 
-This is a step-by-step guide to install MadLib on a single Linux machine with Ubunutu 22.0.4 and Python 3.12. You can try to adapt this guide to other configurations. Once you have installed MadLib on a single Linux machine, you can run MadLib using Pandas or Spark. 
+This is a step-by-step guide to install MatchFlow on a single Linux machine with Ubunutu 22.0.4 and Python 3.12. You can try to adapt this guide to other configurations. Once you have installed MatchFlow on a single Linux machine, you can run MatchFlow using Pandas or Spark.
 
 ### Step 1: Installing Essential Packages
 
@@ -25,7 +25,7 @@ sudo apt install -y \
     wget
 ```
 
-Once these have been installed, we can install Java, Python, and MadLib.
+Once these have been installed, we can install Java, Python, and MatchFlow.
 
 ### Step 2: Installing Java
 
@@ -61,7 +61,7 @@ java --version
 
 ### Step 3: Installing Python
 
-We now install Python 3.12, create a virtual environment, and install two Python packages setuptools and build. Other versions of Python, other environments, or incorrect installations of the setuptools and build packages can cause issues with MadLib installation.
+We now install Python 3.12, create a virtual environment, and install two Python packages setuptools and build. Other versions of Python, other environments, or incorrect installations of the setuptools and build packages can cause issues with MatchFlow installation.
 
 If you suspect that you may have Python downloaded on your machine already, open up your terminal. Then run the command:
 
@@ -86,14 +86,18 @@ If the output of this is
 where x is a number, you can go to Step 3B (you do not need to complete Step 3A).
 
 If
+
 ```
 which python3
 ```
+
 or
+
 ```
 python3 --version
 ```
-do not have the outputs listed above, continue to Step 3A. 
+
+do not have the outputs listed above, continue to Step 3A.
 
 #### Step 3A: Installing Python 3.12
 
@@ -105,6 +109,7 @@ Run the following commands in the terminal to install Python 3.12:
     sudo curl -O https://www.python.org/ftp/python/3.12.3/Python-3.12.3.tgz
     sudo tar xzf Python-3.12.3.tgz
 ```
+
 ```
     cd Python-3.12.3
     sudo make clean
@@ -112,7 +117,9 @@ Run the following commands in the terminal to install Python 3.12:
     sudo make -j$(nproc)
     sudo make altinstall
 ```
-Now run the following commands to make Python 3.12 the default: 
+
+Now run the following commands to make Python 3.12 the default:
+
 ```
 sudo update-alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.12 1
 python3.12 -m ensurepip --default-pip
@@ -122,21 +129,25 @@ python3.12 -m pip install --upgrade pip setuptools
 #### Step 3B: Setting Up the Python Environment
 
 Now we will create a Python environment with Python 3.12. This step is necessary to make sure we use the correct version of Python with the correct dependencies. First, we install the venv module with the following command:
+
 ```
     sudo apt install python3-venv
 ```
 
 Next, in your terminal, run:
+
 ```
     python3 -m venv ~/madlib-venv
 ```
 
 This will create a virtual environment named madlib-venv. To activate this environment, run the following:
+
 ```
     source ~/madlib-venv/bin/activate
 ```
 
 To make sure everything is correct, run:
+
 ```
     python3 --version
 ```
@@ -173,36 +184,36 @@ If at any point during the installation you close your terminal, you will need t
     source ~/madlib-venv/bin/activate
 ```
 
-### Step 4: Installing MadLib
+### Step 4: Installing MatchFlow
 
-Before installing MadLib, we should return to the root directory by running the following command in the terminal:
+Before installing MatchFlow, we should return to the root directory by running the following command in the terminal:
 
 ```
     cd
 ```
 
-In the future you can install MadLib using one of the following two options. **As of now, since MadLib is still in testing, we do not yet enable Option 1 (Pip installing from PyPI). Thus you should use Option 2 (Pip installing from GitHub).**
+In the future you can install MatchFlow using one of the following two options. **As of now, since MatchFlow is still in testing, we do not yet enable Option 1 (Pip installing from PyPI). Thus you should use Option 2 (Pip installing from GitHub).**
 
 #### Option 1: Pip Installing from PyPI
 
 Note that this option is not yet enabled. Please use Option 2.
 
-You can install MadLib from PyPI using the following command:
+You can install MatchFlow from PyPI using the following command:
 
 ```
-    pip install MadLib
+    pip install MatchFlow
 ```
 
-This command will install MadLib and all of its dependencies, such as Flask, Joblib, mmh3, Numba, Numpy, Numpydoc, Pandas, Pyarrow, Py_Stringmatching, PySpark, Requests, Scikit-Learn, Scipy, Streamlit, Tabulate, Threadpoolctl, TQDM, Xgboost, Xxhash.
+This command will install MatchFlow and all of its dependencies, such as Flask, Joblib, mmh3, Numba, Numpy, Numpydoc, Pandas, Pyarrow, Py_Stringmatching, PySpark, Requests, Scikit-Learn, Scipy, Streamlit, Tabulate, Threadpoolctl, TQDM, Xgboost, Xxhash.
 
 #### Option 2: Pip Installing from GitHub
 
-Instead of pip installing from PyPI, you may want to pip install MadLib from its GitHub repo. This happens if you want to install the latest MadLib version compared to the version on PyPI. For example, the GitHub version may contain bug fixes that the PyPI version does not.
+Instead of pip installing from PyPI, you may want to pip install MatchFlow from its GitHub repo. This happens if you want to install the latest MatchFlow version compared to the version on PyPI. For example, the GitHub version may contain bug fixes that the PyPI version does not.
 
-To install MadLib directly from its GitHub repo, use the following command:
+To install MatchFlow directly from its GitHub repo, use the following command:
 
 ```
-    pip install git+https://github.com/MadMatcher/MadLib.git@main
+    pip install git+https://github.com/MadMatcher/MatchFlow.git@main
 ```
 
-Similar to pip installing from PyPI, the above command will install MadLib and all of its dependencies.
+Similar to pip installing from PyPI, the above command will install MatchFlow and all of its dependencies.
