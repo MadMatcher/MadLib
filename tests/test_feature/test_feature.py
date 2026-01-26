@@ -1,8 +1,8 @@
-"""Tests for MadLib._internal.feature.feature module.
+"""Tests for MatchFlow._internal.feature.feature module.
 
 This module defines base Feature classes and string similarity features.
 """
-from MadLib._internal.feature.feature import (
+from MatchFlow._internal.feature.feature import (
     ExactMatchFeature,
     RelDiffFeature,
     EditDistanceFeature,

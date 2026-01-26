@@ -1,8 +1,8 @@
-"""Tests for MadLib._internal.feature.token_feature module.
+"""Tests for MatchFlow._internal.feature.token_feature module.
 
 This module defines token-based similarity features.
 """
-from MadLib._internal.feature.token_feature import (
+from MatchFlow._internal.feature.token_feature import (
     JaccardFeature,
     OverlapCoeffFeature,
     CosineFeature,

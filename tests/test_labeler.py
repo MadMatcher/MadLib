@@ -1,4 +1,4 @@
-"""Tests for MadLib._internal.labeler module.
+"""Tests for MatchFlow._internal.labeler module.
 
 This module provides Labeler abstractions and implementations.
 """
@@ -6,7 +6,7 @@ import pytest
 from unittest.mock import patch
 import time
 
-from MadLib._internal.labeler import (
+from MatchFlow._internal.labeler import (
     Labeler,
     GoldLabeler,
     DelayedGoldLabeler,

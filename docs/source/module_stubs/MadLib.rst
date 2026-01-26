@@ -1,6 +1,6 @@
-﻿MadLib
+﻿MatchFlow
 ======
 
-.. automodule:: MadLib
+.. automodule:: MatchFlow
 
    

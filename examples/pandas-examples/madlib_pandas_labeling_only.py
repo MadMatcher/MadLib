@@ -1,5 +1,5 @@
 """
-This workflow runs Pandas on a single machine. It shows how you can use MadLib functions, 
+This workflow runs Pandas on a single machine. It shows how you can use MatchFlow functions, 
 especially labeled_pairs() to label a set of tuple pairs.  It loads the data, then asks 
 the user to label the tuple pairs in the candidate set, using the CLI labeler (or the Web labeler). 
 Note that it is straightforward to modify this script to take a sample from the candidate set 
@@ -8,8 +8,8 @@ using down_sample(), then asks the user to label only the pairs in the sample.
 
 import pandas as pd
 import warnings
-# Import MadLib functions
-from MadLib import CLILabeler, WebUILabeler, save_dataframe, load_dataframe, label_pairs
+# Import MatchFlow functions
+from MatchFlow import CLILabeler, WebUILabeler, save_dataframe, load_dataframe, label_pairs
 warnings.filterwarnings('ignore')
 
 # Load data

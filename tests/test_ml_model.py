@@ -1,4 +1,4 @@
-"""Tests for MadLib._internal.ml_model module.
+"""Tests for MatchFlow._internal.ml_model module.
 This module wraps MLModel abstractions and model utilities.
 """
 import pytest
@@ -7,7 +7,7 @@ import pandas as pd
 from pyspark.sql.types import ArrayType, DoubleType, FloatType
 from pyspark.ml.linalg import Vectors, VectorUDT
 from pyspark.ml.classification import GBTClassifier
-from MadLib._internal.ml_model import (
+from MatchFlow._internal.ml_model import (
     MLModel,
     SKLearnModel,
     SparkMLModel,

@@ -1,17 +1,17 @@
-"""Tests for MadLib._internal.feature.vector_feature module.
+"""Tests for MatchFlow._internal.feature.vector_feature module.
 
 This module provides document frequency builders and TFIDF/SIF features.
 """
 import pandas as pd
 import numpy as np
 
-from MadLib._internal.feature.vector_feature import (
+from MatchFlow._internal.feature.vector_feature import (
     DocFreqBuilder,
     TFIDFFeature,
     SIFFeature,
 )
-from MadLib._internal.tokenizer.vectorizer import SIFVectorizer
-from MadLib._internal.featurization import BuildCache
+from MatchFlow._internal.tokenizer.vectorizer import SIFVectorizer
+from MatchFlow._internal.featurization import BuildCache
 
 
 class TestDocFreqBuilder:

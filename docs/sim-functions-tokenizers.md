@@ -1,6 +1,6 @@
-## Similarity Functions and Tokenizers in MadLib
+## Similarity Functions and Tokenizers in MatchFlow
 
-In MadLib, we create a set of features, then use them to convert each tuple pair into a feature vector. Roughly speaking, a feature is a way to compare two values and determine how similar they are. Think of it as answering questions like:
+In MatchFlow, we create a set of features, then use them to convert each tuple pair into a feature vector. Roughly speaking, a feature is a way to compare two values and determine how similar they are. Think of it as answering questions like:
 
 - How similar are these two names?
 - How different are these two ages?
@@ -20,7 +20,6 @@ Features are created through two main components:
    ```
 
    Breaking text into tokens helps handle:
-
    - Different word orders
    - Extra/missing words
    - Punctuation
@@ -30,7 +29,7 @@ Features are created through two main components:
 
 2. **Similarity Functions**  
    What they are: Methods to compute how similar two sets of tokens are  
-   Available similarity functions in MadLib (as of July 31, 2025):
+   Available similarity functions in MatchFlow (as of July 31, 2025):
    - TF-IDF: Term frequency-inverse document frequency similarity
    - Jaccard: Set-based similarity using intersection over union
    - SIF: Smooth inverse frequency similarity
@@ -39,7 +38,7 @@ Features are created through two main components:
 
 ### Understanding Your Similiarity Functions
 
-When using MadLib, it's crucial to understand how your chosen similarity functions work:
+When using MatchFlow, it's crucial to understand how your chosen similarity functions work:
 
 **Why This Matters:**
 

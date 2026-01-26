@@ -1,8 +1,8 @@
-"""Tests for MadLib._internal.tokenizer.tokenizer module.
+"""Tests for MatchFlow._internal.tokenizer.tokenizer module.
 
 This module defines tokenizer variants for string preprocessing.
 """
-from MadLib._internal.tokenizer.tokenizer import (
+from MatchFlow._internal.tokenizer.tokenizer import (
     StrippedWhiteSpaceTokenizer,
     ShingleTokenizer,
     WhiteSpaceTokenizer,

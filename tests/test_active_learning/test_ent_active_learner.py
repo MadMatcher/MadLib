@@ -1,4 +1,4 @@
-"""Tests for MadLib._internal.active_learning.ent_active_learner module.
+"""Tests for MatchFlow._internal.active_learning.ent_active_learner module.
 
 This module implements EntropyActiveLearner for batch selection.
 """
@@ -10,10 +10,10 @@ import pandas as pd
 import pytest
 import pyspark.sql.functions as F
 
-from MadLib._internal.active_learning.ent_active_learner import (
+from MatchFlow._internal.active_learning.ent_active_learner import (
     EntropyActiveLearner,
 )
-from MadLib._internal.labeler import CustomLabeler, GoldLabeler
+from MatchFlow._internal.labeler import CustomLabeler, GoldLabeler
 
 
 class StopLabeler(CustomLabeler):

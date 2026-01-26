@@ -1,4 +1,4 @@
-"""Tests for MadLib._internal.utils module.
+"""Tests for MatchFlow._internal.utils module.
 
 This module provides utility functions, compression, hashing, and math helpers.
 """
@@ -6,7 +6,7 @@ import pytest
 import numpy as np
 import pandas as pd
 
-import MadLib._internal.utils as utils
+import MatchFlow._internal.utils as utils
 
 
 class TestTypeChecks:
