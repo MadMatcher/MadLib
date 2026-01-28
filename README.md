@@ -2,30 +2,31 @@
 
 MatchFlow is an open-source library for the matching step of entity matching (EM).
 
-Matching two tables A and B is typically done in two stages. First, a blocking step uses fast heuristics to identify candidate tuple pairs that are likely to match, often using tools such as Sparkly or Delex. Second, a matching step examines these candidate pairs more carefully—using more expensive computation—to determine whether they are true matches.
+Matching two tables A and B is typically done in two stages. First, a _blocking step_ uses fast heuristics to identify candidate tuple pairs that are likely to match, often using tools such as Sparkly or Delex. Second, a _matching step_ examines these candidate pairs more carefully—using more expensive computation—to determine whether they are true matches.
 
 MatchFlow focuses on this second stage. It provides a machine-learning–based solution for matching and is distinguished by the following features:
 
-- Supervised ML matchers. MatchFlow uses supervised learning: users train an ML classifier on labeled tuple pairs and then apply the trained classifier to the blocking output to classify each pair as match or no-match. We refer to this classifier as a matcher.
-- Composable matching workflows. In practice, users often experiment with multiple workflows when building a matcher. MatchFlow provides a set of core functions that can be flexibly composed to create a wide variety of workflows. For example, a user may generate a candidate set of features, refine this set into a final feature list, create training data by labeling tuple pairs, convert labeled pairs into feature vectors, train and evaluate different matchers, and so on.
-- Support for creating high-quality training data. Producing good labeled data is one of the hardest parts of entity matching. MatchFlow addresses this challenge using active learning, allowing users to focus labeling effort where it is most valuable.
-- Scalability to massive blocking outputs. Blocking outputs often contain hundreds of millions or even billions of tuple pairs. MatchFlow is designed to scale to these sizes, building on over a decade of research and development from the Magellan project at the University of Wisconsin–Madison.
-- Proven in real-world use. Variants of MatchFlow have been implemented in industry settings and used by hundreds of users.
+- _Supervised ML matchers._ MatchFlow uses supervised learning: users train an ML classifier on labeled tuple pairs and then apply the trained classifier to the blocking output to classify each pair as match or no-match. We refer to this classifier as a _matcher_.
+- _Composable matching workflows._ In practice, users often experiment with multiple workflows when building a matcher. MatchFlow provides a set of core functions that can be flexibly composed to create a wide variety of workflows. For example, a user may generate a candidate set of features, refine this set into a final feature set, create training data by labeling tuple pairs, convert labeled pairs into feature vectors, train and evaluate different matchers, and so on.
+- _Support for creating high-quality training data._ Producing good labeled data is one of the hardest parts of entity matching. MatchFlow addresses this challenge using active learning, allowing users to focus labeling effort where it is most valuable.
+- _Scalability to massive blocking outputs._ Blocking outputs often contain hundreds of millions or even billions of tuple pairs. MatchFlow is designed to scale to these sizes, building on over a decade of research and development from the [Magellan project](https://anhaidgroup.github.io/magellan) at the University of Wisconsin–Madison.
+- _Proven in real-world use._ Variants of MatchFlow have been implemented in industry settings and used by hundreds of users.
 
 ### How MatchFlow Works
 
-Let C be the output of blocking on tables A and B (using a blocking solution such as Sparkly or Delex). Let D be the training data—a set of tuple pairs labeled as match or no-match.
+Let C be the output of blocking on tables A and B (using a blocking solution such as [Sparkly](https://github.com/anhaidgroup/sparkly) or [Delex](https://github.com/anhaidgroup/delex)). Let D be the training data—a set of tuple pairs labeled as match or no-match.
 
 Using MatchFlow, users typically execute the following workflows:
 
-1. Feature creation. Run a workflow that examines the schemas and data of tables A and B to generate a set of candidate features. These features typically involve similarity functions commonly used in entity matching. Users may inspect and edit this set to produce a final feature set F.
-2. Feature vector construction. Convert each tuple pair in the training data D into a feature vector using F. Run a separate workflow to convert each tuple pair in the blocking output C into a feature vector.
-3. Matcher training. Use the feature vectors derived from D to train a matcher M, which is a classification model such as Random Forest or XGBoost.
-4. Matcher application. Apply the trained matcher M to the feature vectors from C to predict match or no-match for each candidate pair.
+1. _Feature creation._ Run a workflow that examines the schemas and data of tables A and B to generate a set of candidate features. These features typically involve similarity functions commonly used in entity matching. Users may inspect and edit this set to produce a final feature set F.
+2. _Feature vector construction._ Convert each tuple pair in the training data D into a feature vector using F. Run a separate workflow to convert each tuple pair in the blocking output C into a feature vector.
+3. _Matcher training._ Use the feature vectors derived from D to train a matcher M, which is a classification model such as Random Forest or XGBoost.
+4. _Matcher application._ Apply the trained matcher M to the feature vectors from C to predict match or no-match for each candidate pair.
 
 If training data D is not available, MatchFlow provides a workflow to create it using active learning. This workflow iteratively selects a small number of informative tuple pairs from the blocking output C (e.g., a few hundred pairs) for the user to label, progressively improving the matcher with minimal labeling effort.
 
 A key challenge in these workflows is scalability. Blocking outputs often contain hundreds of millions of tuple pairs. This raises many problems. For example, even generating feature vectors is difficult, as it is not trivially parallelizable.
+
 As another example, active learning cannot be applied directly to the blocking output C due to its size and must instead operate on a carefully constructed sample S of C, which is itself non-trivial to obtain. MatchFlow provides effective solutions to address these scalability challenges, enabling matching workflows to operate at real-world scale.
 
 ### Runtime Environments
@@ -36,19 +37,10 @@ The above workflows are created by stitching together MatchFlow functions and Py
 - _Spark on a single machine:_ Use this if you have a relatively small amount of data, or just want to experiment with MatchFlow, or if you want to test your Spark scripts before running them on a cluster.
 - _Spark on a cluster of machines:_ Use this if you have a large amount of data, such as 5M+ tuples or more in Tables A and B.
 
-### Solving Matching Challenges
-
-Today the matching step of EM often uses machine learning: train a matcher M on a set of labeled tuple pairs, then apply M to new pairs to predict match/non-match. In the EM context this raises a set of challenges, as described below. MatchFlow functions address these challenges, and distinguish MatchFlow from other existing EM packages:
-
-- _How to create the features?_ MatchFlow analyzes the schema and data of the two tables A and B to be matched, to create a comprehensive set of features that involve similarity functions and tokenizers.
-- _How to create the training data?_ If a set of labeled tuple pairs for training is not available (a very common scenario), MatchFlow can help the user create such a set, using active learning.
-- _How to scale?_ When the tables A and B to be matched are large (e.g., 5M+ tuples), scaling is difficult. MatchFlow provides Spark-based solutions to these problems.
-- _How to label examples?_ MatchFlow provides a variety of labelers that the user can use (to label data in the command-line interface, using a Web browser, etc.), and ways to extend or customize these labelers.
-
 ### Additional Details
 
-- The core functions of MatchFlow include create_features, featurize, down_sample, create_seeds, label_data, label_pairs, train_matcher, apply_matcher.
-- Features use well-known similarity measures such as TF/IDF, Jaccard, Overlap, Cosine, etc., and well-known tokenizers such as word-level tokenization and qgrams.
+- The core functions of MatchFlow include _create_features_, _featurize_, _down_sample_, _create_seeds_, _label_data_, _label_pairs_, _train_matcher_, _apply_matcher_.
+- Features use well-known similarity measures such as _TF/IDF_, _Jaccard_, _Overlap_, _Cosine_, _etc._, and well-known tokenizers such as _word-level tokenization_ and _qgrams_.
 - Labelers are objects that allow users to label using command-line interface and Web browser. If all matches are known, you can use them to simulate labeling (using the Gold Labeler). This facilitates development, debugging, and computing matching accuracy.
 - Matchers can use classification models from Scikit Learn and PySpark MLlib.
 - Features, labelers, and matchers can be customized and new types can be easily added.
